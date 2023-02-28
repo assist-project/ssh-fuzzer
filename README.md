@@ -29,13 +29,6 @@ Timing variances were a nuisance. Timing is controlled at various places:
 - read_multiple_responses() in manualparamiko/transport.py (has both a timeout between responses and total timeout -in case of multiple responses- argument). 
 - Timeout based on the type of message can be set in the individual read_multiple_responses-calls. 
 
-
- --- RESULTS UTILITY ---
-Results include the .dot models obtained by learning plus various 
-
- --- DOTTOSMV UTILITY ---
-The dotToNuSMV utility was used to convert the .dot Mealy machines obtained by learning, to NuSMV (.smv) models that are suitable for model checking. 
-
 # Trimming script (mypydot)
 The python pydot package was altered to merge edges between the same nodes. 
 Feed it a .dot file and let it do its magic. 
