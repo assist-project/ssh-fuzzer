@@ -1,0 +1,18 @@
+Effective Configuration: {cache=output/Dropbear1632517145969/querylog.db, name=Dropbear, maxNonDeterminismRetries=3, maxNumTests=20000, eqOracle=RANDOM, alphabet=!DISCONNECT;!IGNORE;!UNIMPL;!DEBUG;KEXINIT;!KEXINIT_PROCEED;KEX30;NEWKEYS;SR_AUTH;SR_CONN;UA_PK_NOK;UA_PK_OK;!UA_PW_NOK;!UA_PW_OK;!UA_NONE;CH_OPEN;CH_CLOSE;CH_EOF;CH_DATA;!CH_EXTENDED_DATA;!CH_WINDOW_ADJUST;CH_REQUEST_PTY, mapperAddress=localhost:7000, timeLimit=PT14H}
+Hypothesis 0 after: 553ms
+Membership: 2197
+Counter Example: KEXINIT KEX30 NEWKEYS UA_PK_OK KEXINIT NEWKEYS KEX30 
+Hypothesis 1 after: 814ms
+Membership: 342
+Counter Example: KEXINIT KEX30 NEWKEYS UA_PK_OK KEXINIT CH_CLOSE KEX30 NEWKEYS UA_PK_OK 
+Hypothesis 2 after: 1615ms
+Membership: 906
+Counter Example: KEXINIT KEX30 NEWKEYS UA_PK_OK CH_OPEN CH_EOF CH_REQUEST_PTY UA_PK_NOK KEXINIT KEX30 NEWKEYS CH_CLOSE 
+Hypothesis 3 after: 6976ms
+Membership: 618
+RANDOM Equivalence: 23336
+Learning completed: true
+Total mem Queries: 4063
+Total test Queries: 23336
+Timestamp: 1632677862425.
+Running time: 47616815ms.

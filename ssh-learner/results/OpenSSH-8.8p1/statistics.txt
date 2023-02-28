@@ -1,0 +1,16 @@
+Effective Configuration: {name=OpenSSH-8.8p1, maxNonDeterminismRetries=3, maxNumTests=20000, eqOracle=RANDOM, alphabet=!DISCONNECT;!IGNORE;!UNIMPL;!DEBUG;KEXINIT;!KEXINIT_PROCEED;KEX30;NEWKEYS;SR_AUTH;SR_CONN;UA_PK_NOK;UA_PK_OK;!UA_PW_NOK;!UA_PW_OK;!UA_NONE;CH_OPEN;CH_CLOSE;CH_EOF;CH_DATA;!CH_EXTENDED_DATA;!CH_WINDOW_ADJUST;CH_REQUEST_PTY, mapperAddress=localhost:8002, timeLimit=P2D}
+Hypothesis 0 after: 77822958ms
+Membership: 5005
+Counter Example: KEXINIT KEX30 NEWKEYS SR_AUTH UA_PK_OK KEXINIT CH_OPEN CH_CLOSE SR_AUTH CH_DATA SR_CONN CH_CLOSE CH_OPEN KEX30 KEX30 KEXINIT CH_OPEN CH_EOF NEWKEYS CH_REQUEST_PTY 
+Hypothesis 1 after: 100309925ms
+Membership: 895
+Counter Example: KEXINIT KEX30 NEWKEYS SR_AUTH UA_PK_OK KEXINIT CH_OPEN CH_REQUEST_PTY CH_CLOSE UA_PK_OK CH_REQUEST_PTY UA_PK_OK CH_DATA SR_CONN CH_CLOSE UA_PK_NOK CH_OPEN CH_REQUEST_PTY KEXINIT UA_PK_NOK CH_CLOSE UA_PK_OK 
+Hypothesis 2 after: 120193641ms
+Membership: 787
+Learning stopped due to exception: learner.ExperimentTimeoutException
+Exception message: Experiment timed out after a duration of PT48H
+Learning completed: false
+Total mem Queries: 6687
+Total test Queries: 2902
+Timestamp: 1633464655864.
+Running time: 172821589ms.

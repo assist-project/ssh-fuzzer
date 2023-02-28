@@ -1,0 +1,11 @@
+yanna/main --prefix buggy --seed 123456789 = random 4 4
+yanna/main --seed 70 = fixed 2 4
+Hypothesis 0 after: 19715ms
+Membership: 2744
+Counter Example: NEWKEYS KEX30 NEWKEYS UA_PK_OK KEXINIT_PROCEED KEX30 NEWKEYS KEX30 KEXINIT SERVICE_REQUEST_AUTH NEWKEYS 
+Hypothesis 1 after: 47197ms
+Membership: 817
+RANDOM Equivalence: 21093
+EXHAUSTIVE Equivalence: 9536
+Timestamp: 1486458926350.
+Running time: 34703186ms.
