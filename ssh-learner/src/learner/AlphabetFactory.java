@@ -4,9 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import de.ls5.jlearn.interfaces.Alphabet;
-import de.ls5.jlearn.shared.AlphabetImpl;
-import de.ls5.jlearn.shared.SymbolImpl;
+import net.automatalib.words.Alphabet;
+import net.automatalib.words.impl.ListAlphabet;
 
 public class AlphabetFactory {
 	public static List<String> fullAlphabet = Arrays.asList(
@@ -34,15 +33,13 @@ public class AlphabetFactory {
 					,"CH_WINDOW_ADJUST"
 					,"CH_REQUEST_PTY" } );
 	
-	public static Alphabet generateInputAlphabet(List<String> suppliedInputStrings) {
+	public static Alphabet<String> generateInputAlphabet(List<String> suppliedInputStrings) {
 		Optional<String> hasInvInput = suppliedInputStrings.stream().filter(str -> !fullAlphabet.contains(str)).findAny();
 		if (hasInvInput.isPresent()) {
 			System.out.println("Input " + hasInvInput.get() + " not in full alphabet");
 			System.exit(0);
 		}
-		Alphabet result = new AlphabetImpl();
-		suppliedInputStrings.forEach(action -> 
-		result.addSymbol(new SymbolImpl(action)));
+		ListAlphabet<String> result = new ListAlphabet<String>(suppliedInputStrings);
 		return result;
 	}
 }

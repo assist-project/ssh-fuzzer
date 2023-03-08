@@ -28,7 +28,6 @@ public class Config {
 																		// previous
 																		// learning
 																		// runs
-	
 	/*
 	 * Example: equOracle="RANDOM;EXHAUSTIVE" maxNumTests=2000
 	 */
@@ -39,7 +38,6 @@ public class Config {
 	public final List<String> testWords;
 	public String specFile;
 	public final String sutName;
-	public String nusmvCmd;
 	public final Duration timeTimit;
 	public final Integer maxNonDeterminismRetries;
 	public final String mapperHost;
@@ -48,7 +46,6 @@ public class Config {
 	public final Properties properties; 
 	public final String outputFolder;
 	public final long timestamp;
-	
 
 	public Config(String file) throws IOException {
 		Properties defaults = new Properties();
@@ -83,7 +80,6 @@ public class Config {
 																											// inputs
 				.collect(Collectors.<String>toList());
 
-		// efficient computing... not
 		maxNumTests = Integer.valueOf(properties.getProperty("maxNumTests"));
 		testWords = new ArrayList<>();
 		if (equOracleTypes.contains(EquType.WORDS)) {
@@ -97,11 +93,6 @@ public class Config {
 				reader.close();
 			}
 
-		}
-		if (equOracleTypes.contains(EquType.CONFORMANCE)) {
-			String specFileName = requireGet(EquType.CONFORMANCE, "specification", properties);
-			specFile = "input/" + specFileName;
-			nusmvCmd = requireGet(EquType.CONFORMANCE, "nusmvCmd", properties);
 		}
 		String timeLimit = properties.getProperty("timeLimit");
 		if (timeLimit != null) {
@@ -125,15 +116,8 @@ public class Config {
 		return properties.toString();
 	}
 	
-	private String requireGet(EquType type, String param, Properties propFile) {
-		String paramVal = (String) propFile.getProperty(param);
-		if (paramVal == null)
-			throw new RuntimeException("Parameter " + param + " must be specified for Equ Oracle " + type);
-		return paramVal;
-	}
-	
 	public static enum EquType {
-		RANDOM, EXHAUSTIVE, WORDS, CONFORMANCE
+		RANDOM, EXHAUSTIVE, WORDS
 	}
 	
 }

@@ -2,12 +2,13 @@ package learner;
 
 
 import java.time.Duration;
+import java.util.Collection;
 
-import de.ls5.jlearn.abstractclasses.LearningException;
-import de.ls5.jlearn.interfaces.Oracle;
-import de.ls5.jlearn.interfaces.Word;
+import de.learnlib.api.oracle.MembershipOracle.MealyMembershipOracle;
+import de.learnlib.api.query.Query;
+import net.automatalib.words.Word;
 
-public class TimeoutOracleWrapper implements Oracle {
+public class TimeoutOracleWrapper<I,O> implements MealyMembershipOracle<I, O> {
 	/**
 	 * 
 	 */
@@ -15,21 +16,19 @@ public class TimeoutOracleWrapper implements Oracle {
 	
 	private long startTime;
 	private Duration duration;
-	private Oracle oracle;
+	private MealyMembershipOracle<I, O> oracle;
 
-	public TimeoutOracleWrapper(Oracle oracle, Duration duration) {
+	public TimeoutOracleWrapper(MealyMembershipOracle<I, O> oracle, Duration duration) {
 		this.oracle = oracle;
 		this.startTime = System.currentTimeMillis();
 		this.duration = duration;
 	}
 
 	@Override
-	public Word processQuery(Word arg0) throws LearningException {
+	public void processQueries(Collection<? extends Query<I, Word<O>>> queries) {
 		if (System.currentTimeMillis() > duration.toMillis() + startTime) {
 			throw new ExperimentTimeoutException(duration);
 		}
-		Word output = oracle.processQuery(arg0);
-		return output;
+		oracle.processQueries(queries);
 	}
-	
 }

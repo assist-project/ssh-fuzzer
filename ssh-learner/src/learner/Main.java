@@ -2,27 +2,30 @@ package learner;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.EnumMap;
+import java.util.ArrayList;
+import java.util.List;
 
-import de.ls5.jlearn.algorithms.packs.ObservationPack;
-import de.ls5.jlearn.interfaces.Automaton;
-import de.ls5.jlearn.interfaces.EquivalenceOracle;
-import de.ls5.jlearn.interfaces.EquivalenceOracleOutput;
-import de.ls5.jlearn.interfaces.Learner;
-import de.ls5.jlearn.interfaces.Oracle;
-import de.ls5.jlearn.interfaces.Word;
-import de.ls5.jlearn.logging.LearnLog;
-import de.ls5.jlearn.logging.LogLevel;
-import de.ls5.jlearn.logging.PrintStreamLoggingAppender;
-import de.ls5.jlearn.shared.AlphabetImpl;
-import de.ls5.jlearn.shared.AutomatonImpl;
-import de.ls5.jlearn.util.DotUtil;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import de.learnlib.acex.analyzers.AcexAnalyzers;
+import de.learnlib.algorithms.ttt.mealy.TTTLearnerMealy;
+import de.learnlib.api.algorithm.LearningAlgorithm.MealyLearner;
+import de.learnlib.api.oracle.EquivalenceOracle.MealyEquivalenceOracle;
+import de.learnlib.api.oracle.MembershipOracle.MealyMembershipOracle;
+import de.learnlib.api.query.DefaultQuery;
+import de.learnlib.oracle.equivalence.MealyEQOracleChain;
+import de.learnlib.oracle.equivalence.MealyRandomWpMethodEQOracle;
+import de.learnlib.oracle.equivalence.MealyWpMethodEQOracle;
 import learner.Config.EquType;
+import net.automatalib.automata.transducers.MealyMachine;
+import net.automatalib.serialization.dot.GraphDOT;
+import net.automatalib.words.Word;
 import util.FileManager;
 import util.SoundUtils;
 
@@ -31,11 +34,6 @@ public class Main {
 	// input file(name)s
 	private static final String emptyDbFile = "input/querylog-empty.db";
 	private static final String defaultConfigFile = "input/config.prop";
-	private static final String yannakakisNewExhaustiveCmd = "binaries/hybrid-ads -m all -p buggy -s hads -r 4 -x 70";
-	private static final String yannakakisNewRandomCmd = "binaries/hybrid-ads -m random -p buggy -s hads -r 4 -x 70";
-
-	// global hyp counter
-	private static int hypCounter = 0;
 
 	private PrintStream statisticsFileStream;
 
@@ -47,11 +45,11 @@ public class Main {
 				configFile = args[0];
 			}
 			final Config config = new Config(configFile);
-			Automaton learnedModel = main.learn(config);
+			MealyMachine<?, String, ?, String>  learnedModel = main.learn(config);
 			SoundUtils.success();
 			File modelFile = new File(config.outputFolder + "learnedModel.dot");
 			// Write final dot
-			DotUtil.writeDot(learnedModel, modelFile);
+			GraphDOT.write(learnedModel, config.alphabet,  new FileWriter(modelFile));
 			FileManager.copy(configFile, config.outputFolder + "config.prop");
 
 		} catch (Exception e) {
@@ -64,22 +62,18 @@ public class Main {
 
 	}
 	
-	public Automaton learn(Config config) throws Exception {
+	public MealyMachine<?, String, ?, String>  learn(Config config) throws Exception {
 		String expFolder = config.outputFolder;
 		if (!new File(expFolder).exists()) {
 			new File(expFolder).mkdirs();
 		}
 		
-		
-		String outputFile = expFolder + "out.txt";
 		String statisticsFile = expFolder + "statistics.txt";
 		String dbFile = expFolder + "cache.db";
 		String learnLog = expFolder + "learnLog.txt";
 		
 		// All output goes to file
 		statisticsFileStream = new PrintStream(new FileOutputStream(statisticsFile, false));
-		PrintStream fileStream = new PrintStream(new FileOutputStream(outputFile, false));
-		System.setOut(fileStream);
 		statisticsFileStream.println("Effective Configuration: " + config.getEffectiveConfigString());
 		
 		// Set up a connection
@@ -90,8 +84,8 @@ public class Main {
 		sock.setTcpNoDelay(true);
 
 		// Logging info goes to System.out
-		LearnLog.addAppender(
-				new PrintStreamLoggingAppender(LogLevel.DEBUG, new PrintStream(new FileOutputStream(learnLog, false))));
+//		LearnLogger.addAppender(
+//				new PrintStreamLoggingAppender(LogLevel.DEBUG, new PrintStream(new FileOutputStream(learnLog, false))));
 
 		// Some debug info
 		System.out.println("Started the main process");
@@ -114,107 +108,66 @@ public class Main {
 		Logger sqllog = new Logger(dbFile, config.sutName);
 
 		// And test oracle
-		Oracle testOracle = new TestOracle(sut, sqllog);
+		MealyMembershipOracle<String, String> testOracle = new TestOracle(sut, sqllog);
 		Counter testQueryCounter = ((TestOracle) testOracle).getQueryCounter();
-		testOracle = new NonDeterminismRetryingSutOracle(testOracle, config.maxNonDeterminismRetries, System.out);
+		testOracle = new NonDeterminismRetryingSutOracle<>(testOracle, config.maxNonDeterminismRetries, System.out);
 		if (config.timeTimit != null) {
-			testOracle = new TimeoutOracleWrapper(testOracle, config.timeTimit);
+			testOracle = new TimeoutOracleWrapper<>(testOracle, config.timeTimit);
 		}
 
 		// Create learnlib objects: membershipOracle, EquivalenceOracles and
 		// Learner
-		Oracle membershipOracle = new MembershipOracle(sut, sqllog);
+		MealyMembershipOracle<String, String> membershipOracle = new MembershipOracle(sut, sqllog);
 		Counter membershipQueryCounter = ((MembershipOracle) membershipOracle).getQueryCounter();
-		membershipOracle = new NonDeterminismRetryingSutOracle(membershipOracle, config.maxNonDeterminismRetries, System.out);
+		membershipOracle = new NonDeterminismRetryingSutOracle<>(membershipOracle, config.maxNonDeterminismRetries, System.out);
 		if (config.timeTimit != null) {
-			membershipOracle = new TimeoutOracleWrapper(membershipOracle, config.timeTimit);
+			membershipOracle = new TimeoutOracleWrapper<>(membershipOracle, config.timeTimit);
 		}
 
-		// Set up the eqOracleMap (equType -> equOracle)
-		EnumMap<EquType, EquivalenceOracle> equOracleMap = new EnumMap<EquType, EquivalenceOracle>(EquType.class);
-		for (EquType equType : config.equOracleTypes) {
-			EquivalenceOracle eqOracle = null;
-			switch (equType) {
-			case RANDOM:
-				eqOracle = new YannakakisEquivalenceOracle(yannakakisNewRandomCmd, config.maxNumTests);
-				break;
-			case EXHAUSTIVE:
-				eqOracle = new YannakakisEquivalenceOracle(yannakakisNewExhaustiveCmd);
-				break;
-			case WORDS:
-				eqOracle = new WordsEquivalenceOracle(config.testWords);
-				break;
-			case CONFORMANCE:
-				throw new RuntimeException("Operation not supported");
-			}
-			eqOracle.setOracle(testOracle);
-			equOracleMap.put(equType, eqOracle);
-		}
+		// build equivalence oracle
+		MealyEquivalenceOracle<String, String> eqOracle = buildEqOracle(testOracle, config);
 
-		Learner learner = null;
-
+		
+		MealyLearner<String, String> learner = null;
 		// Set up the learner
-		learner = new ObservationPack();
-		learner.setOracle(membershipOracle);
-		learner.setAlphabet(AlphabetFactory.generateInputAlphabet(config.alphabet));
+		learner = new TTTLearnerMealy<String, String>(AlphabetFactory.generateInputAlphabet(config.alphabet), membershipOracle, AcexAnalyzers.BINARY_SEARCH_FWD);
 
 		long start = System.currentTimeMillis();
+		learner.startLearning();
+		System.out.println("starting learning");
 		boolean done = false;
-		int memQueries = 0, testQueries = 0;
+		int hypCounter = 0;
+		int memQueries = 0;
 
 		// Repeat until a hypothesis has been formed for which no counter
 		// example can be found
 		try {
 			for (hypCounter = 0; !done; hypCounter++) {
-				Automaton hyp = null;
-	
-				// Learn
-				System.out.println("starting learning");
-				learner.learn();
-				System.out.println("done learning");
-	
+				MealyMachine<?, String, ?, String> hyp = null;
+				hyp = learner.getHypothesisModel();
 				// Print some stats
 				statisticsFileStream
 						.println("Hypothesis " + hypCounter + " after: " + (System.currentTimeMillis() - start) + "ms");
 				statisticsFileStream.println("Membership: " + (membershipQueryCounter.getValue() - memQueries));
 				memQueries = membershipQueryCounter.getValue();
-				// memberOracle.resetNumQueries();
+				
+				GraphDOT.write(hyp, config.alphabet,  new FileWriter(expFolder + "hypothesis-" + hypCounter + ".dot"));
+				
+				@Nullable
+				DefaultQuery<String, Word<String>> ce = eqOracle.findCounterExample(hyp, config.alphabet);
 	
-				// Retrieve hypothesis and write to dot file
-				hyp = learner.getResult();
-				DotUtil.writeDot(hyp, new File(expFolder + "hypothesis-" + hypCounter + ".dot"));
-	
-				EquivalenceOracleOutput equivOutput = null;
-	
-				for (EquType equOracleType : config.equOracleTypes) {
-					EquivalenceOracle eqOracle = equOracleMap.get(equOracleType);
-					System.out.println("starting " + equOracleType.name() + " equivalence query");
-					// mapper.setRetrieveFromCache(false);
-					equivOutput = eqOracle.findCounterExample(hyp);
-					if (equivOutput != null)
-						break;
-					// mapper.setRetrieveFromCache(true);
-					System.out.println("done " + equOracleType.name() + " equivalence query");
-	
-					statisticsFileStream
-							.println(equOracleType.name() + " Equivalence: " + (testQueryCounter.getValue() - testQueries));
-					testQueries = testQueryCounter.getValue();
-				}
 	
 				// Check for a counterexample
-				if (equivOutput == null) {
+				if (ce == null) {
 					// No counterexample: close socket and done.
 					System.out.println("No counterexample found; done!");
 					sock.close();
 					done = true;
 				} else {
 					// There is a counter example, send it to learnlib.
-					Word counterExample = equivOutput.getCounterExample();
-	
-					statisticsFileStream.println("Counter Example: " + counterExample.toString());
+					statisticsFileStream.println("Counter Example: " + ce);
 					System.out.println("Sending Counter Example to LearnLib.");
-					System.out.println("Counter Example: " + counterExample.toString());
-					learner.addCounterExample(counterExample, equivOutput.getOracleOutput());
+					learner.refineHypothesis(ce);
 				}
 			}
 		} catch(Exception e) {
@@ -232,21 +185,41 @@ public class Main {
 		statisticsFileStream.close();
 
 		// Get result
-		Automaton learnedModel = learner.getResult();
+		MealyMachine<?, String, ?, String>  learnedModel = learner.getHypothesisModel();
 
 		return learnedModel;
+	}
+	
+	public MealyEquivalenceOracle<String, String> buildEqOracle(MealyMembershipOracle<String, String> oracle, Config config) {
+		List<MealyEquivalenceOracle<String, String>> eqOracles = new ArrayList<>(config.equOracleTypes.size()); 
+		for (EquType type : config.equOracleTypes) {
+			switch(type) {
+			case WORDS:
+				eqOracles.add(new MealyWpMethodEQOracle<>(oracle, 1));
+				break;
+			case RANDOM:
+				eqOracles.add(new MealyRandomWpMethodEQOracle<>(oracle, 4, 5, config.maxNumTests));
+				break;
+			case EXHAUSTIVE:
+				eqOracles.add(new MealyWpMethodEQOracle<>(oracle, 1));
+				break;
+			default:
+				throw new RuntimeException("Equivalence oracle not supported");
+			}
+			
+		}
+		if (eqOracles.size() == 0) {
+			throw new RuntimeException("Must supply at least one equivalence oracle type");
+		} else if (eqOracles.size() == 1) {
+			return eqOracles.get(0);
+		} else {
+			return new MealyEQOracleChain<String, String>(eqOracles);
+		}
 	}
 
 	public static void copyToExpFolder(String expFolder, String... files) throws Exception {
 		for (String file : files) {
 			FileManager.copy(file, expFolder + new File(file).getName());
 		}
-
-	}
-
-	public Automaton readExistingHypothesis(String filename) {
-		System.out.println("Old hypothesis found");
-
-		return new AutomatonImpl(new AlphabetImpl());
 	}
 }

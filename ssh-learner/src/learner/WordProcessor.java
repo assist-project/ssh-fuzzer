@@ -1,13 +1,13 @@
 package learner;
 
-import de.ls5.jlearn.abstractclasses.LearningException;
-import de.ls5.jlearn.interfaces.Oracle;
-import de.ls5.jlearn.interfaces.Symbol;
-import de.ls5.jlearn.interfaces.Word;
-import de.ls5.jlearn.shared.SymbolImpl;
-import de.ls5.jlearn.shared.WordImpl;
+import java.util.Collection;
 
-public class WordProcessor implements Oracle {
+import de.learnlib.api.oracle.MembershipOracle.MealyMembershipOracle;
+import de.learnlib.api.query.Query;
+import net.automatalib.words.Word;
+import net.automatalib.words.WordBuilder;
+
+public class WordProcessor implements MealyMembershipOracle<String, String> {
 	private static final long serialVersionUID = -4173623825087666011L;
 	private Sut sut;
 	private Logger sqllog;
@@ -26,14 +26,14 @@ public class WordProcessor implements Oracle {
 		this.queryCounter = queryCounter;
 	}
 	
-	public Word processQuery(Word query) throws LearningException {
+	public Word<String> processQuery(Word<String> query) {
 		// Perform a learnlib query
 		String input, output;
-		Word result = new WordImpl();
+		WordBuilder<String> result = new WordBuilder<>();
 		
 		// First run against DB for extra performance.
 		String fullQuery = "";
-		for (Symbol currentSymbol : query.getSymbolList()) {
+		for (String currentSymbol : query.asList()) {
 			fullQuery += currentSymbol.toString() + " ";
 		}
 		
@@ -62,7 +62,7 @@ public class WordProcessor implements Oracle {
 			String resultString = "";
 			boolean safeToCache = true;
 			long startTime = System.currentTimeMillis();
-			for (Symbol currentSymbol : query.getSymbolList()) {
+			for (String currentSymbol : query.asList()) {
 				// INTERESTING
 				// Tell something about the CHAOS state which we didnt implement in the end but might have been needed 
 				// For Tectia 
@@ -72,7 +72,7 @@ public class WordProcessor implements Oracle {
 				
 				System.out.println("... sending \"" + input + "\", got \"" + output + "\" in " + duration + "ms");
 				
-				result.addSymbol(new SymbolImpl(output));
+				result.add(output);
 				
 				// Log the results
 				inputString += input + " ";
@@ -108,16 +108,24 @@ public class WordProcessor implements Oracle {
 			// This result already exists from a previous run, use that one
 			System.out.println("... using cache");
  			for (String cacheWord : cacheOutput.split("\\s+")) {
- 				result.addSymbol(new SymbolImpl(cacheWord));
+ 				result.add(cacheWord);
  			}
 		}
 		
 		//System.out.println("... output vocabulary size is " + this.sqllog.outputVocabulary());		
 		System.out.println("... return final result learnlib: " + result);
-		return result;
+		return result.toWord();
 	}
 	
 	public Counter getQueryCounter() {
 		return queryCounter;
+	}
+
+	@Override
+	public void processQueries(Collection<? extends Query<String, Word<String>>> queries) {
+		for (Query<String, Word<String>> query : queries) {
+			Word<String> answer = processQuery(query.getInput());
+			query.answer(answer);
+		}
 	}
 }
