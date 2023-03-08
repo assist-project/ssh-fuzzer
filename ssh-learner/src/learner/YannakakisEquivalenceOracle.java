@@ -34,22 +34,8 @@ public class YannakakisEquivalenceOracle implements EquivalenceOracle {
 	private final int maxNumTests;
 	private int crtTestNum;
 
-    public YannakakisEquivalenceOracle(
-    		//Automaton inputEnabledHypothesis,
-            String yannakakisCmd) {
-        //this.hyp = inputEnabledHypothesis;
-
+    public YannakakisEquivalenceOracle(String yannakakisCmd) {
         this(yannakakisCmd, Integer.MAX_VALUE);
-        
-        //Toon: No clue what this does, since I don't have the referenced Main-class
-//        Main.registerShutdownHook(new Runnable() {
-//            public void run() {
-//                if (!isClosed()) {
-//                    closeAll();
-//                    //Log.err("Shutting down process");
-//                }
-//            }
-//        });
     }
     
     public YannakakisEquivalenceOracle(
