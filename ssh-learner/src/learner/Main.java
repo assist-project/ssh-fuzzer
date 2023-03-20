@@ -31,7 +31,6 @@ import util.SoundUtils;
 
 public class Main {
 
-	// input file(name)s
 	private static final String emptyDbFile = "input/querylog-empty.db";
 	private static final String defaultConfigFile = "input/config.prop";
 

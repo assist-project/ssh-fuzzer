@@ -45,7 +45,8 @@ public class NonDeterminismRetryingSutOracle<I,O> implements MealyMembershipOrac
 
     public void processQueries(Collection<? extends Query<I, Word<O>>> queries) {
         for (Query<I, Word<O>> q : queries) {
-            processQuery(q);
+        	Word<O> out = processQuery(q.getInput());
+            q.answer(out);
         }
     }
 }
