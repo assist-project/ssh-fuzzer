@@ -240,5 +240,5 @@ server_addr = parse_address(args.server)
 config = args.config
 
 proc = Processor(learnlib=learnlib_addr, ssh=server_addr, config=args.config)
-print "Starting mapper with parameters\n", vars(proc)
+print( "Starting mapper with parameters\n", vars(proc))
 proc.listen()
