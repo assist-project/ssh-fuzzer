@@ -23,5 +23,5 @@ if [[ "$1" == '--' ]]; then shift; fi
 
 
 
-cd ssh-fuzzer/ssh-mapper/
+cd ssh-mapper/
 python2 mapper/mapper.py -l localhost:$lport -s localhost:$sport -c $mapper

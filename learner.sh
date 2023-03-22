@@ -15,5 +15,5 @@ esac; shift; done
 if [[ "$1" == '--' ]]; then shift; fi
 
 
-cd ssh-fuzzer/ssh-learner
+cd ssh-learner
 java -jar target/ssh-learner-jar-with-dependencies.jar
