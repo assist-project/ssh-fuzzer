@@ -1757,7 +1757,8 @@ class Transport (threading.Thread, ClosingContextManager):
         self.auth_handler.private_key = paramiko.RSAKey.from_private_key_file(default_path)
         self.auth_handler.auth_method = 'publickey'
 #this should be changed to the username on the server
-        self.auth_handler.username = 'pfg666' if ok else 'NOACCESS'
+        self.auth_handler.username = 'thetelefon' if ok else 'NOACCESS' # //MAGIC Set username
+        print "hello world"
         self.auth_handler.custom_parse_service_request()
 
         return self.read_multiple_responses()
@@ -1777,7 +1778,7 @@ class Transport (threading.Thread, ClosingContextManager):
     def fuzz_userauth_pw(self, ok):
         self.auth_handler = AuthHandler(self)
         self.auth_handler.auth_method = 'password'
-        self.auth_handler.username = 'pfg666'
+        self.auth_handler.username = 'thetelefon'
         if ok:
             self.auth_handler.password = 'student'  # Just an example, make sure this user/pass exists!
         else:
@@ -1789,7 +1790,7 @@ class Transport (threading.Thread, ClosingContextManager):
         self.auth_handler = AuthHandler(self)
 
         self.auth_handler.auth_method = 'none'
-        self.auth_handler.username = 'pfg666'
+        self.auth_handler.username = 'thetelefon'
         self.auth_handler.custom_parse_service_request()
 
         return self.read_multiple_responses()
