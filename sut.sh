@@ -9,10 +9,18 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     echo "$version"
     exit
     ;;
+  -h | --help )
+    echo "Usage: ./sut.sh [opt]"
+    echo "[opt]:"
+    echo -e "\t-db  --dropbear"
+    echo -e "\t-os  --oppenssh"
+    echo -e "\t-p\tport to listen to"
+    exit
+    ;;
   -db | --dropbear )
     db=1
     ;;
-  -ossh | --openssh )
+  -os | --openssh )
     openssh=1
     ;;
   -p | --port )

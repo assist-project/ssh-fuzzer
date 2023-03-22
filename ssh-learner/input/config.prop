@@ -7,11 +7,14 @@ maxNumTests=20000
 # the specification file selected (relative to within the input dir), used by the CONFORMANCE oracle
 specification=bv_spec.smv
 # the time limit set for learning experiments
-#timeLimit=P2D
+# PT <num> H/M/S        PT10M
+# P <num> D             P1D     P1DT6H
+timeLimit=P1DT1M
 # a maximum number of learning rounds (= hypotheses generated)
 #roundLimit=1
 # initialize the cache with that of a previous experiment  
-# cache=querylog.db
+# path from ssh-learner root dir
+#cache=./output/Test1679554166777/cache.db
 # the maximum number of retries attempted in case of non-determinism before concluding that it cannot be resolved
 maxNonDeterminismRetries=3
 # the address at which the mapper is listening 

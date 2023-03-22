@@ -9,6 +9,14 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     echo "$version"
     exit
     ;;
+  -h | --help )
+    echo "Usage: ./mapper.sh [opt]"
+    echo "[opt]:"
+    echo -e "\t-db  --dropbear"
+    echo -e "\t-l\tport to learner"
+    echo -e "\t-s\tport to server"
+    exit
+    ;;
   -db | --dropbear )
     mapper="Dropbear"
     ;;
