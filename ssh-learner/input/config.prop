@@ -8,7 +8,6 @@ maxNumTests=20000
 specification=bv_spec.smv
 # the time limit set for learning experiments
 #timeLimit=P2D
-timeLimit=P10M
 # initialize the cache with that of a previous experiment  
 # cache=querylog.db
 # the maximum number of retries attempted in case of non-determinism before concluding that it cannot be resolved

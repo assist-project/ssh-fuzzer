@@ -22,7 +22,11 @@ esac; shift; done
 if [[ "$1" == '--' ]]; then shift; fi
 
 if [[ $db -eq 1 ]]; then
-	cd SUTs/dropbear-2022.83
+  cd SUTs/dropbear-2022.83
+  if ! [[ -e "./dropbear" ]]; then
+    ./configure
+    make
+  fi
 	sudo ./dropbear -R -F -E -p localhost:$port
 elif [[ $openssh -eq 1 ]]; then
 	echo "OpenSSH"
