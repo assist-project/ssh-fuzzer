@@ -1,0 +1,13 @@
+digraph g {
+
+	s0 [shape="circle" label="s0"];
+	s0 -> s0 [label="KEXINIT / KEXINIT"];
+	s0 -> s0 [label="KEX30 / KEXINIT+UNIMPL"];
+	s0 -> s0 [label="NEWKEYS / KEXINIT+UNIMPL"];
+	s0 -> s0 [label="SR_AUTH / KEXINIT"];
+	s0 -> s0 [label="UA_PK_OK / KEXINIT"];
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> s0;
+
+}
