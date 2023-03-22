@@ -39,6 +39,7 @@ public class Config {
 	public String specFile;
 	public final String sutName;
 	public final Duration timeTimit;
+	public final Integer roundLimit;
 	public final Integer maxNonDeterminismRetries;
 	public final String mapperHost;
 	public final Integer mapperPort;
@@ -99,6 +100,12 @@ public class Config {
 			this.timeTimit = Duration.parse(timeLimit);
 		} else {
 			this.timeTimit = null;
+		}
+		String roundLimit = properties.getProperty("roundLimit");
+		if (roundLimit != null) {
+			this.roundLimit = Integer.valueOf(roundLimit);
+		} else {
+			this.roundLimit = null;
 		}
 		maxNonDeterminismRetries = Integer.valueOf(properties.getProperty("maxNonDeterminismRetries"));
 		cache = properties.getProperty("cache");

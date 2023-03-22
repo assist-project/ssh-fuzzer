@@ -69,11 +69,10 @@ public class Main {
 		
 		String statisticsFile = expFolder + "statistics.txt";
 		String dbFile = expFolder + "cache.db";
-		String learnLog = expFolder + "learnLog.txt";
 		
 		// All output goes to file
 		statisticsFileStream = new PrintStream(new FileOutputStream(statisticsFile, false));
-		statisticsFileStream.println("Effective Configuration: " + config.getEffectiveConfigString());
+		printStatLine("Effective Configuration: " + config.getEffectiveConfigString());
 		
 		// Set up a connection
 		Socket sock = new Socket(config.mapperHost, config.mapperPort);
@@ -113,6 +112,7 @@ public class Main {
 		if (config.timeTimit != null) {
 			testOracle = new TimeoutOracleWrapper<>(testOracle, config.timeTimit);
 		}
+		Integer roundLimit = config.roundLimit;
 
 		// Create learnlib objects: membershipOracle, EquivalenceOracles and
 		// Learner
@@ -134,6 +134,7 @@ public class Main {
 		long start = System.currentTimeMillis();
 		learner.startLearning();
 		System.out.println("starting learning");
+		MealyMachine<?, String, ?, String> hyp = null;
 		boolean done = false;
 		int hypCounter = 0;
 		int memQueries = 0;
@@ -142,15 +143,18 @@ public class Main {
 		// example can be found
 		try {
 			for (hypCounter = 0; !done; hypCounter++) {
-				MealyMachine<?, String, ?, String> hyp = null;
 				hyp = learner.getHypothesisModel();
 				// Print some stats
 				statisticsFileStream
 						.println("Hypothesis " + hypCounter + " after: " + (System.currentTimeMillis() - start) + "ms");
-				statisticsFileStream.println("Membership: " + (membershipQueryCounter.getValue() - memQueries));
+				printStatLine("Membership: " + (membershipQueryCounter.getValue() - memQueries));
 				memQueries = membershipQueryCounter.getValue();
 				
 				GraphDOT.write(hyp, config.alphabet,  new FileWriter(expFolder + "hypothesis-" + hypCounter + ".dot"));
+				if (roundLimit != null && hypCounter+1 >= roundLimit) {
+					printStatLine("Learning stopped due to reaching the round limit");
+					break;
+				}
 				
 				@Nullable
 				DefaultQuery<String, Word<String>> ce = eqOracle.findCounterExample(hyp, config.alphabet);
@@ -164,29 +168,35 @@ public class Main {
 					done = true;
 				} else {
 					// There is a counter example, send it to learnlib.
-					statisticsFileStream.println("Counter Example: " + ce);
+					printStatLine("Counter Example: " + ce);
 					System.out.println("Sending Counter Example to LearnLib.");
 					learner.refineHypothesis(ce);
 				}
 			}
 		} catch(Exception e) {
-			statisticsFileStream.println("Learning stopped due to exception: " + e.getClass().getName());
-			statisticsFileStream.println("Exception message: " + e.getMessage());
+			
+			printStatLine("Learning stopped due to exception: " + e.getClass().getName());
+			printStatLine("Exception message: " + e.getMessage());
 		}
 
 		// End of learning, update some stats
 		long end = System.currentTimeMillis();
-		statisticsFileStream.println("Learning completed: " + done);
-		statisticsFileStream.println("Total mem Queries: " + membershipQueryCounter.getValue());
-		statisticsFileStream.println("Total test Queries: " + testQueryCounter.getValue());
-		statisticsFileStream.println("Timestamp: " + config.timestamp + ".");
-		statisticsFileStream.println("Running time: " + (end - start) + "ms.");
+		printStatLine("Learning completed: " + done);
+		printStatLine("Total mem Queries: " + membershipQueryCounter.getValue());
+		printStatLine("Total test Queries: " + testQueryCounter.getValue());
+		printStatLine("Timestamp: " + config.timestamp + ".");
+		printStatLine("Running time: " + (end - start) + "ms.");
 		statisticsFileStream.close();
 
 		// Get result
-		MealyMachine<?, String, ?, String>  learnedModel = learner.getHypothesisModel();
+		MealyMachine<?, String, ?, String>  learnedModel = hyp;
 
 		return learnedModel;
+	}
+	
+	public void printStatLine(String msg) {
+		statisticsFileStream.println(msg);
+		System.out.println(msg);
 	}
 	
 	public MealyEquivalenceOracle<String, String> buildEqOracle(MealyMembershipOracle<String, String> oracle, Config config) {
