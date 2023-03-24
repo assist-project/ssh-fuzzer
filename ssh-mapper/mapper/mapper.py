@@ -190,7 +190,7 @@ class Processor(object):
 
                     # Execute single OR multiquery 'repeat'-many times
                     #Mapper
-                    for i in xrange(repeat):
+                    for i in range(repeat):
                         result = ''
                         for ci, command in enumerate(commands):
                             print('[%s]' % self.transport)
