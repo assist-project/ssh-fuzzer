@@ -9,7 +9,7 @@ from messages import MSG_MAPPING
 
 
 
-class Processor(object):
+class Processor:
     ssh_sock = None
     transport = None
 
@@ -130,7 +130,9 @@ class Processor(object):
         #Not sure, think Mapper
         if query in MSG_MAPPING:
             try:
-                return getattr(self.transport, MSG_MAPPING[query])()
+                return query
+                #return getattr(self.transport, MSG_MAPPING[query])()
+                #return MSG_MAPPING[query]
             except Exception as e:
                 print('An exception has occured: %s' % e)
                 traceback.print_exc()
@@ -193,10 +195,9 @@ class Processor(object):
                     for i in range(repeat):
                         result = ''
                         for ci, command in enumerate(commands):
-                            print('[%s]' % self.transport)
-                            print('Sending %s...' % command)
-                            response = self.process_learlib_query(command)
-
+                            print('[%s]' % self.transport)  #BUG This does not print encryption method
+                            print('Sending %s...' % command.decode('UTF-8'))
+                            response = self.process_learlib_query(command.decode('UTF-8'))
                             result += response
                             # If this is not the last command, add a space
                             if ci != len(commands)-1:
@@ -207,7 +208,9 @@ class Processor(object):
                             time.sleep(self.cmd_to)
 
                         # Add a newline after a run of one or many commands
-                        conn.send('%s\n' % result)
+                        result += '\n'
+                        
+                        conn.send(str.encode(result))
                 except socket.error:
                     print('\nCient disconnected (socket.error)')
                     break

@@ -299,10 +299,17 @@ class AuthHandler:
             m.add_string(password)
         elif self.auth_method == 'publickey':
             m.add_boolean(True)
-            m.add_string(self.private_key.get_name())
-            m.add_string(self.private_key)
-            blob = self._get_session_blob(self.private_key, 'ssh-connection', self.username)
-            sig = self.private_key.sign_ssh_data(blob)
+            key_type, bits = self._get_key_type_and_bits(self.private_key)
+            algorithm = self._finalize_pubkey_algorithm(key_type)
+            m.add_string(algorithm)
+            m.add_string(bits)
+            blob = self._get_session_blob(
+                self.private_key,
+                "ssh-connection",
+                self.username,
+                algorithm,
+            )
+            sig = self.private_key.sign_ssh_data(blob, algorithm)
             m.add_string(sig)
         elif self.auth_method == 'keyboard-interactive':
             m.add_string('')

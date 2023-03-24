@@ -110,7 +110,7 @@ from manualparamiko.kex_group16 import KexGroup16SHA512
 from manualparamiko.kex_ecdh_nist import KexNistp256, KexNistp384, KexNistp521
 from manualparamiko.kex_gss import KexGSSGex, KexGSSGroup1, KexGSSGroup14
 from manualparamiko.message import Message
-from mapper.messages import MSG_NO_CONN, MSG_NO_RESP, MSG_CH_NONE, MSG_CH_MAX #TODO Need to find where MSG_EXT_INFO is
+from messages import MSG_NO_CONN, MSG_NO_RESP, MSG_CH_NONE, MSG_CH_MAX
 from manualparamiko.packet import Packetizer, NeedRekeyException, NoTimelyResponse
 from manualparamiko.primes import ModulusPack
 from manualparamiko.rsakey import RSAKey
@@ -130,7 +130,7 @@ from manualparamiko.util import (
     b,
 )
 
-class NoChannelException(Exception):    #NOTE THESE CLASSES ARE ADDED
+class NoChannelException(Exception):
     pass
 
 class MaxChannelsException(Exception):
@@ -350,7 +350,7 @@ class Transport(threading.Thread, ClosingContextManager):
         gss_deleg_creds=True,
         disabled_algorithms=None,
         server_sig_algs=True,
-        auth_pw_ok_to=3.0, #NOTE BELOW ADDED
+        auth_pw_ok_to=3.0,
         auth_pw_ok_to_total=3.3,
         auth_pw_nok_to=0.8,
         auth_pw_nok_to_total=1.0,
@@ -556,20 +556,18 @@ class Transport(threading.Thread, ClosingContextManager):
         self.server_accept_cv = threading.Condition(self.lock)
         self.subsystem_table = {}
 
-        #NOTE ADDED Custom additions
         self.last_ptype = None
         self.last_message = None
         self.service_accepted = False
         self.last_kexinit = None
 
-        #NOTE ADDED Time settings
         self.auth_pw_ok_to = auth_pw_ok_to
         self.auth_pw_ok_to_total = auth_pw_ok_to_total
         self.auth_pw_nok_to = auth_pw_nok_to
         self.auth_pw_nok_to_total = auth_pw_nok_to_total
         self.global_to = global_to
         self.global_to_total = global_to_total
-        #NOTE ADDED
+
         self.buffer_after_newkey = buffer_after_newkey
 
     def _filter_algorithm(self, type_):
@@ -939,7 +937,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
     def open_session(
         self, window_size=None, max_packet_size=None, timeout=None
-    ): #NOTE TIMEOUT WAS REMOVED
+    ):
         """
         Request a new channel to the server, of type ``"session"``.  This is
         just an alias for calling `open_channel` with an argument of
@@ -969,7 +967,7 @@ class Transport(threading.Thread, ClosingContextManager):
             "session",
             window_size=window_size,
             max_packet_size=max_packet_size,
-            timeout=timeout, #NOTE WAS REMOVED
+            timeout=timeout,
         )
 
     def open_x11_channel(self, src_addr=None):
@@ -1021,7 +1019,7 @@ class Transport(threading.Thread, ClosingContextManager):
         src_addr=None,
         window_size=None,
         max_packet_size=None,
-        timeout=None,   #NOTE WAS REMOVED
+        timeout=None,
     ):
         """
         Request a new channel to the server. `Channels <.Channel>` are
@@ -1060,7 +1058,7 @@ class Transport(threading.Thread, ClosingContextManager):
         """
         if not self.active:
             raise SSHException("SSH session not active")
-        timeout = self.channel_timeout if timeout is None else timeout #NOTE WAS REMOVED
+        timeout = self.channel_timeout if timeout is None else timeout
         self.lock.acquire()
         try:
             window_size = self._sanitize_window_size(window_size)
@@ -2008,24 +2006,24 @@ class Transport(threading.Thread, ClosingContextManager):
         # Fallback to SHA1 for kex engines that fail to specify a hex
         # algorithm, or for e.g. transport tests that don't run kexinit.
         #NOTE vvvvvvv This was removed
-        hash_algo = getattr(self.kex_engine, "hash_algo", None)
-        hash_select_msg = "kex engine {} specified hash_algo {!r}".format(
-            self.kex_engine.__class__.__name__, hash_algo
-        )
-        if hash_algo is None:
-            hash_algo = sha1
-            hash_select_msg += ", falling back to sha1"
-        if not hasattr(self, "_logged_hash_selection"):
-            self._log(DEBUG, hash_select_msg)
-            setattr(self, "_logged_hash_selection", True)
+        # hash_algo = getattr(self.kex_engine, "hash_algo", None)
+        # hash_select_msg = "kex engine {} specified hash_algo {!r}".format(
+        #     self.kex_engine.__class__.__name__, hash_algo
+        # )
+        # if hash_algo is None:
+        #     hash_algo = sha1
+        #     hash_select_msg += ", falling back to sha1"
+        # if not hasattr(self, "_logged_hash_selection"):
+        #     self._log(DEBUG, hash_select_msg)
+        #     setattr(self, "_logged_hash_selection", True)
         #NOTE ^^^^^^
-        out = sofar = hash_algo(m.asbytes()).digest()
+        out = sofar = sha1(m.asbytes()).digest() #If using the above code use: hash_algo(m.asbytes()).digest()
         while len(out) < nbytes:
             m = Message()
             m.add_mpint(self.K)
             m.add_bytes(self.H)
             m.add_bytes(sofar)
-            digest = hash_algo(m.asbytes()).digest()
+            digest = sha1(m.asbytes()).digest()
             out += digest
             sofar += digest
         return out[:nbytes]
@@ -2219,7 +2217,6 @@ class Transport(threading.Thread, ClosingContextManager):
         self.auth_handler.auth_method = 'publickey'
 #this should be changed to the username on the server
         self.auth_handler.username = 'thetelefon' if ok else 'NOACCESS' # //MAGIC Set username
-        print("hello world")
         self.auth_handler.custom_parse_service_request()
 
         return self.read_multiple_responses()
@@ -2469,6 +2466,7 @@ class Transport(threading.Thread, ClosingContextManager):
             self.last_message = m
             self.last_ptype = ptype
 
+
             # (Mostly) state-changing handlers.
             handlers = {
                 MSG_KEXINIT: lambda m: self._negotiate_keys(m),
@@ -2590,6 +2588,8 @@ class Transport(threading.Thread, ClosingContextManager):
                         continue
                     elif ptype == MSG_DISCONNECT:
                         self._parse_disconnect(m)
+                        self.active = False
+                        self.packetizer.close()
                         break
                     elif ptype == MSG_DEBUG:
                         self._parse_debug(m)
@@ -2721,17 +2721,17 @@ class Transport(threading.Thread, ClosingContextManager):
 
     # protocol stages
 
-    def _set_service_accept(self, m): #NOTE ADDED 
+    def _set_service_accept(self, m):
         self.service_accepted = True
 
-    def _get_service_accept(self):  #NOTE ADDED
+    def _get_service_accept(self):
         return 'YES' if self.service_accepted else 'NO'
-    #NOTE _log_agreement removed
-    def _do_nothing(self):  #NOTE ADDED
+
+    def _do_nothing(self):
         return self.read_multiple_responses()
 
     def _negotiate_keys(self, m):
-        self.last_kexinit = m   #NOTE THIS WAS ADDED
+        self.last_kexinit = m
         # throws SSHException on anything unusual
         self.clear_to_send_lock.acquire()
         try:
@@ -2894,7 +2894,7 @@ class Transport(threading.Thread, ClosingContextManager):
         client_lang_list = parsed["client_lang_list"]
         server_lang_list = parsed["server_lang_list"]
         kex_follows = parsed["kex_follows"]
-        print('... server supports kex %s' % kex_algo_list) #NOTE ADDED
+        print('... server supports kex %s' % kex_algo_list)
 
         self._log(DEBUG, "=== Key exchange possibilities ===")
         for prefix, value in (
@@ -2970,7 +2970,7 @@ class Transport(threading.Thread, ClosingContextManager):
             raise IncompatiblePeer(
                 "Incompatible ssh peer (can't match requested host key type)"
             )  # noqa
-        self._log_agreement("HostKey", agreed_keys[0], agreed_keys[0])
+        #self._log_agreement("HostKey", agreed_keys[0], agreed_keys[0])
 
         if self.server_mode:
             agreed_local_ciphers = list(
@@ -3004,9 +3004,9 @@ class Transport(threading.Thread, ClosingContextManager):
             )  # noqa
         self.local_cipher = agreed_local_ciphers[0]
         self.remote_cipher = agreed_remote_ciphers[0]
-        self._log_agreement(
-            "Cipher", local=self.local_cipher, remote=self.remote_cipher
-        )
+        # self._log_agreement(
+        #     "Cipher", local=self.local_cipher, remote=self.remote_cipher
+        # )
 
         if self.server_mode:
             agreed_remote_macs = list(
@@ -3028,9 +3028,9 @@ class Transport(threading.Thread, ClosingContextManager):
             )
         self.local_mac = agreed_local_macs[0]
         self.remote_mac = agreed_remote_macs[0]
-        self._log_agreement(
-            "MAC", local=self.local_mac, remote=self.remote_mac
-        )
+        # self._log_agreement(
+        #     "MAC", local=self.local_mac, remote=self.remote_mac
+        # )
 
         if self.server_mode:
             agreed_remote_compression = list(
@@ -3073,11 +3073,11 @@ class Transport(threading.Thread, ClosingContextManager):
             )
         self.local_compression = agreed_local_compression[0]
         self.remote_compression = agreed_remote_compression[0]
-        self._log_agreement(
-            "Compression",
-            local=self.local_compression,
-            remote=self.remote_compression,
-        )
+        # self._log_agreement(
+        #     "Compression",
+        #     local=self.local_compression,
+        #     remote=self.remote_compression,
+        # )
         self._log(DEBUG, "=== End of kex handshake ===")
 
         # self._log(DEBUG, 'using kex %s; server key type %s; cipher: local %s, remote %s; mac: local %s, remote %s; compression: local %s, remote %s' %
@@ -3135,7 +3135,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self._send_message(m)
         if update is False:
             return
-        try:     #NOTE THIS TRY WAS ADDED
+        try:
             block_size = self._cipher_info[self.local_cipher]["block-size"]
             if self.server_mode:
                 IV_out = self._compute_key("B", block_size)

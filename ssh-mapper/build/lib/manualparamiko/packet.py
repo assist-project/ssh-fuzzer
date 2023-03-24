@@ -28,6 +28,8 @@ import threading
 import time
 from hmac import HMAC
 
+from socket import error as SocketError
+
 from manualparamiko import util
 from manualparamiko.common import (
     linefeed_byte,
@@ -51,7 +53,9 @@ class NeedRekeyException(Exception):
     """
     Exception indicating a rekey is needed.
     """
+    pass
 
+class NoTimelyResponse(Exception):
     pass
 
 
@@ -135,6 +139,9 @@ class Packetizer:
         Set the Python log object to use for logging.
         """
         self.__logger = log
+
+    def set_timeout(self, timeout):
+        self.__socket.settimeout(timeout)
 
     def set_outbound_cipher(
         self,
@@ -293,25 +300,36 @@ class Packetizer:
             out = self.__remainder[:n]
             self.__remainder = self.__remainder[n:]
             n -= len(out)
+        starttime = time.time()
         while n > 0:
             got_timeout = False
-            if self.handshake_timed_out():
-                raise EOFError()
+            # if self.handshake_timed_out():
+            #     raise EOFError()
             try:
                 x = self.__socket.recv(n)
                 if len(x) == 0:
-                    raise EOFError()
+                    raise SocketError()
                 out += x
                 n -= len(x)
             except socket.timeout:
                 got_timeout = True
+
+                raise NoTimelyResponse('Got no immediate response after timeout, returning...')
             except socket.error as e:
                 # on Linux, sometimes instead of socket.timeout, we get
                 # EAGAIN.  this is a bug in recent (> 2.6.9) kernels but
                 # we need to work around it.
-                arg = first_arg(e)
-                if arg == errno.EAGAIN:
+                # arg = first_arg(e)
+                # if arg == errno.EAGAIN:
+                #     got_timeout = True
+                # elif self.__closed:
+                #     raise EOFError()
+                # else:
+                #     raise
+                if(type(e.args) is tuple) and (len(e.args) > 0) and (e.args[0] == errno.EAGAIN):
                     got_timeout = True
+                elif(type(e.args) is tuple) and (len(e.args) > 0) and (e.args[0] == errno.EINTR):
+                    pass
                 elif self.__closed:
                     raise EOFError()
                 else:
@@ -452,7 +470,8 @@ class Packetizer:
         :raises: `.SSHException` -- if the packet is mangled
         :raises: `.NeedRekeyException` -- if the transport should rekey
         """
-        header = self.read_all(self.__block_size_in, check_rekey=True)
+        header = self.read_all(self.__block_size_in, check_rekey=True) #BUG Get stuck in the second recived message i.e. KEXINIT
+        print("No WaY JoSé")
         if self.__etm_in:
             packet_size = struct.unpack(">I", header[:4])[0]
             remaining = packet_size - self.__block_size_in + 4

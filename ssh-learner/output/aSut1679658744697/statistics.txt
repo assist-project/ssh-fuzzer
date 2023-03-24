@@ -1,4 +1,0 @@
-Effective Configuration: {timeLimit=P1DT1M, maxNonDeterminismRetries=3, eqOracle=RANDOM, maxNumTests=20000, name=aSut, specification=bv_spec.smv, alphabet=!DISCONNECT;!IGNORE;!UNIMPL;!DEBUG;KEXINIT;!KEXINIT_PROCEED;KEX30;NEWKEYS;SR_AUTH;!SR_CONN;!UA_PK_NOK;UA_PK_OK;!UA_PW_NOK;!UA_PW_OK;!UA_NONE;!CH_OPEN;!CH_CLOSE;!CH_EOF;!CH_DATA;!CH_EXTENDED_DATA;!CH_WINDOW_ADJUST;!CH_REQUEST_PTY, mapperAddress=localhost:8000}
-Hypothesis 0 after: 5350ms
-Membership: 5
-Counter Example: Query[ε|NEWKEYS KEX30 NEWKEYS KEX30 / KEXINIT+UNIMPL KEX31+NEWKEYS NO_RESP NO_CONN]
