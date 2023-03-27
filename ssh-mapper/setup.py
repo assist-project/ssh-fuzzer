@@ -28,7 +28,7 @@ long_description = open("README.rst").read()
 
 # Version info -- read without importing
 _locals = {}
-with open("paramiko/_version.py") as fp:
+with open("manualparamiko/_version.py") as fp:
     exec(fp.read(), None, _locals)
 version = _locals["__version__"]
 
