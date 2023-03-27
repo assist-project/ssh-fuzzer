@@ -7,6 +7,8 @@ import argparse
 
 from messages import MSG_MAPPING
 
+from messages import MSG_NAMES #BUG DUBUG PURPOSE
+
 
 
 class Processor:
@@ -130,7 +132,8 @@ class Processor:
         #Not sure, think Mapper
         if query in MSG_MAPPING:
             try:
-                return query
+                x = getattr(self.transport, MSG_MAPPING[query])()
+                return x
                 #return getattr(self.transport, MSG_MAPPING[query])()
                 #return MSG_MAPPING[query]
             except Exception as e:

@@ -58,10 +58,11 @@ from manualparamiko.common import (
     MSG_USERAUTH_GSSAPI_ERROR,
     MSG_USERAUTH_GSSAPI_ERRTOK,
     MSG_USERAUTH_GSSAPI_MIC,
-    MSG_NAMES,
+    #MSG_NAMES,
     cMSG_USERAUTH_BANNER,
 )
 from manualparamiko.message import Message
+from messages import MSG_NAMES
 from manualparamiko.util import b, u
 from manualparamiko.ssh_exception import (
     SSHException,

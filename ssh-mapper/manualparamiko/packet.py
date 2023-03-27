@@ -34,7 +34,7 @@ from manualparamiko import util
 from manualparamiko.common import (
     linefeed_byte,
     cr_byte_value,
-    MSG_NAMES,
+    #MSG_NAMES,
     DEBUG,
     xffffffff,
     zero_byte,
@@ -43,6 +43,7 @@ from manualparamiko.common import (
 from manualparamiko.util import u
 from manualparamiko.ssh_exception import SSHException, ProxyCommandFailure
 from manualparamiko.message import Message
+from messages import MSG_NAMES
 
 
 def compute_hmac(key, message, digest_class):
@@ -471,7 +472,6 @@ class Packetizer:
         :raises: `.NeedRekeyException` -- if the transport should rekey
         """
         header = self.read_all(self.__block_size_in, check_rekey=True) #BUG Get stuck in the second recived message i.e. KEXINIT
-        print("No WaY JoSé")
         if self.__etm_in:
             packet_size = struct.unpack(">I", header[:4])[0]
             remaining = packet_size - self.__block_size_in + 4
@@ -589,6 +589,7 @@ class Packetizer:
                 DEBUG,
                 "Read packet <{}>, length {}".format(cmd_name, len(payload)),
             )
+        print("CMD:", cmd, "msg: ", msg)
         return cmd, msg
 
     # ...protected...

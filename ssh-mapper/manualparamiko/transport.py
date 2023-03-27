@@ -83,7 +83,7 @@ from manualparamiko.common import (
     DEFAULT_MAX_PACKET_SIZE,
     HIGHEST_USERAUTH_MESSAGE_ID,
     MSG_UNIMPLEMENTED,
-    MSG_NAMES,
+    #MSG_NAMES,  #BUG IMPORT THIS FROM messages.py instead?
     cMSG_SERVICE_REQUEST,
     cMSG_DEBUG,
     cMSG_DISCONNECT,
@@ -110,7 +110,7 @@ from manualparamiko.kex_group16 import KexGroup16SHA512
 from manualparamiko.kex_ecdh_nist import KexNistp256, KexNistp384, KexNistp521
 from manualparamiko.kex_gss import KexGSSGex, KexGSSGroup1, KexGSSGroup14
 from manualparamiko.message import Message
-from messages import MSG_NO_CONN, MSG_NO_RESP, MSG_CH_NONE, MSG_CH_MAX
+from messages import MSG_NO_CONN, MSG_NO_RESP, MSG_CH_NONE, MSG_CH_MAX, MSG_NAMES
 from manualparamiko.packet import Packetizer, NeedRekeyException, NoTimelyResponse
 from manualparamiko.primes import ModulusPack
 from manualparamiko.rsakey import RSAKey
@@ -161,6 +161,9 @@ class Transport(threading.Thread, ClosingContextManager):
     Instances of this class may be used as context managers.
     """
 
+    ##NOTE First section here is the new implementation of preferred parameters
+    #As of now 2023-03-27 this is nor supported and therefore commented
+
     _ENCRYPT = object()
     _DECRYPT = object()
 
@@ -172,110 +175,35 @@ class Transport(threading.Thread, ClosingContextManager):
     # NOTE: if you need to modify these, we suggest leveraging the
     # `disabled_algorithms` constructor argument (also available in SSHClient)
     # instead of monkeypatching or subclassing.
-    _preferred_ciphers = (
-        "aes128-ctr",
-        "aes192-ctr",
-        "aes256-ctr",
-        "aes128-cbc",
-        "aes192-cbc",
-        "aes256-cbc",
-        "3des-cbc",
-    )
-    _preferred_macs = (
-        "hmac-sha2-256",
-        "hmac-sha2-512",
-        "hmac-sha2-256-etm@openssh.com",
-        "hmac-sha2-512-etm@openssh.com",
-        "hmac-sha1",
-        "hmac-md5",
-        "hmac-sha1-96",
-        "hmac-md5-96",
-    )
+    _preferred_ciphers = ("aes128-ctr","aes192-ctr","aes256-ctr","aes128-cbc","aes192-cbc","aes256-cbc","3des-cbc")
+    _preferred_macs = ("hmac-sha2-256","hmac-sha2-512","hmac-sha2-256-etm@openssh.com","hmac-sha2-512-etm@openssh.com",
+                       "hmac-sha1","hmac-md5","hmac-sha1-96","hmac-md5-96")
     # ~= HostKeyAlgorithms in OpenSSH land
-    _preferred_keys = (
-        "ssh-ed25519",
-        "ecdsa-sha2-nistp256",
-        "ecdsa-sha2-nistp384",
-        "ecdsa-sha2-nistp521",
-        "rsa-sha2-512",
-        "rsa-sha2-256",
-        "ssh-rsa",
-        "ssh-dss",
-    )
+    _preferred_keys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521","rsa-sha2-512",
+                       "rsa-sha2-256","ssh-rsa","ssh-dss")
     # ~= PubKeyAcceptedAlgorithms
-    _preferred_pubkeys = (
-        "ssh-ed25519",
-        "ecdsa-sha2-nistp256",
-        "ecdsa-sha2-nistp384",
-        "ecdsa-sha2-nistp521",
-        "rsa-sha2-512",
-        "rsa-sha2-256",
-        "ssh-rsa",
-        "ssh-dss",
-    )
-    _preferred_kex = (
-        "ecdh-sha2-nistp256",
-        "ecdh-sha2-nistp384",
-        "ecdh-sha2-nistp521",
-        "diffie-hellman-group16-sha512",
-        "diffie-hellman-group-exchange-sha256",
-        "diffie-hellman-group14-sha256",
-        "diffie-hellman-group-exchange-sha1",
-        "diffie-hellman-group14-sha1",
-        "diffie-hellman-group1-sha1",
-    )
-    if KexCurve25519.is_available():
-        _preferred_kex = ("curve25519-sha256@libssh.org",) + _preferred_kex
-    _preferred_gsskex = (
-        "gss-gex-sha1-toWM5Slw5Ew8Mqkay+al2g==",
-        "gss-group14-sha1-toWM5Slw5Ew8Mqkay+al2g==",
-        "gss-group1-sha1-toWM5Slw5Ew8Mqkay+al2g==",
-    )
+    _preferred_pubkeys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521",
+                          "rsa-sha2-512","rsa-sha2-256","ssh-rsa","ssh-dss")
+    # _preferred_kex = ("ecdh-sha2-nistp256","ecdh-sha2-nistp384","ecdh-sha2-nistp521","diffie-hellman-group16-sha512",
+    #                   "diffie-hellman-group-exchange-sha256","diffie-hellman-group14-sha256",
+    #                   "diffie-hellman-group-exchange-sha1","diffie-hellman-group14-sha1","diffie-hellman-group1-sha1")
+    # if KexCurve25519.is_available():
+    #     _preferred_kex = ("curve25519-sha256@libssh.org",) + _preferred_kex
+    # _preferred_gsskex = (
+    #     "gss-gex-sha1-toWM5Slw5Ew8Mqkay+al2g==",
+    #     "gss-group14-sha1-toWM5Slw5Ew8Mqkay+al2g==",
+    #     "gss-group1-sha1-toWM5Slw5Ew8Mqkay+al2g==",
+    # )
     _preferred_compression = ("none",)
 
     _cipher_info = {
-        "aes128-ctr": {
-            "class": algorithms.AES,
-            "mode": modes.CTR,
-            "block-size": 16,
-            "key-size": 16,
-        },
-        "aes192-ctr": {
-            "class": algorithms.AES,
-            "mode": modes.CTR,
-            "block-size": 16,
-            "key-size": 24,
-        },
-        "aes256-ctr": {
-            "class": algorithms.AES,
-            "mode": modes.CTR,
-            "block-size": 16,
-            "key-size": 32,
-        },
-        "aes128-cbc": {
-            "class": algorithms.AES,
-            "mode": modes.CBC,
-            "block-size": 16,
-            "key-size": 16,
-        },
-        "aes192-cbc": {
-            "class": algorithms.AES,
-            "mode": modes.CBC,
-            "block-size": 16,
-            "key-size": 24,
-        },
-        "aes256-cbc": {
-            "class": algorithms.AES,
-            "mode": modes.CBC,
-            "block-size": 16,
-            "key-size": 32,
-        },
-        "3des-cbc": {
-            "class": algorithms.TripleDES,
-            "mode": modes.CBC,
-            "block-size": 8,
-            "key-size": 24,
-        },
+        "aes128-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 16},
+        "aes192-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 24},
+        "aes256-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 32},
+        "aes128-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 16},
+        "aes192-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 24},
+        "aes256-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 32},
+        "3des-cbc": {"class": algorithms.TripleDES,"mode": modes.CBC,"block-size": 8,"key-size": 24}
     }
 
     _mac_info = {
@@ -312,22 +240,22 @@ class Transport(threading.Thread, ClosingContextManager):
         "ssh-ed25519-cert-v01@openssh.com": Ed25519Key,
     }
 
-    _kex_info = {
-        "diffie-hellman-group1-sha1": KexGroup1,
-        "diffie-hellman-group14-sha1": KexGroup14,
-        "diffie-hellman-group-exchange-sha1": KexGex,
-        "diffie-hellman-group-exchange-sha256": KexGexSHA256,
-        "diffie-hellman-group14-sha256": KexGroup14SHA256,
-        "diffie-hellman-group16-sha512": KexGroup16SHA512,
-        "gss-group1-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGroup1,
-        "gss-group14-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGroup14,
-        "gss-gex-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGex,
-        "ecdh-sha2-nistp256": KexNistp256,
-        "ecdh-sha2-nistp384": KexNistp384,
-        "ecdh-sha2-nistp521": KexNistp521,
-    }
-    if KexCurve25519.is_available():
-        _kex_info["curve25519-sha256@libssh.org"] = KexCurve25519
+    # _kex_info = {
+    #     "diffie-hellman-group1-sha1": KexGroup1,
+    #     "diffie-hellman-group14-sha1": KexGroup14,
+    #     "diffie-hellman-group-exchange-sha1": KexGex,
+    #     "diffie-hellman-group-exchange-sha256": KexGexSHA256,
+    #     "diffie-hellman-group14-sha256": KexGroup14SHA256,
+    #     "diffie-hellman-group16-sha512": KexGroup16SHA512,
+    #     "gss-group1-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGroup1,
+    #     "gss-group14-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGroup14,
+    #     "gss-gex-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGex,
+    #     "ecdh-sha2-nistp256": KexNistp256,
+    #     "ecdh-sha2-nistp384": KexNistp384,
+    #     "ecdh-sha2-nistp521": KexNistp521,
+    # }
+    # if KexCurve25519.is_available():
+    #     _kex_info["curve25519-sha256@libssh.org"] = KexCurve25519
 
     _compression_info = {
         # zlib@openssh.com is just zlib, but only turned on after a successful
@@ -337,6 +265,61 @@ class Transport(threading.Thread, ClosingContextManager):
         "zlib": (ZlibCompressor, ZlibDecompressor),
         "none": (None, None),
     }
+
+    #NOTE Here ends the new parameter initialization, the old ones below
+
+    # _PROTO_ID = '2.0'
+    # _CLIENT_ID = 'paramiko_%s' % manualparamiko.__version__
+
+    # _preferred_ciphers = ('aes128-ctr', 'aes256-ctr', 'aes128-cbc', 'blowfish-cbc',
+    #                       'aes256-cbc', '3des-cbc', 'arcfour128', 'arcfour256')
+    # _preferred_macs = ('hmac-sha1', 'hmac-md5', 'hmac-sha1-96', 'hmac-md5-96')
+    # _preferred_keys = ('ssh-rsa', 'ssh-dss', 'ecdsa-sha2-nistp256')
+    _preferred_kex =  ('diffie-hellman-group1-sha1', 'diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha1')
+    # _preferred_compression = ('none',)
+
+    # _cipher_info = {
+    #     "aes128-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 16},
+    #     'aes256-ctr': {'class': algorithms.AES, 'mode': modes.CTR, 'block-size': 16, 'key-size': 32},
+    #     'blowfish-cbc': {'class': algorithms.Blowfish, 'mode': modes.CBC, 'block-size': 8, 'key-size': 16},
+    #     'aes128-cbc': {'class': algorithms.AES, 'mode': modes.CBC, 'block-size': 16, 'key-size': 16},
+    #     'aes256-cbc': {'class': algorithms.AES, 'mode': modes.CBC, 'block-size': 16, 'key-size': 32},
+    #     '3des-cbc': {'class': DES3, 'mode': modes.CBC, 'block-size': 8, 'key-size': 24},
+    #     'arcfour128': {'class': algorithms.ARC4, 'mode': None, 'block-size': 8, 'key-size': 16},
+    #     'arcfour256': {'class': algorithms.ARC4, 'mode': None, 'block-size': 8, 'key-size': 32},
+    # }
+
+    # _mac_info = {
+    #     'hmac-sha1': {'class': sha1, 'size': 20},
+    #     'hmac-sha1-96': {'class': sha1, 'size': 12},
+    #     'hmac-md5': {'class': md5, 'size': 16},
+    #     'hmac-md5-96': {'class': md5, 'size': 12},
+    # }
+
+    # _key_info = {
+    #     'ssh-rsa': RSAKey,
+    #     'ssh-dss': DSSKey,
+    #     'ecdsa-sha2-nistp256': ECDSAKey,
+    # }
+
+    _kex_info = {
+        'diffie-hellman-group1-sha1': KexGroup1,
+        'diffie-hellman-group14-sha1': KexGroup14,
+        'diffie-hellman-group-exchange-sha1': KexGex,
+        'gss-group1-sha1-toWM5Slw5Ew8Mqkay+al2g==': KexGSSGroup1,
+        'gss-group14-sha1-toWM5Slw5Ew8Mqkay+al2g==': KexGSSGroup14,
+        'gss-gex-sha1-toWM5Slw5Ew8Mqkay+al2g==': KexGSSGex
+    }
+
+    # _compression_info = {
+    #     # zlib@openssh.com is just zlib, but only turned on after a successful
+    #     # authentication.  openssh servers may only offer this type because
+    #     # they've had troubles with security holes in zlib in the past.
+    #     'zlib@openssh.com': (ZlibCompressor, ZlibDecompressor),
+    #     'zlib': (ZlibCompressor, ZlibDecompressor),
+    #     'none': (None, None),
+    # }
+    #NOTE end of old parameters
 
     _modulus_pack = None
     _active_check_timeout = 0.1
@@ -2120,7 +2103,7 @@ class Transport(threading.Thread, ClosingContextManager):
         used_kex_engine.start_kex()
 
         if not isinstance(used_kex_engine, KexGroup1):
-            raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a %s' % used_kex_engine)
+            raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a ', used_kex_engine)
 
         return self.read_multiple_responses()
 
@@ -2426,7 +2409,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
             if response == '':
                 # This is the first response, process normally
-                print('... got %s (%s)' % (MSG_NAMES[ptype], (time.time()-start)))
+                print('... got %s (%s)' % (MSG_NAMES[ptype], (time.time()-start)))  #BUG Check here why we don't receive any answer
                 response = MSG_NAMES[ptype]
             elif ptype not in [MSG_NO_CONN, MSG_NO_RESP]:
                 last_msg = response.split('+')[-1]
@@ -2478,6 +2461,8 @@ class Transport(threading.Thread, ClosingContextManager):
                 MSG_SERVICE_ACCEPT: lambda m: self._set_service_accept(m),
                 MSG_GLOBAL_REQUEST: lambda m: self.print_msg(m),
             }
+
+            print(ptype)
 
             if ptype in handlers:
                 handlers[ptype](self.last_message)
@@ -2588,7 +2573,7 @@ class Transport(threading.Thread, ClosingContextManager):
                         continue
                     elif ptype == MSG_DISCONNECT:
                         self._parse_disconnect(m)
-                        self.active = False
+                        #self.active = False
                         self.packetizer.close()
                         break
                     elif ptype == MSG_DEBUG:
