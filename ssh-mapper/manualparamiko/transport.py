@@ -172,16 +172,16 @@ class Transport(threading.Thread, ClosingContextManager):
 
     # These tuples of algorithm identifiers are in preference order; do not
     # reorder without reason!
-    # NOTE: if you need to modify these, we suggest leveraging the
-    # `disabled_algorithms` constructor argument (also available in SSHClient)
-    # instead of monkeypatching or subclassing.
+    # # NOTE: if you need to modify these, we suggest leveraging the
+    # # `disabled_algorithms` constructor argument (also available in SSHClient)
+    # # instead of monkeypatching or subclassing.
     # _preferred_ciphers = ("aes128-ctr","aes192-ctr","aes256-ctr","aes128-cbc","aes192-cbc","aes256-cbc","3des-cbc")
     # _preferred_macs = ("hmac-sha2-256","hmac-sha2-512","hmac-sha2-256-etm@openssh.com","hmac-sha2-512-etm@openssh.com",
     #                    "hmac-sha1","hmac-md5","hmac-sha1-96","hmac-md5-96")
-    # ~= HostKeyAlgorithms in OpenSSH land
+    # # ~= HostKeyAlgorithms in OpenSSH land
     # _preferred_keys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521","rsa-sha2-512",
     #                    "rsa-sha2-256","ssh-rsa","ssh-dss")
-    # ~= PubKeyAcceptedAlgorithms
+    # # ~= PubKeyAcceptedAlgorithms
     # _preferred_pubkeys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521",
     #                       "rsa-sha2-512","rsa-sha2-256","ssh-rsa","ssh-dss")
     # _preferred_kex = ("ecdh-sha2-nistp256","ecdh-sha2-nistp384","ecdh-sha2-nistp521","diffie-hellman-group16-sha512",

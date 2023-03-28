@@ -190,7 +190,7 @@ class Processor:
                         repeat = 1
 
                     #Mapper
-                    if len(commands) > 1 and 'reset' not in commands:
+                    if len(commands) > 1 and b'reset' not in commands:
                         raise Exception('You are doing a multiquery but you are not resetting your sut')
 
                     # Execute single OR multiquery 'repeat'-many times
