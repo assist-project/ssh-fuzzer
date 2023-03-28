@@ -471,7 +471,7 @@ class Packetizer:
         :raises: `.SSHException` -- if the packet is mangled
         :raises: `.NeedRekeyException` -- if the transport should rekey
         """
-        header = self.read_all(self.__block_size_in, check_rekey=True) #BUG Get stuck in the second recived message i.e. KEXINIT
+        header = self.read_all(self.__block_size_in, check_rekey=True)
         if self.__etm_in:
             packet_size = struct.unpack(">I", header[:4])[0]
             remaining = packet_size - self.__block_size_in + 4
@@ -589,7 +589,6 @@ class Packetizer:
                 DEBUG,
                 "Read packet <{}>, length {}".format(cmd_name, len(payload)),
             )
-        print("CMD:", cmd, "msg: ", msg)
         return cmd, msg
 
     # ...protected...

@@ -167,23 +167,23 @@ class Transport(threading.Thread, ClosingContextManager):
     _ENCRYPT = object()
     _DECRYPT = object()
 
-    _PROTO_ID = "2.0"
-    _CLIENT_ID = "paramiko_{}".format(manualparamiko.__version__)
+    # _PROTO_ID = "2.0"
+    # _CLIENT_ID = "paramiko_{}".format(manualparamiko.__version__)
 
     # These tuples of algorithm identifiers are in preference order; do not
     # reorder without reason!
     # NOTE: if you need to modify these, we suggest leveraging the
     # `disabled_algorithms` constructor argument (also available in SSHClient)
     # instead of monkeypatching or subclassing.
-    _preferred_ciphers = ("aes128-ctr","aes192-ctr","aes256-ctr","aes128-cbc","aes192-cbc","aes256-cbc","3des-cbc")
-    _preferred_macs = ("hmac-sha2-256","hmac-sha2-512","hmac-sha2-256-etm@openssh.com","hmac-sha2-512-etm@openssh.com",
-                       "hmac-sha1","hmac-md5","hmac-sha1-96","hmac-md5-96")
+    # _preferred_ciphers = ("aes128-ctr","aes192-ctr","aes256-ctr","aes128-cbc","aes192-cbc","aes256-cbc","3des-cbc")
+    # _preferred_macs = ("hmac-sha2-256","hmac-sha2-512","hmac-sha2-256-etm@openssh.com","hmac-sha2-512-etm@openssh.com",
+    #                    "hmac-sha1","hmac-md5","hmac-sha1-96","hmac-md5-96")
     # ~= HostKeyAlgorithms in OpenSSH land
-    _preferred_keys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521","rsa-sha2-512",
-                       "rsa-sha2-256","ssh-rsa","ssh-dss")
+    # _preferred_keys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521","rsa-sha2-512",
+    #                    "rsa-sha2-256","ssh-rsa","ssh-dss")
     # ~= PubKeyAcceptedAlgorithms
-    _preferred_pubkeys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521",
-                          "rsa-sha2-512","rsa-sha2-256","ssh-rsa","ssh-dss")
+    # _preferred_pubkeys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521",
+    #                       "rsa-sha2-512","rsa-sha2-256","ssh-rsa","ssh-dss")
     # _preferred_kex = ("ecdh-sha2-nistp256","ecdh-sha2-nistp384","ecdh-sha2-nistp521","diffie-hellman-group16-sha512",
     #                   "diffie-hellman-group-exchange-sha256","diffie-hellman-group14-sha256",
     #                   "diffie-hellman-group-exchange-sha1","diffie-hellman-group14-sha1","diffie-hellman-group1-sha1")
@@ -194,51 +194,51 @@ class Transport(threading.Thread, ClosingContextManager):
     #     "gss-group14-sha1-toWM5Slw5Ew8Mqkay+al2g==",
     #     "gss-group1-sha1-toWM5Slw5Ew8Mqkay+al2g==",
     # )
-    _preferred_compression = ("none",)
+    # _preferred_compression = ("none",)
 
-    _cipher_info = {
-        "aes128-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 16},
-        "aes192-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 24},
-        "aes256-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 32},
-        "aes128-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 16},
-        "aes192-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 24},
-        "aes256-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 32},
-        "3des-cbc": {"class": algorithms.TripleDES,"mode": modes.CBC,"block-size": 8,"key-size": 24}
-    }
+    # _cipher_info = {
+    #     "aes128-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 16},
+    #     "aes192-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 24},
+    #     "aes256-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 32},
+    #     "aes128-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 16},
+    #     "aes192-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 24},
+    #     "aes256-cbc": {"class": algorithms.AES,"mode": modes.CBC,"block-size": 16,"key-size": 32},
+    #     "3des-cbc": {"class": algorithms.TripleDES,"mode": modes.CBC,"block-size": 8,"key-size": 24}
+    # }
 
-    _mac_info = {
-        "hmac-sha1": {"class": sha1, "size": 20},
-        "hmac-sha1-96": {"class": sha1, "size": 12},
-        "hmac-sha2-256": {"class": sha256, "size": 32},
-        "hmac-sha2-256-etm@openssh.com": {"class": sha256, "size": 32},
-        "hmac-sha2-512": {"class": sha512, "size": 64},
-        "hmac-sha2-512-etm@openssh.com": {"class": sha512, "size": 64},
-        "hmac-md5": {"class": md5, "size": 16},
-        "hmac-md5-96": {"class": md5, "size": 12},
-    }
+    # _mac_info = {
+    #     "hmac-sha1": {"class": sha1, "size": 20},
+    #     "hmac-sha1-96": {"class": sha1, "size": 12},
+    #     "hmac-sha2-256": {"class": sha256, "size": 32},
+    #     "hmac-sha2-256-etm@openssh.com": {"class": sha256, "size": 32},
+    #     "hmac-sha2-512": {"class": sha512, "size": 64},
+    #     "hmac-sha2-512-etm@openssh.com": {"class": sha512, "size": 64},
+    #     "hmac-md5": {"class": md5, "size": 16},
+    #     "hmac-md5-96": {"class": md5, "size": 12},
+    # }
 
-    _key_info = {
-        # TODO: at some point we will want to drop this as it's no longer
-        # considered secure due to using SHA-1 for signatures. OpenSSH 8.8 no
-        # longer supports it. Question becomes at what point do we want to
-        # prevent users with older setups from using this?
-        "ssh-rsa": RSAKey,
-        "ssh-rsa-cert-v01@openssh.com": RSAKey,
-        "rsa-sha2-256": RSAKey,
-        "rsa-sha2-256-cert-v01@openssh.com": RSAKey,
-        "rsa-sha2-512": RSAKey,
-        "rsa-sha2-512-cert-v01@openssh.com": RSAKey,
-        "ssh-dss": DSSKey,
-        "ssh-dss-cert-v01@openssh.com": DSSKey,
-        "ecdsa-sha2-nistp256": ECDSAKey,
-        "ecdsa-sha2-nistp256-cert-v01@openssh.com": ECDSAKey,
-        "ecdsa-sha2-nistp384": ECDSAKey,
-        "ecdsa-sha2-nistp384-cert-v01@openssh.com": ECDSAKey,
-        "ecdsa-sha2-nistp521": ECDSAKey,
-        "ecdsa-sha2-nistp521-cert-v01@openssh.com": ECDSAKey,
-        "ssh-ed25519": Ed25519Key,
-        "ssh-ed25519-cert-v01@openssh.com": Ed25519Key,
-    }
+    # _key_info = {
+    #     # TODO: at some point we will want to drop this as it's no longer
+    #     # considered secure due to using SHA-1 for signatures. OpenSSH 8.8 no
+    #     # longer supports it. Question becomes at what point do we want to
+    #     # prevent users with older setups from using this?
+    #     "ssh-rsa": RSAKey,
+    #     "ssh-rsa-cert-v01@openssh.com": RSAKey,
+    #     "rsa-sha2-256": RSAKey,
+    #     "rsa-sha2-256-cert-v01@openssh.com": RSAKey,
+    #     "rsa-sha2-512": RSAKey,
+    #     "rsa-sha2-512-cert-v01@openssh.com": RSAKey,
+    #     "ssh-dss": DSSKey,
+    #     "ssh-dss-cert-v01@openssh.com": DSSKey,
+    #     "ecdsa-sha2-nistp256": ECDSAKey,
+    #     "ecdsa-sha2-nistp256-cert-v01@openssh.com": ECDSAKey,
+    #     "ecdsa-sha2-nistp384": ECDSAKey,
+    #     "ecdsa-sha2-nistp384-cert-v01@openssh.com": ECDSAKey,
+    #     "ecdsa-sha2-nistp521": ECDSAKey,
+    #     "ecdsa-sha2-nistp521-cert-v01@openssh.com": ECDSAKey,
+    #     "ssh-ed25519": Ed25519Key,
+    #     "ssh-ed25519-cert-v01@openssh.com": Ed25519Key,
+    # }
 
     # _kex_info = {
     #     "diffie-hellman-group1-sha1": KexGroup1,
@@ -257,50 +257,50 @@ class Transport(threading.Thread, ClosingContextManager):
     # if KexCurve25519.is_available():
     #     _kex_info["curve25519-sha256@libssh.org"] = KexCurve25519
 
-    _compression_info = {
-        # zlib@openssh.com is just zlib, but only turned on after a successful
-        # authentication.  openssh servers may only offer this type because
-        # they've had troubles with security holes in zlib in the past.
-        "zlib@openssh.com": (ZlibCompressor, ZlibDecompressor),
-        "zlib": (ZlibCompressor, ZlibDecompressor),
-        "none": (None, None),
-    }
+    # _compression_info = {
+    #     # zlib@openssh.com is just zlib, but only turned on after a successful
+    #     # authentication.  openssh servers may only offer this type because
+    #     # they've had troubles with security holes in zlib in the past.
+    #     "zlib@openssh.com": (ZlibCompressor, ZlibDecompressor),
+    #     "zlib": (ZlibCompressor, ZlibDecompressor),
+    #     "none": (None, None),
+    # }
 
     #NOTE Here ends the new parameter initialization, the old ones below
 
-    # _PROTO_ID = '2.0'
-    # _CLIENT_ID = 'paramiko_%s' % manualparamiko.__version__
+    _PROTO_ID = '2.0'
+    _CLIENT_ID = 'paramiko_%s' % manualparamiko.__version__
 
-    # _preferred_ciphers = ('aes128-ctr', 'aes256-ctr', 'aes128-cbc', 'blowfish-cbc',
-    #                       'aes256-cbc', '3des-cbc', 'arcfour128', 'arcfour256')
-    # _preferred_macs = ('hmac-sha1', 'hmac-md5', 'hmac-sha1-96', 'hmac-md5-96')
-    # _preferred_keys = ('ssh-rsa', 'ssh-dss', 'ecdsa-sha2-nistp256')
+    _preferred_ciphers = ('aes128-ctr', 'aes256-ctr', 'aes128-cbc', 'blowfish-cbc',
+                          'aes256-cbc', '3des-cbc', 'arcfour128', 'arcfour256')
+    _preferred_macs = ('hmac-sha1', 'hmac-md5', 'hmac-sha1-96', 'hmac-md5-96')
+    _preferred_keys = ('ssh-rsa', 'ssh-dss', 'ecdsa-sha2-nistp256')
     _preferred_kex =  ('diffie-hellman-group1-sha1', 'diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha1')
-    # _preferred_compression = ('none',)
+    _preferred_compression = ('none',)
 
-    # _cipher_info = {
-    #     "aes128-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 16},
-    #     'aes256-ctr': {'class': algorithms.AES, 'mode': modes.CTR, 'block-size': 16, 'key-size': 32},
-    #     'blowfish-cbc': {'class': algorithms.Blowfish, 'mode': modes.CBC, 'block-size': 8, 'key-size': 16},
-    #     'aes128-cbc': {'class': algorithms.AES, 'mode': modes.CBC, 'block-size': 16, 'key-size': 16},
-    #     'aes256-cbc': {'class': algorithms.AES, 'mode': modes.CBC, 'block-size': 16, 'key-size': 32},
-    #     '3des-cbc': {'class': DES3, 'mode': modes.CBC, 'block-size': 8, 'key-size': 24},
-    #     'arcfour128': {'class': algorithms.ARC4, 'mode': None, 'block-size': 8, 'key-size': 16},
-    #     'arcfour256': {'class': algorithms.ARC4, 'mode': None, 'block-size': 8, 'key-size': 32},
-    # }
+    _cipher_info = {
+        "aes128-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 16},
+        'aes256-ctr': {'class': algorithms.AES, 'mode': modes.CTR, 'block-size': 16, 'key-size': 32},
+        'blowfish-cbc': {'class': algorithms.Blowfish, 'mode': modes.CBC, 'block-size': 8, 'key-size': 16},
+        'aes128-cbc': {'class': algorithms.AES, 'mode': modes.CBC, 'block-size': 16, 'key-size': 16},
+        'aes256-cbc': {'class': algorithms.AES, 'mode': modes.CBC, 'block-size': 16, 'key-size': 32},
+        '3des-cbc': {'class': algorithms.TripleDES, 'mode': modes.CBC, 'block-size': 8, 'key-size': 24},
+        'arcfour128': {'class': algorithms.ARC4, 'mode': None, 'block-size': 8, 'key-size': 16},
+        'arcfour256': {'class': algorithms.ARC4, 'mode': None, 'block-size': 8, 'key-size': 32},
+    }
 
-    # _mac_info = {
-    #     'hmac-sha1': {'class': sha1, 'size': 20},
-    #     'hmac-sha1-96': {'class': sha1, 'size': 12},
-    #     'hmac-md5': {'class': md5, 'size': 16},
-    #     'hmac-md5-96': {'class': md5, 'size': 12},
-    # }
+    _mac_info = {
+        'hmac-sha1': {'class': sha1, 'size': 20},
+        'hmac-sha1-96': {'class': sha1, 'size': 12},
+        'hmac-md5': {'class': md5, 'size': 16},
+        'hmac-md5-96': {'class': md5, 'size': 12},
+    }
 
-    # _key_info = {
-    #     'ssh-rsa': RSAKey,
-    #     'ssh-dss': DSSKey,
-    #     'ecdsa-sha2-nistp256': ECDSAKey,
-    # }
+    _key_info = {
+        'ssh-rsa': RSAKey,
+        'ssh-dss': DSSKey,
+        'ecdsa-sha2-nistp256': ECDSAKey,
+    }
 
     _kex_info = {
         'diffie-hellman-group1-sha1': KexGroup1,
@@ -311,14 +311,14 @@ class Transport(threading.Thread, ClosingContextManager):
         'gss-gex-sha1-toWM5Slw5Ew8Mqkay+al2g==': KexGSSGex
     }
 
-    # _compression_info = {
-    #     # zlib@openssh.com is just zlib, but only turned on after a successful
-    #     # authentication.  openssh servers may only offer this type because
-    #     # they've had troubles with security holes in zlib in the past.
-    #     'zlib@openssh.com': (ZlibCompressor, ZlibDecompressor),
-    #     'zlib': (ZlibCompressor, ZlibDecompressor),
-    #     'none': (None, None),
-    # }
+    _compression_info = {
+        # zlib@openssh.com is just zlib, but only turned on after a successful
+        # authentication.  openssh servers may only offer this type because
+        # they've had troubles with security holes in zlib in the past.
+        'zlib@openssh.com': (ZlibCompressor, ZlibDecompressor),
+        'zlib': (ZlibCompressor, ZlibDecompressor),
+        'none': (None, None),
+    }
     #NOTE end of old parameters
 
     _modulus_pack = None
@@ -2928,6 +2928,8 @@ class Transport(threading.Thread, ClosingContextManager):
                 "Incompatible ssh peer (no acceptable kex algorithm)"
             )  # noqa
         self.kex_engine = self._kex_info[agreed_kex[0]](self)
+        #BUG PRINT KEX_ENGINE
+        # Compare dropbears and outrs 
         self._log(DEBUG, "Kex: {}".format(agreed_kex[0]))
 
         if self.server_mode:
@@ -3162,13 +3164,13 @@ class Transport(threading.Thread, ClosingContextManager):
                 and self.server_sig_algs
                 and self._remote_ext_info == "ext-info-c"
             ):
-                extensions = {"server-sig-algs": ",".join(self.preferred_pubkeys)}
+                # extensions = {"server-sig-algs": ",".join(self.preferred_pubkeys)}
                 m = Message()
                 m.add_byte(cMSG_EXT_INFO)
-                m.add_int(len(extensions))
-                for name, value in sorted(extensions.items()):
-                    m.add_string(name)
-                    m.add_string(value)
+                # m.add_int(len(extensions))
+                # for name, value in sorted(extensions.items()):
+                    # m.add_string(name)
+                    # m.add_string(value)
                 self._send_message(m)
             # we always expect to receive NEWKEYS now
             self._expect_packet(MSG_NEWKEYS)

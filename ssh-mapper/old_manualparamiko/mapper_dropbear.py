@@ -3,19 +3,18 @@ import time
 import sys
 import traceback
 import manualparamiko
-import argparse
 
 from messages import MSG_MAPPING
-
-from messages import MSG_NAMES #BUG DUBUG PURPOSE
-
+from manualparamiko.transport import *
 
 
-class Processor:
+
+class Processor(object):
     ssh_sock = None
     transport = None
+    cmd_buffer = None
 
-    def __init__(self, learnlib, ssh, config=None):
+    def __init__(self, learnlib, ssh):
         #Mapper
         self.learnlib_host = learnlib[0]
         self.learnlib_port = learnlib[1]
@@ -23,42 +22,40 @@ class Processor:
         #Adapter
         self.ssh_host = ssh[0]
         self.ssh_port = ssh[1]
+        
+        # buffers commands so we can re-run them in case of expected non-det
+        self.cmd_buffer = list()
 
-        if config is None or config == "OpenSSH":
-            #Timing params (for openSSH)
-            self.auth_pw_ok_to = 3.0
-            self.auth_pw_ok_to_total = 3.3
-            self.auth_pw_nok_to = 0.8
-            self.auth_pw_nok_to_total = 1.0
-            self.cmd_to = 0.25
-            self.global_to = 0.9
-            self.global_to_total = 1.0
-            self.buffer_after_newkey = True
+        #Timing params (for openSSH)
+        #self.auth_ok_to = 3.0
+        #self.auth_ok_to_total = 3.3
+        #self.auth_nok_to = 0.8
+        #self.auth_nok_to_total = 1.0
+        #self.cmd_to = 0.25
+        #self.global_to = 0.9
+        #self.global_to_total = 1.0
 
-        elif config == "BitVise":
         #Timing params (for BitVise)
-            self.auth_pw_ok_to = 3.0
-            self.auth_pw_ok_to_total = 3.3
-            self.auth_pw_nok_to = 3.5
-            self.auth_pw_nok_to_total = 4.0
-            self.global_to = 0.2
-            self.global_to_total = 0.25
-            self.cmd_to = 0.2
-            self.buffer_after_newkey = True
+        #self.auth_ok_to = 3.0
+        #self.auth_ok_to_total = 3.3
+        #self.auth_nok_to = 0.8
+        #self.auth_nok_to_total = 1.0
+        #self.global_to = 1.5
+        #self.global_to_total = 1.6
+        #self.cmd_to = 0.25
+
 
         #Timing params (for Dropbear)
-        elif config == "Dropbear":
-            self.auth_pw_ok_to = 3.0
-            self.auth_pw_ok_to_total = 3.3
-            self.auth_pw_nok_to = 0.8
-            self.auth_pw_nok_to_total = 1.0
-            self.global_to = 0.3
-            self.global_to_total = 0.35
-            self.cmd_to = 0.25
-            self.buffer_after_newkey = False
-        else:
-            raise Exception("Unknown configuration " + config)
-
+        self.auth_ok_to = 3.0
+        self.auth_ok_to_total = 3.3
+        self.auth_nok_to = 0.8
+        self.auth_nok_to_total = 1.0
+        #self.global_to = 1.3
+        #self.global_to_total = 1.4
+        #self.cmd_to = 0.25
+        self.global_to = 0.3
+        self.global_to_total = 0.35
+        self.cmd_to = 0.25
 
     def init_ssh_connection(self):
         """ Create an ssh socket and transport layer object """
@@ -73,7 +70,7 @@ class Processor:
             sys.exit(1)
 
         #Adapter
-        self.transport = manualparamiko.Transport(self.ssh_sock, auth_pw_ok_to=self.auth_pw_ok_to, auth_pw_ok_to_total=self.auth_pw_ok_to_total, auth_pw_nok_to=self.auth_pw_nok_to, auth_pw_nok_to_total = self.auth_pw_nok_to_total, global_to=self.global_to, global_to_total=self.global_to_total, buffer_after_newkey = self.buffer_after_newkey)
+        self.transport = manualparamiko.Transport(self.ssh_sock, auth_ok_to=self.auth_ok_to, auth_ok_to_total=self.auth_ok_to_total, auth_nok_to=self.auth_nok_to, auth_nok_to_total = self.auth_nok_to_total, global_to=self.global_to, global_to_total=self.global_to_total)
         self.transport.active = True
 
         #Adapter (not sure yet, don't know what packetizer in transport does)
@@ -104,8 +101,9 @@ class Processor:
             self.close_ssh_connection()
 
         self.init_ssh_connection()
+        self.cmd_buffer = list()
 
-    def process_learlib_query(self, query):
+    def process_learnlib_query(self, query):
         """ Processes a query identified by a keyword (e.g. DISCONNECT) """
 
         # Handle reset queries
@@ -124,6 +122,7 @@ class Processor:
             return 'resetok'
 
         # Handle empty queries
+        
         #Mapper
         if query == '':
             return ''
@@ -131,15 +130,14 @@ class Processor:
         # Handle other queries
         #Not sure, think Mapper
         if query in MSG_MAPPING:
+            self.cmd_buffer.append(query)
             try:
-                x = getattr(self.transport, MSG_MAPPING[query])()
-                return x
-                #return getattr(self.transport, MSG_MAPPING[query])()
-                #return MSG_MAPPING[query]
+                return getattr(self.transport, MSG_MAPPING[query])()
             except Exception as e:
                 print('An exception has occured: %s' % e)
                 traceback.print_exc()
-                sys.exit(1)
+                raise
+                #sys.exit(1)
 
         raise Exception('Query "%s" is not recognized as an learnlib or reset query' % query)
 
@@ -172,9 +170,13 @@ class Processor:
                     # single run queries (e.g. just "DISCONNECT"). If the first argument is an integer,
                     # the query will be repeated int times (this is useful for nondeterminism test
                     # cases).
+                    allCommands = []
 
                     #Mapper
                     commands = conn.recv(4096).rstrip().split()
+                    if len(commands) == 0:
+                        break
+                    
 
                     # Repeat multiple times?
                     #Mapper
@@ -192,59 +194,62 @@ class Processor:
                     #Mapper
                     if len(commands) > 1 and 'reset' not in commands:
                         raise Exception('You are doing a multiquery but you are not resetting your sut')
-
+                    
+                    
                     # Execute single OR multiquery 'repeat'-many times
                     #Mapper
-                    for i in range(repeat):
-                        result = ''
-                        for ci, command in enumerate(commands):
-                            print('[%s]' % self.transport)  #BUG This does not print encryption method
-                            print('Sending %s...' % command)
-                            response = self.process_learlib_query(command.decode('UTF-8'))
-                            result += response
-                            # If this is not the last command, add a space
-                            if ci != len(commands)-1:
-                                result += ' '
-
-                            # 0.15 effectively prevents ssh nondeterminism on SSH6.6 localhost
-#time param
-                            time.sleep(self.cmd_to)
-
+                    for i in xrange(repeat):
+                        try:
+                            print("\n command buffer: ",self.cmd_buffer)
+                            result = self._execute(commands)
+                        except Exception as e:
+                            time.sleep(20)
+                            print("\n trying to execute commands again \n",self.cmd_buffer)
+                            cmds = self.cmd_buffer
+                            self.process_reset()
+                            outs = self._execute(cmds)
+                            result = outs[len(outs) - 1]
+                            
                         # Add a newline after a run of one or many commands
-                        result += '\n'
-                        
-                        conn.send(str.encode(result))
+                        conn.send('%s\n' % result)
                 except socket.error:
                     print('\nCient disconnected (socket.error)')
                     break
-            print('Ready for new connection on address ' + self.learnlib_host + ':' + str(self.learnlib_port) )
+                
+            print('Ready for new connection')
 
         print('Closing connection')
         sock.close()
 
-def parse_address(address_str):
-    host_port = address_str.split(":")
-    if len(host_port) != 2:
-        raise Exception('Invalid address. Expected format is "host:port"')
-    host = host_port[0]
-    port = int(host_port[1])
-    return (host, port)
+    def _execute(self, commands):
+        result = ''
+        for ci, command in enumerate(commands):
+            print('[%s]' % self.transport)
+            print('Sending %s...' % command)
+            response = self.process_learnlib_query(command)
+            result += response
+            # If this is not the last command, add a space
+            if ci != len(commands)-1:
+                result += ' '
+
+            # 0.15 effectively prevents ssh nondeterminism on SSH6.6 localhost
+            #time pa
+            time.sleep(self.cmd_to)
+        return result
+
 
 # Start listening!
-parser = argparse.ArgumentParser(description='Mapper implementation for learning/testing SSH servers. Operates as a TCP server. \
-Over a connection, it receives from the client abstract message strings over sockets. \
-These are turned into actual SSH messages and then forwarded to an SSH server. \
-Responses are received, abstracted and relayed back to the client.')
-parser.add_argument('-l', "--listen", required=True, type=str, help="Listening address in the form host:port.")
-parser.add_argument('-s', "--server", required=True, type=str, help="SSH server address in the form host:port.")
-parser.add_argument('-c', "--config", required=False, default=None, choices=['OpenSSH', 'BitVise', 'Dropbear'], help="(Optional) Select a timing/alphabet configuration proven to sort of work with a particular implementation.")
-args = parser.parse_args()
-
 #Unclear, contains both connection to SUT and learner
-learnlib_addr = parse_address(args.listen)
-server_addr = parse_address(args.server)
-config = args.config
+if len(sys.argv) > 1: 
+    sshServerIP = sys.argv[1] 
+else:
+    sshServerIP = "localhost"
+if len(sys.argv) > 2:
+    sshServerPort = int(sys.argv[2])
+else:
+    sshServerPort = 22
 
-proc = Processor(learnlib=learnlib_addr, ssh=server_addr, config=args.config)
-print( "Starting mapper with parameters\n", vars(proc))
+sshAdr = (sshServerIP, sshServerPort)
+proc = Processor(learnlib=('localhost', 8000), ssh=sshAdr)
+print "Starting mapper with parameters\n", vars(proc)
 proc.listen()
