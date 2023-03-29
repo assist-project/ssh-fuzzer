@@ -2096,8 +2096,10 @@ class Transport(threading.Thread, ClosingContextManager):
         # Here we have to assume a kex engine if we do not already have one.
 
         if self.kex_engine:
+            print(">>>><<<<<<")
             used_kex_engine = self.kex_engine
         else:
+            print("=======================>>")
             used_kex_engine = KexGroup1(self)
 
         used_kex_engine.start_kex()
@@ -2929,7 +2931,7 @@ class Transport(threading.Thread, ClosingContextManager):
             )  # noqa
         self.kex_engine = self._kex_info[agreed_kex[0]](self)
         #BUG PRINT KEX_ENGINE
-        # Compare dropbears and outrs 
+        # Compare dropbears and outrs
         self._log(DEBUG, "Kex: {}".format(agreed_kex[0]))
 
         if self.server_mode:
