@@ -349,6 +349,7 @@ class Packetizer:
         while len(out) > 0:
             retry_write = False
             try:
+                print("What we are writing to socket: ", out)
                 n = self.__socket.send(out)
             except socket.timeout:
                 retry_write = True
@@ -472,7 +473,7 @@ class Packetizer:
         :raises: `.NeedRekeyException` -- if the transport should rekey
         """
         header = self.read_all(self.__block_size_in, check_rekey=True)
-        if self.__etm_in:
+        if self.__etm_in:   #Q? This if is new, migth this be the problem?
             packet_size = struct.unpack(">I", header[:4])[0]
             remaining = packet_size - self.__block_size_in + 4
             packet = header[4:] + self.read_all(remaining, check_rekey=False)
@@ -509,7 +510,8 @@ class Packetizer:
             buf = self.read_all(
                 packet_size + self.__mac_size_in - len(leftover)
             )
-            packet = buf[: packet_size - len(leftover)]
+            print("What might buf be?\n----------->>>", buf)
+            packet = buf[: packet_size - len(leftover)] #Q? Is it something wrong with packet or buf?
             post_packet = buf[packet_size - len(leftover) :]
 
             if self.__block_engine_in is not None:
@@ -532,6 +534,7 @@ class Packetizer:
                 raise SSHException("Mismatched MAC")
         padding = byte_ord(packet[0])
         payload = packet[1 : packet_size - padding]
+        print("---->Payload", payload)
 
         if self.__dump_packets:
             self._log(
@@ -540,12 +543,12 @@ class Packetizer:
                     packet_size, padding
                 ),
             )
-
         if self.__compress_engine_in is not None:
             payload = self.__compress_engine_in(payload)
 
         msg = Message(payload[1:])
         msg.seqno = self.__sequence_number_in
+        print("---\nMSG in packet.py\n---->",msg)
         self.__sequence_number_in = (self.__sequence_number_in + 1) & xffffffff
 
         # check for rekey

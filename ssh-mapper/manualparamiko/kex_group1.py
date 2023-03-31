@@ -96,7 +96,8 @@ class KexGroup1:
 
     def _parse_kexdh_reply(self, m):
         # client mode
-        host_key = m.get_string()
+        host_key = m.get_string() #Q? WHICH function?
+        print("Host Key: ", host_key)
         self.f = m.get_mpint()
         if (self.f < 1) or (self.f > self.P - 1):
             raise SSHException('Server kex "f" is out of range')
@@ -115,7 +116,9 @@ class KexGroup1:
         hm.add_mpint(self.e)
         hm.add_mpint(self.f)
         hm.add_mpint(K)
+        print("-----------------------------K in parse_kexdh_reply BEFORE", self.transport.K, "-----------------------------")
         self.transport._set_K_H(K, self.hash_algo(hm.asbytes()).digest())
+        print("-----------------------------K in parse_kexdh_reply AFTER", self.transport.K, "-----------------------------")
         self.transport._verify_key(host_key, sig)
         # This used to be in here, but will be sent manually from now on (it triggers MSG_NEWKEYS)
         #self.transport._activate_outbound()

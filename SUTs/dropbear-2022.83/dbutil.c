@@ -187,9 +187,9 @@ static double time_since_start()
 
 static void dropbear_tracelevel(int level, const char *format, va_list param)
 {
-	if (debug_trace == 0 || debug_trace < level) {
-		return;
-	}
+	// if (debug_trace == 0 || debug_trace < level) {
+	// 	return;
+	// }
 
 	fprintf(stderr, "TRACE%d (%d) %f: ", level, getpid(), time_since_start());
 	vfprintf(stderr, format, param);

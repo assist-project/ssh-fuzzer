@@ -35,7 +35,7 @@ if [[ $db -eq 1 ]]; then
     ./configure
     make
   fi
-	sudo ./dropbear -R -F -E -p localhost:$port
+	sudo ./dropbear -R -F -E -p  localhost:$port
 elif [[ $openssh -eq 1 ]]; then
 	echo "OpenSSH"
 fi

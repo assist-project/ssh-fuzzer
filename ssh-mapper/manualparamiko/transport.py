@@ -161,8 +161,8 @@ class Transport(threading.Thread, ClosingContextManager):
     Instances of this class may be used as context managers.
     """
 
-    ##NOTE First section here is the new implementation of preferred parameters
-    #As of now 2023-03-27 this is nor supported and therefore commented
+    # #NOTE First section here is the new implementation of preferred parameters
+    # #As of now 2023-03-27 this is nor supported and therefore commented
 
     _ENCRYPT = object()
     _DECRYPT = object()
@@ -170,8 +170,8 @@ class Transport(threading.Thread, ClosingContextManager):
     # _PROTO_ID = "2.0"
     # _CLIENT_ID = "paramiko_{}".format(manualparamiko.__version__)
 
-    # These tuples of algorithm identifiers are in preference order; do not
-    # reorder without reason!
+    # # These tuples of algorithm identifiers are in preference order; do not
+    # # reorder without reason!
     # # NOTE: if you need to modify these, we suggest leveraging the
     # # `disabled_algorithms` constructor argument (also available in SSHClient)
     # # instead of monkeypatching or subclassing.
@@ -552,6 +552,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self.global_to_total = global_to_total
 
         self.buffer_after_newkey = buffer_after_newkey
+
 
     def _filter_algorithm(self, type_):
         default = getattr(self, "_preferred_{}".format(type_))
@@ -1956,7 +1957,8 @@ class Transport(threading.Thread, ClosingContextManager):
         """
         Used by a kex obj to set the K (root key) and H (exchange hash).
         """
-        self.K = k
+        #raise SSHException("In transport")
+        self.K = k #BUG THIS IS PROBABLY NEVER SET CORRECT
         self.H = h
         if self.session_id is None:
             self.session_id = h
@@ -1981,11 +1983,16 @@ class Transport(threading.Thread, ClosingContextManager):
 
     def _compute_key(self, id, nbytes):
         """id is 'A' - 'F' for the various keys used by ssh"""
+        if id == 'A':
+            print("self.K if ID is A (in compute key)", self.K) #BUG WHY?
+            print("-----------------------------------------------------------Do this execute?")
+
         m = Message()
         m.add_mpint(self.K)
         m.add_bytes(self.H)
         m.add_byte(b(id))
         m.add_bytes(self.session_id)
+        
         # Fallback to SHA1 for kex engines that fail to specify a hex
         # algorithm, or for e.g. transport tests that don't run kexinit.
         #NOTE vvvvvvv This was removed
@@ -2009,6 +2016,8 @@ class Transport(threading.Thread, ClosingContextManager):
             digest = sha1(m.asbytes()).digest()
             out += digest
             sofar += digest
+        if id == 'A':
+            print("-----------------------------------------------------------Do this execute?")
         return out[:nbytes]
 
     def _get_cipher(self, name, key, iv, operation):
@@ -2078,7 +2087,7 @@ class Transport(threading.Thread, ClosingContextManager):
         # This performs a complete rekey procedure
         kexinit = self.fuzz_kex_init()
         kexdh = self.fuzz_kexdh_init()
-        newkeys = self.fuzz_newkeys()
+        newkeys = self.fuzz_newkeys() #BUG Only place where this funciton is called but still does not seem to be called from here?!?
 
         return '%s|%s|%s' % (kexinit, kexdh, newkeys)
 
@@ -2104,8 +2113,10 @@ class Transport(threading.Thread, ClosingContextManager):
 
         used_kex_engine.start_kex()
 
-        if not isinstance(used_kex_engine, KexGroup1):
-            raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a ', used_kex_engine)
+        print("Our engine: ", used_kex_engine)
+
+        # if not isinstance(used_kex_engine, KexGroup1):
+        #     raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a ', used_kex_engine)
 
         return self.read_multiple_responses()
 
@@ -2239,11 +2250,15 @@ class Transport(threading.Thread, ClosingContextManager):
         return self.read_multiple_responses()
 
     def fuzz_newkeysnop(self):
+        print("self.K indasd fuzz_newkeysnop", self.K)
         self._activate_outbound(update=False)
 
         return self.read_multiple_responses()
 
     def fuzz_newkeys(self):
+        print("self.K in dasfuzz_newkeys", self.K)
+        #BUG When, in mapper.py:135, getattr is called this function is called
+        #    and that object does not contain any info how do we access the correct element?
         self._activate_outbound()
 
         return self.read_multiple_responses()
@@ -2406,6 +2421,7 @@ class Transport(threading.Thread, ClosingContextManager):
         response = ''
         while True:
             ptype = self.read_response(timeout)
+            print("K in transport after it should have been set, K=", self.K)
             if MSG_NAMES[ptype] == 'IGNORE' or MSG_NAMES[ptype] == 'DEBUG':
                 continue
 
@@ -2447,11 +2463,11 @@ class Transport(threading.Thread, ClosingContextManager):
     def read_response(self, timeout):
         try:
             self.packetizer.set_timeout(timeout)
-            ptype, m = self.packetizer.read_message()
+            ptype, m = self.packetizer.read_message() #Q? is the error comming from the answer here? m is b'' when K goes from useful to None
             self.last_message = m
             self.last_ptype = ptype
 
-
+            print("In read_response BEFORE-BEFORE. What is k?", self.K)
             # (Mostly) state-changing handlers.
             handlers = {
                 MSG_KEXINIT: lambda m: self._negotiate_keys(m),
@@ -2464,10 +2480,18 @@ class Transport(threading.Thread, ClosingContextManager):
                 MSG_GLOBAL_REQUEST: lambda m: self.print_msg(m),
             }
 
-            print(ptype)
+            print("In read_response BEFORE. What is k?", self.K)
+
+            print("In read_response. What is m?", m)
+
+            print("self.last_message", self.last_message)
 
             if ptype in handlers:
-                handlers[ptype](self.last_message)
+                if ptype == 31:
+                    print("-------------..................-------------------aaaaaaaaaaaaaadddd")
+                handlers[ptype](self.last_message) #Q? What does this do?
+
+            print("In read_response AFTER. What is k?", self.K)
 
             # Return the message
             return ptype
@@ -2538,6 +2562,9 @@ class Transport(threading.Thread, ClosingContextManager):
         # interpreter shutdown.
         self.sys = sys
 
+        print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+        print("are we even running this?")
+
         # active=True occurs before the thread is launched, to avoid a race
         _active_threads.append(self)
         tid = hex(id(self) & xffffffff)
@@ -2589,7 +2616,10 @@ class Transport(threading.Thread, ClosingContextManager):
                                 )
                             )  # noqa
                         self._expected_packet = tuple()
+                        print("--------------------------in transport ptype: ", ptype)
+                        print("kex_engine", self.kex_engine) #BUG We don't even run this
                         if (ptype >= 30) and (ptype <= 41):
+                            raise
                             self.kex_engine.parse_next(ptype, m)
                             continue
 
@@ -2821,7 +2851,7 @@ class Transport(threading.Thread, ClosingContextManager):
             # NOTE: doing this here handily means we don't even consider this
             # value when agreeing on real kex algo to use (which is a common
             # pitfall when adding this apparently).
-            kex_algos.append("ext-info-c")
+            # kex_algos.append("ext-info-c")
 
         m = Message()
         m.add_byte(cMSG_KEXINIT)
@@ -3132,10 +3162,16 @@ class Transport(threading.Thread, ClosingContextManager):
                     "D", self._cipher_info[self.local_cipher]["key-size"]
                 )
             else:
-                IV_out = self._compute_key("A", block_size)
+                print("NOT SERVERMODE ===========================================")
+                print("Type of block_size", type(block_size))
+                print("Block_size: ", block_size)
+                print("self.k before comput_key", self.K)
+                IV_out = self._compute_key("A", str(block_size))
                 key_out = self._compute_key(
-                    "C", self._cipher_info[self.local_cipher]["key-size"]
+                    "C", str(self._cipher_info[self.local_cipher]["key-size"])
                 )
+            print("IV_OUT: ", IV_out)
+            print("Key_out: ", key_out)
             engine = self._get_cipher(
                 self.local_cipher, key_out, IV_out, self._ENCRYPT
             )
@@ -3176,8 +3212,10 @@ class Transport(threading.Thread, ClosingContextManager):
                 self._send_message(m)
             # we always expect to receive NEWKEYS now
             self._expect_packet(MSG_NEWKEYS)
-        except Exception as e:
+        except Exception as e:  #BUG Look why we can't proceed something is not setup right
             print('Newkeys sent, but cannot proceed with processing because of missing information')
+            raise e
+            print("Exception: ",e, "\n") # int() argument must be a string, a bytes-like object or a number, not 'NoneType' 
 
     def _auth_trigger(self):
         self.authenticated = True
