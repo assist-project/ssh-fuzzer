@@ -299,12 +299,13 @@ class AuthHandler:
             password = self.password.encode('utf-8') #old version = bytestring(self.password)
             m.add_string(password)
         elif self.auth_method == 'publickey':
+            print("=====================))))D")
             m.add_boolean(True)
             key_type, bits = self._get_key_type_and_bits(self.private_key)
             algorithm = self._finalize_pubkey_algorithm(key_type)
             m.add_string(algorithm)
             m.add_string(bits)
-            blob = self._get_session_blob(
+            blob = self._get_session_blob( #Q? This differ so 
                 self.private_key,
                 "ssh-connection",
                 self.username,
@@ -392,6 +393,8 @@ class AuthHandler:
             raise SSHException('Unknown auth method "%s"' % self.auth_method)
 
         self.transport._send_message(m)
+        print("Message: ", m)
+        raise
 
     def _generate_key_from_request(self, algorithm, keyblob):
         # For use in server mode.

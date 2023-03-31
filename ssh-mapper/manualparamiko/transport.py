@@ -1924,7 +1924,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self._channels.delete(chanid)
 
     def _send_message(self, data):
-        self.packetizer.send_message(data)
+        self.packetizer.send_message(data) #Q? Follow here, old manual send a string here while new sends b'' see if this migth couse the problem
 
     def _send_user_message(self, data):
         """
@@ -2201,7 +2201,6 @@ class Transport(threading.Thread, ClosingContextManager):
         default_path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
         self.auth_handler.private_key = manualparamiko.RSAKey.from_private_key_file(default_path)
         self.auth_handler.auth_method = 'publickey'
-        print("Priv Key:", self.auth_handler.private_key)
 #this should be changed to the username on the server
         self.auth_handler.username = 'thetelefon' if ok else 'NOACCESS' # //MAGIC Set username
         self.auth_handler.custom_parse_service_request()
