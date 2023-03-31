@@ -349,7 +349,6 @@ class Packetizer:
         while len(out) > 0:
             retry_write = False
             try:
-                print("What we are writing to socket: ", out)
                 n = self.__socket.send(out)
             except socket.timeout:
                 retry_write = True
@@ -431,6 +430,7 @@ class Packetizer:
                 else:
                     out = self.__block_engine_out.update(packet)
             else:
+                print("NOT ENCRYPTED")
                 out = packet
             # + mac
             if self.__block_engine_out is not None:

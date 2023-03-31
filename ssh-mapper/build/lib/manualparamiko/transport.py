@@ -83,7 +83,6 @@ from manualparamiko.common import (
     DEFAULT_MAX_PACKET_SIZE,
     HIGHEST_USERAUTH_MESSAGE_ID,
     MSG_UNIMPLEMENTED,
-    #MSG_NAMES,  #BUG IMPORT THIS FROM messages.py instead?
     cMSG_SERVICE_REQUEST,
     cMSG_DEBUG,
     cMSG_DISCONNECT,
@@ -182,8 +181,8 @@ class Transport(threading.Thread, ClosingContextManager):
     # _preferred_keys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521","rsa-sha2-512",
     #                    "rsa-sha2-256","ssh-rsa","ssh-dss")
     # # ~= PubKeyAcceptedAlgorithms
-    # _preferred_pubkeys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521",
-    #                       "rsa-sha2-512","rsa-sha2-256","ssh-rsa","ssh-dss")
+    _preferred_pubkeys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521",
+                          "rsa-sha2-512","rsa-sha2-256","ssh-rsa","ssh-dss")
     # _preferred_kex = ("ecdh-sha2-nistp256","ecdh-sha2-nistp384","ecdh-sha2-nistp521","diffie-hellman-group16-sha512",
     #                   "diffie-hellman-group-exchange-sha256","diffie-hellman-group14-sha256",
     #                   "diffie-hellman-group-exchange-sha1","diffie-hellman-group14-sha1","diffie-hellman-group1-sha1")
@@ -1958,7 +1957,7 @@ class Transport(threading.Thread, ClosingContextManager):
         Used by a kex obj to set the K (root key) and H (exchange hash).
         """
         #raise SSHException("In transport")
-        self.K = k #BUG THIS IS PROBABLY NEVER SET CORRECT
+        self.K = k
         self.H = h
         if self.session_id is None:
             self.session_id = h
@@ -1983,9 +1982,6 @@ class Transport(threading.Thread, ClosingContextManager):
 
     def _compute_key(self, id, nbytes):
         """id is 'A' - 'F' for the various keys used by ssh"""
-        if id == 'A':
-            print("self.K if ID is A (in compute key)", self.K) #BUG WHY?
-            print("-----------------------------------------------------------Do this execute?")
 
         m = Message()
         m.add_mpint(self.K)
@@ -2087,7 +2083,7 @@ class Transport(threading.Thread, ClosingContextManager):
         # This performs a complete rekey procedure
         kexinit = self.fuzz_kex_init()
         kexdh = self.fuzz_kexdh_init()
-        newkeys = self.fuzz_newkeys() #BUG Only place where this funciton is called but still does not seem to be called from here?!?
+        newkeys = self.fuzz_newkeys()
 
         return '%s|%s|%s' % (kexinit, kexdh, newkeys)
 
@@ -2105,15 +2101,11 @@ class Transport(threading.Thread, ClosingContextManager):
         # Here we have to assume a kex engine if we do not already have one.
 
         if self.kex_engine:
-            print(">>>><<<<<<")
             used_kex_engine = self.kex_engine
         else:
-            print("=======================>>")
             used_kex_engine = KexGroup1(self)
 
         used_kex_engine.start_kex()
-
-        print("Our engine: ", used_kex_engine)
 
         # if not isinstance(used_kex_engine, KexGroup1):
         #     raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a ', used_kex_engine)
@@ -2255,9 +2247,8 @@ class Transport(threading.Thread, ClosingContextManager):
 
         return self.read_multiple_responses()
 
-    def fuzz_newkeys(self):
+    def fuzz_newkeys(self): #Q? Look into this as well
         print("self.K in dasfuzz_newkeys", self.K)
-        #BUG When, in mapper.py:135, getattr is called this function is called
         #    and that object does not contain any info how do we access the correct element?
         self._activate_outbound()
 
@@ -2463,11 +2454,10 @@ class Transport(threading.Thread, ClosingContextManager):
     def read_response(self, timeout):
         try:
             self.packetizer.set_timeout(timeout)
-            ptype, m = self.packetizer.read_message() #Q? is the error comming from the answer here? m is b'' when K goes from useful to None
+            ptype, m = self.packetizer.read_message()
             self.last_message = m
             self.last_ptype = ptype
 
-            print("In read_response BEFORE-BEFORE. What is k?", self.K)
             # (Mostly) state-changing handlers.
             handlers = {
                 MSG_KEXINIT: lambda m: self._negotiate_keys(m),
@@ -2480,21 +2470,8 @@ class Transport(threading.Thread, ClosingContextManager):
                 MSG_GLOBAL_REQUEST: lambda m: self.print_msg(m),
             }
 
-            print("In read_response BEFORE. What is k?", self.K)
-
-            print("In read_response. What is m?", m)
-
-            print("self.last_message", self.last_message)
-
-            if m.get_binary() == b'':
-                return ptype
-
             if ptype in handlers:
-                if ptype == 31:
-                    print("-------------..................-------------------aaaaaaaaaaaaaadddd")
-                handlers[ptype](self.last_message) #Q? What does this do?
-
-            print("In read_response AFTER. What is k?", self.K)
+                handlers[ptype](self.last_message)
 
             # Return the message
             return ptype
@@ -3169,9 +3146,9 @@ class Transport(threading.Thread, ClosingContextManager):
                 print("Type of block_size", type(block_size))
                 print("Block_size: ", block_size)
                 print("self.k before comput_key", self.K)
-                IV_out = self._compute_key("A", str(block_size))
+                IV_out = self._compute_key("A", block_size)
                 key_out = self._compute_key(
-                    "C", str(self._cipher_info[self.local_cipher]["key-size"])
+                    "C", self._cipher_info[self.local_cipher]["key-size"]
                 )
             print("IV_OUT: ", IV_out)
             print("Key_out: ", key_out)
@@ -3188,6 +3165,7 @@ class Transport(threading.Thread, ClosingContextManager):
             else:
                 mac_key = self._compute_key("E", mac_engine().digest_size)
             sdctr = self.local_cipher.endswith("-ctr")
+            print("outgoing engine: ", engine) #Q? The engine is never set only plca where set.outbound_cipher() is called
             self.packetizer.set_outbound_cipher(
                 engine, block_size, mac_engine, mac_size, mac_key, sdctr, etm=etm
             )
@@ -3250,26 +3228,26 @@ class Transport(threading.Thread, ClosingContextManager):
         self._log(DEBUG, "Switch to new keys ...")
         self._activate_inbound()
         # can also free a bunch of stuff here
-        self.local_kex_init = self.remote_kex_init = None
-        self.K = None
-        self.kex_engine = None
-        if self.server_mode and (self.auth_handler is None):
-            # create auth handler for server mode
-            self.auth_handler = AuthHandler(self)
-        if not self.initial_kex_done:
-            # this was the first key exchange
-            self.initial_kex_done = True
-        # send an event?
-        if self.completion_event is not None:
-            self.completion_event.set()
-        # it's now okay to send data again (if this was a re-key)
-        if not self.packetizer.need_rekey():
-            self.in_kex = False
-        self.clear_to_send_lock.acquire()
-        try:
-            self.clear_to_send.set()
-        finally:
-            self.clear_to_send_lock.release()
+        # self.local_kex_init = self.remote_kex_init = None
+        # self.K = None
+        # self.kex_engine = None
+        # if self.server_mode and (self.auth_handler is None):
+        #     # create auth handler for server mode
+        #     self.auth_handler = AuthHandler(self)
+        # if not self.initial_kex_done:
+        #     # this was the first key exchange
+        #     self.initial_kex_done = True
+        # # send an event?
+        # if self.completion_event is not None:
+        #     self.completion_event.set()
+        # # it's now okay to send data again (if this was a re-key)
+        # if not self.packetizer.need_rekey():
+        #     self.in_kex = False
+        # self.clear_to_send_lock.acquire()
+        # try:
+        #     self.clear_to_send.set()
+        # finally:
+        #     self.clear_to_send_lock.release()
         return
 
     def _parse_disconnect(self, m):

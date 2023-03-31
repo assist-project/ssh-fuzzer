@@ -132,12 +132,8 @@ class Processor:
         #Not sure, think Mapper
         if query in MSG_MAPPING:
             try:
-                #BUG So this object does not contain the correct values
-                print("IN MAPPER", MSG_MAPPING[query])
                 x = getattr(self.transport, MSG_MAPPING[query])()
                 return x
-                #return getattr(self.transport, MSG_MAPPING[query])()
-                #return MSG_MAPPING[query]
             except Exception as e:
                 print('An exception has occured: %s' % e)
                 traceback.print_exc()
