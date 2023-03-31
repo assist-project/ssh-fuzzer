@@ -2012,8 +2012,6 @@ class Transport(threading.Thread, ClosingContextManager):
             digest = sha1(m.asbytes()).digest()
             out += digest
             sofar += digest
-        if id == 'A':
-            print("-----------------------------------------------------------Do this execute?")
         return out[:nbytes]
 
     def _get_cipher(self, name, key, iv, operation):
@@ -2203,6 +2201,7 @@ class Transport(threading.Thread, ClosingContextManager):
         default_path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
         self.auth_handler.private_key = manualparamiko.RSAKey.from_private_key_file(default_path)
         self.auth_handler.auth_method = 'publickey'
+        print("Priv Key:", self.auth_handler.private_key)
 #this should be changed to the username on the server
         self.auth_handler.username = 'thetelefon' if ok else 'NOACCESS' # //MAGIC Set username
         self.auth_handler.custom_parse_service_request()
@@ -2242,13 +2241,11 @@ class Transport(threading.Thread, ClosingContextManager):
         return self.read_multiple_responses()
 
     def fuzz_newkeysnop(self):
-        print("self.K indasd fuzz_newkeysnop", self.K)
         self._activate_outbound(update=False)
 
         return self.read_multiple_responses()
 
     def fuzz_newkeys(self): #Q? Look into this as well
-        print("self.K in dasfuzz_newkeys", self.K)
         #    and that object does not contain any info how do we access the correct element?
         self._activate_outbound()
 
@@ -2412,7 +2409,6 @@ class Transport(threading.Thread, ClosingContextManager):
         response = ''
         while True:
             ptype = self.read_response(timeout)
-            print("K in transport after it should have been set, K=", self.K)
             if MSG_NAMES[ptype] == 'IGNORE' or MSG_NAMES[ptype] == 'DEBUG':
                 continue
 
@@ -3142,16 +3138,10 @@ class Transport(threading.Thread, ClosingContextManager):
                     "D", self._cipher_info[self.local_cipher]["key-size"]
                 )
             else:
-                print("NOT SERVERMODE ===========================================")
-                print("Type of block_size", type(block_size))
-                print("Block_size: ", block_size)
-                print("self.k before comput_key", self.K)
                 IV_out = self._compute_key("A", block_size)
                 key_out = self._compute_key(
                     "C", self._cipher_info[self.local_cipher]["key-size"]
                 )
-            print("IV_OUT: ", IV_out)
-            print("Key_out: ", key_out)
             engine = self._get_cipher(
                 self.local_cipher, key_out, IV_out, self._ENCRYPT
             )
@@ -3165,7 +3155,6 @@ class Transport(threading.Thread, ClosingContextManager):
             else:
                 mac_key = self._compute_key("E", mac_engine().digest_size)
             sdctr = self.local_cipher.endswith("-ctr")
-            print("outgoing engine: ", engine) #Q? The engine is never set only plca where set.outbound_cipher() is called
             self.packetizer.set_outbound_cipher(
                 engine, block_size, mac_engine, mac_size, mac_key, sdctr, etm=etm
             )
@@ -3193,7 +3182,7 @@ class Transport(threading.Thread, ClosingContextManager):
                 self._send_message(m)
             # we always expect to receive NEWKEYS now
             self._expect_packet(MSG_NEWKEYS)
-        except Exception as e:  #BUG Look why we can't proceed something is not setup right
+        except Exception as e:
             print('Newkeys sent, but cannot proceed with processing because of missing information')
             raise e
             print("Exception: ",e, "\n") # int() argument must be a string, a bytes-like object or a number, not 'NoneType' 

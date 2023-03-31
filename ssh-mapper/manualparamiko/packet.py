@@ -430,7 +430,6 @@ class Packetizer:
                 else:
                     out = self.__block_engine_out.update(packet)
             else:
-                print("NOT ENCRYPTED")
                 out = packet
             # + mac
             if self.__block_engine_out is not None:
@@ -510,8 +509,7 @@ class Packetizer:
             buf = self.read_all(
                 packet_size + self.__mac_size_in - len(leftover)
             )
-            print("What might buf be?\n----------->>>", buf)
-            packet = buf[: packet_size - len(leftover)] #Q? Is it something wrong with packet or buf?
+            packet = buf[: packet_size - len(leftover)]
             post_packet = buf[packet_size - len(leftover) :]
 
             if self.__block_engine_in is not None:
@@ -534,7 +532,6 @@ class Packetizer:
                 raise SSHException("Mismatched MAC")
         padding = byte_ord(packet[0])
         payload = packet[1 : packet_size - padding]
-        print("---->Payload", payload)
 
         if self.__dump_packets:
             self._log(
@@ -548,7 +545,6 @@ class Packetizer:
 
         msg = Message(payload[1:])
         msg.seqno = self.__sequence_number_in
-        print("---\nMSG in packet.py\n---->",msg)
         self.__sequence_number_in = (self.__sequence_number_in + 1) & xffffffff
 
         # check for rekey
