@@ -1,21 +1,33 @@
 # the name of the sut you want to learn
 name=aSut
-# the equ oracles used (RANDOM, EXHAUSTIVE, WORDS, CONFORMANCE), sep. by ';'
+
+# the equ oracles used (RANDOM, EXHAUSTIVE, WORDS), sep. by ';'
 eqOracle=RANDOM
+
 # the maximum number of tests (for the RANDOM equ oracle)
 maxNumTests=20000
-# the specification file selected (relative to within the input dir), used by the CONFORMANCE oracle
-specification=bv_spec.smv
+
 # the time limit set for learning experiments
 #timeLimit=P2D
+
 # a maximum number of learning rounds (= hypotheses generated)
 #roundLimit=1
+
 # initialize the cache with that of a previous experiment  
 # cache=querylog.db
+
 # the maximum number of retries attempted in case of non-determinism before concluding that it cannot be resolved
 maxNonDeterminismRetries=3
+
+# execute tests in this file and exit
+# testWords=testtrace.txt
+
+# tests to use for the WORDS oracle
+# equTestWords=testtrace.txt
+
 # the address at which the mapper is listening 
 mapperAddress=localhost:8000
+
 # the input alphabet, sep by ';', start with '!' inputs that you want commented out 
 alphabet=DISCONNECT;\
 IGNORE;\

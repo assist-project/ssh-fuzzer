@@ -8,7 +8,9 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -31,19 +33,20 @@ import util.SoundUtils;
 
 public class Main {
 
-	private static final String emptyDbFile = "input/querylog-empty.db";
-	private static final String defaultConfigFile = "input/config.prop";
+	private static final String EMPTY_DATABASE = "/querylog-empty.db";
 
 	private PrintStream statisticsFileStream;
 
 	public static void main(String[] args) {
 		Main main = new Main();
 		try {
-			String configFile = Main.defaultConfigFile;
-			if (args.length > 0) {
-				configFile = args[0];
+			if (args.length == 0) {
+				System.err.println("A configuration file with learning parameters is required.");
+				System.err.println("See '${ssh-learner}/input/config.prop' for an example including all the configurable parameters.");
+				return;
 			}
-			final Config config = new Config(configFile);
+			String configFile = args[0];
+			final Config config = new Config(configFile, Arrays.copyOfRange(args, 1, args.length));
 			MealyMachine<?, String, ?, String>  learnedModel = main.learn(config);
 			SoundUtils.success();
 			File modelFile = new File(config.outputFolder + "learnedModel.dot");
@@ -58,9 +61,8 @@ public class Main {
 	}
 
 	public Main() {
-
 	}
-	
+
 	public MealyMachine<?, String, ?, String>  learn(Config config) throws Exception {
 		String expFolder = config.outputFolder;
 		if (!new File(expFolder).exists()) {
@@ -72,7 +74,7 @@ public class Main {
 		
 		// All output goes to file
 		statisticsFileStream = new PrintStream(new FileOutputStream(statisticsFile, false));
-		printStatLine("Effective Configuration: " + config.getEffectiveConfigString());
+		statisticsFileStream.println("Effective Configuration: " + config.getEffectiveConfigString());
 		
 		// Set up a connection
 		Socket sock = new Socket(config.mapperHost, config.mapperPort);
@@ -91,9 +93,8 @@ public class Main {
 		System.out.println("Effective Configuration: " + config.getEffectiveConfigString());
 
 		// if cache not present, make a copy of an empty db
-		if (config.cache == null) {
-			Path emptyDbPath = Paths.get(emptyDbFile);
-			Files.copy(emptyDbPath, new FileOutputStream(dbFile));
+		if (config.cache == null || config.testWords != null) {
+			Files.copy(Main.class.getResourceAsStream(EMPTY_DATABASE), Paths.get(dbFile), StandardCopyOption.REPLACE_EXISTING);
 		} else {
 			Path dbPath = Paths.get(config.cache);
 			Files.copy(dbPath, new FileOutputStream(dbFile));
@@ -107,6 +108,11 @@ public class Main {
 
 		// And test oracle
 		MealyMembershipOracle<String, String> testOracle = new TestOracle(sut, sqllog);
+		if (config.testWords != null) {
+			runTests(testOracle, config.testWords);
+			System.exit(0);
+		}
+		
 		Counter testQueryCounter = ((TestOracle) testOracle).getQueryCounter();
 		testOracle = new NonDeterminismRetryingSutOracle<>(testOracle, config.maxNonDeterminismRetries, System.out);
 		if (config.timeTimit != null) {
@@ -147,12 +153,12 @@ public class Main {
 				// Print some stats
 				statisticsFileStream
 						.println("Hypothesis " + hypCounter + " after: " + (System.currentTimeMillis() - start) + "ms");
-				printStatLine("Membership: " + (membershipQueryCounter.getValue() - memQueries));
+				printStatAndOut("Membership: " + (membershipQueryCounter.getValue() - memQueries));
 				memQueries = membershipQueryCounter.getValue();
 				
 				GraphDOT.write(hyp, config.alphabet,  new FileWriter(expFolder + "hypothesis-" + hypCounter + ".dot"));
 				if (roundLimit != null && hypCounter+1 >= roundLimit) {
-					printStatLine("Learning stopped due to reaching the round limit");
+					printStatAndOut("Learning stopped due to reaching the round limit");
 					break;
 				}
 				
@@ -168,24 +174,23 @@ public class Main {
 					done = true;
 				} else {
 					// There is a counter example, send it to learnlib.
-					printStatLine("Counter Example: " + ce);
+					printStatAndOut("Counter Example: " + ce);
 					System.out.println("Sending Counter Example to LearnLib.");
 					learner.refineHypothesis(ce);
 				}
 			}
 		} catch(Exception e) {
-			
-			printStatLine("Learning stopped due to exception: " + e.getClass().getName());
-			printStatLine("Exception message: " + e.getMessage());
+			printStatAndOut("Learning stopped due to exception: " + e.getClass().getName());
+			printStatAndOut("Exception message: " + e.getMessage());
 		}
 
 		// End of learning, update some stats
 		long end = System.currentTimeMillis();
-		printStatLine("Learning completed: " + done);
-		printStatLine("Total mem Queries: " + membershipQueryCounter.getValue());
-		printStatLine("Total test Queries: " + testQueryCounter.getValue());
-		printStatLine("Timestamp: " + config.timestamp + ".");
-		printStatLine("Running time: " + (end - start) + "ms.");
+		printStatAndOut("Learning completed: " + done);
+		printStatAndOut("Total mem Queries: " + membershipQueryCounter.getValue());
+		printStatAndOut("Total test Queries: " + testQueryCounter.getValue());
+		printStatAndOut("Timestamp: " + config.timestamp + ".");
+		printStatAndOut("Running time: " + (end - start) + "ms.");
 		statisticsFileStream.close();
 
 		// Get result
@@ -194,7 +199,16 @@ public class Main {
 		return learnedModel;
 	}
 	
-	public void printStatLine(String msg) {
+	private void runTests(MealyMembershipOracle<String, String> testOracle, List<Word<String>> testWords) {
+		System.out.println("testWords parameter given, proceeding to run tests, then exit");
+		for (Word<String> test : testWords) {
+			Word<String> response = testOracle.answerQuery(test);
+			System.out.println("Test Query: " + test);
+			System.out.println("Output: " + response);
+		}
+	}
+
+	public void printStatAndOut(String msg) {
 		statisticsFileStream.println(msg);
 		System.out.println(msg);
 	}
@@ -204,7 +218,7 @@ public class Main {
 		for (EquType type : config.equOracleTypes) {
 			switch(type) {
 			case WORDS:
-				eqOracles.add(new MealyWpMethodEQOracle<>(oracle, 1));
+				eqOracles.add(new WordsEquivalenceOracle(config.eqTestWords, oracle));
 				break;
 			case RANDOM:
 				eqOracles.add(new MealyRandomWpMethodEQOracle<>(oracle, 4, 5, config.maxNumTests));

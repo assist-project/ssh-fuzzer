@@ -1,10 +1,7 @@
 package learner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -18,11 +15,8 @@ public class WordsEquivalenceOracle implements MealyEquivalenceOracle<String, St
 	private List<Word<String>> words;
 	private MealyMembershipOracle<String, String> oracle;
 
-	public WordsEquivalenceOracle(List<String> tests, MealyMembershipOracle<String, String> membershipOracle) {
-		this.words = new ArrayList<>(tests.size());
-		for (String test : tests) {
-			words.add(Word.fromList(Arrays.stream(test.split(" ")).map(s -> s.trim()).collect(Collectors.toList())));
-		}
+	public WordsEquivalenceOracle( List<Word<String>> words, MealyMembershipOracle<String, String> membershipOracle) {
+		this.words = words;
 		this.oracle = membershipOracle;
 	}
 
