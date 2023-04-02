@@ -26,8 +26,15 @@ import de.learnlib.oracle.equivalence.MealyRandomWpMethodEQOracle;
 import de.learnlib.oracle.equivalence.MealyWpMethodEQOracle;
 import learner.Config.EquType;
 import net.automatalib.automata.transducers.MealyMachine;
+import net.automatalib.automata.transducers.MutableMealyMachine;
+import net.automatalib.automata.transducers.impl.FastMealy;
 import net.automatalib.serialization.dot.GraphDOT;
+import net.automatalib.util.automata.Automata;
+import net.automatalib.util.automata.builders.AutomatonBuilders;
+import net.automatalib.util.automata.copy.AutomatonCopyMethod;
+import net.automatalib.util.automata.copy.AutomatonLowLevelCopy;
 import net.automatalib.words.Word;
+import net.automatalib.words.impl.ListAlphabet;
 import util.FileManager;
 import util.SoundUtils;
 
@@ -140,7 +147,7 @@ public class Main {
 		long start = System.currentTimeMillis();
 		learner.startLearning();
 		System.out.println("starting learning");
-		MealyMachine<?, String, ?, String> hyp = null;
+		MutableMealyMachine<?, String, ?, String> hyp = null;
 		boolean done = false;
 		int hypCounter = 0;
 		int memQueries = 0;
@@ -149,7 +156,9 @@ public class Main {
 		// example can be found
 		try {
 			for (hypCounter = 0; !done; hypCounter++) {
-				hyp = learner.getHypothesisModel();
+				// the is a copy of the hypothesis model
+				hyp = new FastMealy<>(new ListAlphabet<>(config.alphabet));
+				AutomatonLowLevelCopy.copy(AutomatonCopyMethod.STATE_BY_STATE, learner.getHypothesisModel(), config.alphabet, hyp);
 				// Print some stats
 				statisticsFileStream
 						.println("Hypothesis " + hypCounter + " after: " + (System.currentTimeMillis() - start) + "ms");
