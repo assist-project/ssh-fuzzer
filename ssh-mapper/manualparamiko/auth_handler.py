@@ -294,7 +294,6 @@ class AuthHandler:
         m.add_string(self.username)
         m.add_string('ssh-connection')
         m.add_string(self.auth_method)
-        print("\n\n===================\nauth_handler.py:297\nauth-method: ", self.auth_method, "======\n\nMessage: ", m, "\n=====\n")
         if self.auth_method == 'password':
             m.add_boolean(False)
             password = self.password.encode('utf-8') #old version = bytestring(self.password)
@@ -313,6 +312,7 @@ class AuthHandler:
             )
             sig = self.private_key.sign_ssh_data(blob, algorithm)
             m.add_string(sig)
+
         elif self.auth_method == 'keyboard-interactive':
             m.add_string('')
             m.add_string(self.submethods)
@@ -470,6 +470,7 @@ class AuthHandler:
             # Fallback: first one in our (possibly tweaked by caller) list
             pubkey_algo = my_algos[0]
             msg = "Server did not send a server-sig-algs list; defaulting to our first preferred algo ({!r})"  # noqa
+            print(msg)
             self._log(DEBUG, msg.format(pubkey_algo))
             self._log(
                 DEBUG,
@@ -477,7 +478,7 @@ class AuthHandler:
             )
         if key_type.endswith("-cert-v01@openssh.com"):
             pubkey_algo += "-cert-v01@openssh.com"
-        self.transport._agreed_pubkey_algorithm = pubkey_algo
+        self.transport._agreed_pubkey_algorithm = pubkey_algo #Q? Interesting?
         return pubkey_algo
 
     def _parse_service_accept(self, m):
@@ -499,7 +500,7 @@ class AuthHandler:
             elif self.auth_method == "publickey":
                 m.add_boolean(True)
                 key_type, bits = self._get_key_type_and_bits(self.private_key)
-                algorithm = self._finalize_pubkey_algorithm(key_type)
+                algorithm = self._finalize_pubkey_algorithm(key_type) #Q? This as well
                 m.add_string(algorithm)
                 m.add_string(bits)
                 blob = self._get_session_blob(

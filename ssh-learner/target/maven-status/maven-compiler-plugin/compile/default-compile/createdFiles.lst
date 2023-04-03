@@ -1,4 +1,5 @@
 learner/Logger.class
+learner/TestParser.class
 learner/NonDeterminismException.class
 learner/AlphabetFactory.class
 util/FileManager.class
