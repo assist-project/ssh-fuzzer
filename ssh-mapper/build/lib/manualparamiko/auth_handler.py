@@ -294,12 +294,12 @@ class AuthHandler:
         m.add_string(self.username)
         m.add_string('ssh-connection')
         m.add_string(self.auth_method)
+        print("\n\n===================\nauth_handler.py:297\nauth-method: ", self.auth_method, "======\n\nMessage: ", m, "\n=====\n")
         if self.auth_method == 'password':
             m.add_boolean(False)
             password = self.password.encode('utf-8') #old version = bytestring(self.password)
             m.add_string(password)
         elif self.auth_method == 'publickey':
-            print("=====================))))D")
             m.add_boolean(True)
             key_type, bits = self._get_key_type_and_bits(self.private_key)
             algorithm = self._finalize_pubkey_algorithm(key_type)
@@ -393,8 +393,6 @@ class AuthHandler:
             raise SSHException('Unknown auth method "%s"' % self.auth_method)
 
         self.transport._send_message(m)
-        print("Message: ", m)
-        raise
 
     def _generate_key_from_request(self, algorithm, keyblob):
         # For use in server mode.

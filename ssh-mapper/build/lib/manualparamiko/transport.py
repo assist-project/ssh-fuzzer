@@ -1924,7 +1924,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self._channels.delete(chanid)
 
     def _send_message(self, data):
-        self.packetizer.send_message(data)
+        self.packetizer.send_message(data) #Q? Follow here, old manual send a string here while new sends b'' see if this migth couse the problem
 
     def _send_user_message(self, data):
         """
@@ -2413,7 +2413,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
             if response == '':
                 # This is the first response, process normally
-                print('... got %s (%s)' % (MSG_NAMES[ptype], (time.time()-start)))  #BUG Check here why we don't receive any answer
+                print('... got %s (%s)' % (MSG_NAMES[ptype], (time.time()-start)))
                 response = MSG_NAMES[ptype]
             elif ptype not in [MSG_NO_CONN, MSG_NO_RESP]:
                 last_msg = response.split('+')[-1]
@@ -3183,7 +3183,7 @@ class Transport(threading.Thread, ClosingContextManager):
             self._expect_packet(MSG_NEWKEYS)
         except Exception as e:
             print('Newkeys sent, but cannot proceed with processing because of missing information')
-            raise e
+            raise e #TODO REMOVE THIS BEFORE FUZZING
             print("Exception: ",e, "\n") # int() argument must be a string, a bytes-like object or a number, not 'NoneType' 
 
     def _auth_trigger(self):
@@ -3215,6 +3215,10 @@ class Transport(threading.Thread, ClosingContextManager):
     def _parse_newkeys(self, m):
         self._log(DEBUG, "Switch to new keys ...")
         self._activate_inbound()
+        # This part of the code assumed that newkeys was sent before it was received. When receiving, this
+        # method was called, but it frees information (like self.K) that is used for sending newkeys.
+        # Therefore, we just disable it...
+
         # can also free a bunch of stuff here
         # self.local_kex_init = self.remote_kex_init = None
         # self.K = None

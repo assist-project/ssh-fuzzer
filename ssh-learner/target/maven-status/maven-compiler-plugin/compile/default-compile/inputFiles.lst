@@ -10,8 +10,8 @@
 /home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/Logger.java
 /home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/MembershipOracle.java
 /home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/MapperException.java
-/home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/ExperimentTimeoutException.java
 /home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/Config.java
+/home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/ExperimentTimeoutException.java
 /home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/Sut.java
 /home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/WordsEquivalenceOracle.java
 /home/thetelefon/school/exjobb/ssh-fuzzer/ssh-learner/src/learner/NonDeterminismRetryingSutOracle.java
