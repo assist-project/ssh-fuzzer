@@ -1,33 +1,45 @@
 package learner;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Sets;
+
+import net.automatalib.words.Word;
 
 public class Config {
 	private static final String DEFAULT_CONFIG = "/default_config.prop";
-	private static final String OLD_STATS_FILE = "input/statistics.txt"; // used
-																		// to
-																		// extract
-																		// test
-																		// words
-																		// so as
-																		// to
-																		// recreate
-																		// previous
-																		// learning
-																		// runs
+	
+	private static String [] PROPERTY_NAMES = new String [] {"name",
+			"mapperAddress",
+			"eqOracle",
+			"specification",
+			"maxNumTests",
+			"timeLimit",
+			"roundLimit",
+			"cache",
+			"maxNonDeterminismRetries",
+			"testWords",
+			"eqTestWords",
+			"mapperAddress",
+			"alphabet"
+	}
+	;
 	/*
 	 * Example: equOracle="RANDOM;EXHAUSTIVE" maxNumTests=2000
 	 */
@@ -35,7 +47,8 @@ public class Config {
 	// applies only to equ oracles which otherwise would be unbounded.
 	public final Integer maxNumTests;
 	public final List<String> alphabet;
-	public final List<String> testWords;
+	public final List<Word<String>> testWords;
+	public final List<Word<String>> eqTestWords;
 	public String specFile;
 	public final String sutName;
 	public final Duration timeTimit;
@@ -48,15 +61,25 @@ public class Config {
 	public final String outputFolder;
 	public final long timestamp;
 
-	public Config(String file) throws IOException {
+	public Config(String file, String ... args) throws IOException {
 		Properties defaults = new Properties();
 		defaults.load(Main.class.getResourceAsStream(DEFAULT_CONFIG));
 		properties = new Properties(defaults);
-		if (!new File(file).exists()) {
-			System.out.println("The property file " + properties + " doesn't exist. Taking all values from the default configuration default configuration.");
-		} else {
-			properties.load(new FileInputStream(file));
+		properties.load(new FileInputStream(file));
+		for (String arg : args) {
+			String[] prop = arg.split("=");
+			if (prop.length != 2) {
+				throw new RuntimeException("Arguments after config file are of for 'param=value'");
+			}
+			properties.put(prop[0], prop[1]);
 		}
+		
+		Set<String> names = new LinkedHashSet<>(properties.stringPropertyNames());
+		names.removeAll(Sets.newHashSet(PROPERTY_NAMES));
+		if (!names.isEmpty()) {
+			throw new RuntimeException("Unrecognized parameter(s): " + names + System.lineSeparator() + "Supported parameters are: " + Arrays.asList(PROPERTY_NAMES));
+		}
+		
 		this.sutName = (String) properties.getProperty("name");
 		String mapperAddress = properties.getProperty("mapperAddress");
 		String [] hostPort = mapperAddress.split("\\:");
@@ -82,19 +105,28 @@ public class Config {
 				.collect(Collectors.<String>toList());
 
 		maxNumTests = Integer.valueOf(properties.getProperty("maxNumTests"));
-		testWords = new ArrayList<>();
-		if (equOracleTypes.contains(EquType.WORDS)) {
-			// getting test words from old stats file
-			if (new File(OLD_STATS_FILE).exists()) {
-				BufferedReader reader = new BufferedReader(new FileReader(OLD_STATS_FILE));
-				String str;
-				while ((str = reader.readLine()) != null)
-					if (str.startsWith("Counter Example:"))
-						testWords.add(str.replace("Counter Example:", "").trim());
-				reader.close();
-			}
-
+		String testWordsConfig = properties.getProperty("testWords");
+		if (testWordsConfig != null) {
+			this.testWords = new ArrayList<>();
+			readTestWords(this.testWords, testWordsConfig);
+		} else {
+			this.testWords = null;
 		}
+		
+		String eqTestWordsConfig = properties.getProperty("eqTestWords");
+		if (eqTestWordsConfig != null) {
+			eqTestWords = new ArrayList<>();
+			readTestWords(eqTestWords, eqTestWordsConfig);
+		} else {
+			eqTestWords = null;
+		}
+		
+		if (equOracleTypes.contains(EquType.WORDS)) {
+			if (eqTestWords == null) {
+				throw new RuntimeException("For WORDS equivalence oracle, eqTestWords parameter should be set to a file containing test words");
+			}
+		}
+		
 		String timeLimit = properties.getProperty("timeLimit");
 		if (timeLimit != null) {
 			this.timeTimit = Duration.parse(timeLimit);
@@ -111,6 +143,17 @@ public class Config {
 		cache = properties.getProperty("cache");
 		timestamp = System.currentTimeMillis();
 		outputFolder = "output/" + sutName + timestamp + "/";
+	}
+	
+	private void readTestWords(Collection<Word<String>> words, String fileOrTest) throws IOException {
+		Reader reader;
+		if (new File(fileOrTest).exists()) {
+			reader = new FileReader(fileOrTest);
+		} else {
+			reader = new StringReader(fileOrTest);
+		}
+		TestParser parser = new TestParser();
+		words.addAll(parser.readTests(alphabet, reader));
 	}
 	
 	public void export(OutputStream outputStream) {
