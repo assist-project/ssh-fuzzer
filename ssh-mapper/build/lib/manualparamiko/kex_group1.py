@@ -96,7 +96,7 @@ class KexGroup1:
 
     def _parse_kexdh_reply(self, m):
         # client mode
-        host_key = m.get_string() #Q? WHICH function?
+        host_key = m.get_string()
         self.f = m.get_mpint()
         if (self.f < 1) or (self.f > self.P - 1):
             raise SSHException('Server kex "f" is out of range')

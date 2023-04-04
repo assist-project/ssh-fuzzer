@@ -161,9 +161,6 @@ class Transport(threading.Thread, ClosingContextManager):
     Instances of this class may be used as context managers.
     """
 
-    # #NOTE First section here is the new implementation of preferred parameters
-    # #As of now 2023-03-27 this is nor supported and therefore commented
-
     _ENCRYPT = object()
     _DECRYPT = object()
 
@@ -272,61 +269,6 @@ class Transport(threading.Thread, ClosingContextManager):
         "zlib": (ZlibCompressor, ZlibDecompressor),
         "none": (None, None),
     }
-
-    #NOTE Here ends the new parameter initialization, the old ones below
-
-    # _PROTO_ID = '2.0'
-    # _CLIENT_ID = 'paramiko_%s' % manualparamiko.__version__
-
-    # _preferred_ciphers = ('aes128-ctr', 'aes256-ctr', 'aes128-cbc', 'blowfish-cbc',
-    #                       'aes256-cbc', '3des-cbc', 'arcfour128', 'arcfour256')
-    # _preferred_macs = ('hmac-sha1', 'hmac-md5', 'hmac-sha1-96', 'hmac-md5-96')
-    # _preferred_keys = ('ssh-rsa', 'ssh-dss', 'ecdsa-sha2-nistp256')
-    # _preferred_kex =  ('diffie-hellman-group1-sha1', 'diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha1')
-    # _preferred_compression = ('none',)
-
-    # _cipher_info = {
-    #     "aes128-ctr": {"class": algorithms.AES,"mode": modes.CTR,"block-size": 16,"key-size": 16},
-    #     'aes256-ctr': {'class': algorithms.AES, 'mode': modes.CTR, 'block-size': 16, 'key-size': 32},
-    #     'blowfish-cbc': {'class': algorithms.Blowfish, 'mode': modes.CBC, 'block-size': 8, 'key-size': 16},
-    #     'aes128-cbc': {'class': algorithms.AES, 'mode': modes.CBC, 'block-size': 16, 'key-size': 16},
-    #     'aes256-cbc': {'class': algorithms.AES, 'mode': modes.CBC, 'block-size': 16, 'key-size': 32},
-    #     '3des-cbc': {'class': algorithms.TripleDES, 'mode': modes.CBC, 'block-size': 8, 'key-size': 24},
-    #     'arcfour128': {'class': algorithms.ARC4, 'mode': None, 'block-size': 8, 'key-size': 16},
-    #     'arcfour256': {'class': algorithms.ARC4, 'mode': None, 'block-size': 8, 'key-size': 32},
-    # }
-
-    # _mac_info = {
-    #     'hmac-sha1': {'class': sha1, 'size': 20},
-    #     'hmac-sha1-96': {'class': sha1, 'size': 12},
-    #     'hmac-md5': {'class': md5, 'size': 16},
-    #     'hmac-md5-96': {'class': md5, 'size': 12},
-    # }
-
-    # _key_info = {
-    #     'ssh-rsa': RSAKey,
-    #     'ssh-dss': DSSKey,
-    #     'ecdsa-sha2-nistp256': ECDSAKey,
-    # }
-
-    # _kex_info = {
-    #     'diffie-hellman-group1-sha1': KexGroup1,
-    #     'diffie-hellman-group14-sha1': KexGroup14,
-    #     'diffie-hellman-group-exchange-sha1': KexGex,
-    #     'gss-group1-sha1-toWM5Slw5Ew8Mqkay+al2g==': KexGSSGroup1,
-    #     'gss-group14-sha1-toWM5Slw5Ew8Mqkay+al2g==': KexGSSGroup14,
-    #     'gss-gex-sha1-toWM5Slw5Ew8Mqkay+al2g==': KexGSSGex
-    # }
-
-    # _compression_info = {
-    #     # zlib@openssh.com is just zlib, but only turned on after a successful
-    #     # authentication.  openssh servers may only offer this type because
-    #     # they've had troubles with security holes in zlib in the past.
-    #     'zlib@openssh.com': (ZlibCompressor, ZlibDecompressor),
-    #     'zlib': (ZlibCompressor, ZlibDecompressor),
-    #     'none': (None, None),
-    # }
-    #NOTE end of old parameters
 
     _modulus_pack = None
     _active_check_timeout = 0.1
@@ -1932,7 +1874,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self._channels.delete(chanid)
 
     def _send_message(self, data):
-        self.packetizer.send_message(data) #Q? Follow here, old manual send a string here while new sends b'' see if this migth couse the problem
+        self.packetizer.send_message(data)
 
     def _send_user_message(self, data):
         """
@@ -1947,7 +1889,7 @@ class Transport(threading.Thread, ClosingContextManager):
                     DEBUG, "Dropping user packet because connection is dead."
                 )  # noqa
                 return
-            self.clear_to_send_lock.acquire()
+            self.clear_to_send_lock.acquire()   #BUG This is not acquired when open new channel
             if self.clear_to_send.is_set():
                 break
             self.clear_to_send_lock.release()
@@ -1999,7 +1941,7 @@ class Transport(threading.Thread, ClosingContextManager):
         
         # Fallback to SHA1 for kex engines that fail to specify a hex
         # algorithm, or for e.g. transport tests that don't run kexinit.
-        #NOTE vvvvvvv This was removed
+
         hash_algo = getattr(self.kex_engine, "hash_algo", None)
         hash_select_msg = "kex engine {} specified hash_algo {!r}".format(
             self.kex_engine.__class__.__name__, hash_algo
@@ -2010,14 +1952,14 @@ class Transport(threading.Thread, ClosingContextManager):
         if not hasattr(self, "_logged_hash_selection"):
             self._log(DEBUG, hash_select_msg)
             setattr(self, "_logged_hash_selection", True)
-        #NOTE ^^^^^^
-        out = sofar = hash_algo(m.asbytes()).digest() #sha1(m.asbytes()).digest() #If using the above code use: hash_algo(m.asbytes()).digest()
+
+        out = sofar = hash_algo(m.asbytes()).digest() #the old version sha1(m.asbytes()).digest()
         while len(out) < nbytes:
             m = Message()
             m.add_mpint(self.K)
             m.add_bytes(self.H)
             m.add_bytes(sofar)
-            digest = sha1(m.asbytes()).digest()
+            digest = hash_algo(m.asbytes()).digest() #the old version sha1(m.asbytes()).digest()
             out += digest
             sofar += digest
         return out[:nbytes]
@@ -2075,7 +2017,6 @@ class Transport(threading.Thread, ClosingContextManager):
             max_packet_size = self.default_max_packet_size
         return clamp_value(MIN_PACKET_SIZE, max_packet_size, MAX_WINDOW_SIZE)
 
-#MAGIC THIS IS THESIS SPECIFIC
     """
     This section defines the custom methods that are to be called to perform message code-related actions.
     """
@@ -2210,7 +2151,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self.auth_handler.private_key = manualparamiko.RSAKey.from_private_key_file(default_path)
         self.auth_handler.auth_method = 'publickey'
 #this should be changed to the username on the server
-        self.auth_handler.username = 'thetelefon' if ok else 'NOACCESS' # //MAGIC Set username
+        self.auth_handler.username = 'thetelefon' if ok else 'NOACCESS' #TODO Set username to machine specific
         self.auth_handler.custom_parse_service_request()
 
         return self.read_multiple_responses()
@@ -2252,7 +2193,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
         return self.read_multiple_responses()
 
-    def fuzz_newkeys(self): #Q? Look into this as well
+    def fuzz_newkeys(self):
         #    and that object does not contain any info how do we access the correct element?
         self._activate_outbound()
 
@@ -2260,6 +2201,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
     def fuzz_channel_open(self):
         # Can only open one channel because L* cannot handle normal  behaviour (register automata)
+        print("\nin open channel\n\n")
         if len(self._channels):
             return MSG_NAMES[MSG_CH_MAX]
         else:
@@ -2471,7 +2413,7 @@ class Transport(threading.Thread, ClosingContextManager):
                 MSG_CHANNEL_OPEN_SUCCESS: lambda m: self._parse_channel_open_success(m),
                 MSG_SERVICE_ACCEPT: lambda m: self._set_service_accept(m),
                 MSG_GLOBAL_REQUEST: lambda m: self.print_msg(m),
-                MSG_EXT_INFO: lambda m: self._parse_ext_info(m), #NOTE parses the ext info which includes info about hash_algo
+                MSG_EXT_INFO: lambda m: self._parse_ext_info(m),
             }
 
             if ptype in handlers:
@@ -2496,7 +2438,10 @@ class Transport(threading.Thread, ClosingContextManager):
             return self._channels._map[self._channels._map.keys()[0]].remote_chanid
         except IndexError:
             raise NoChannelException('There is no channel')
-#MAGIC UNTIL HERE
+
+    """
+    This is the end of specialised transport
+    """
 
     def _ensure_authed(self, ptype, message):
         """
@@ -2732,6 +2677,7 @@ class Transport(threading.Thread, ClosingContextManager):
         try:
             self.clear_to_send.clear()
         finally:
+            
             self.clear_to_send_lock.release()
         if self.local_kex_init is None:
             # remote side wants to renegotiate
@@ -2793,6 +2739,7 @@ class Transport(threading.Thread, ClosingContextManager):
         try:
             self.clear_to_send.clear()
         finally:
+            
             self.clear_to_send_lock.release()
         self.gss_kex_used = False
         self.in_kex = True
@@ -2938,7 +2885,6 @@ class Transport(threading.Thread, ClosingContextManager):
                 "Incompatible ssh peer (no acceptable kex algorithm)"
             )  # noqa
         self.kex_engine = self._kex_info[agreed_kex[0]](self)
-        #BUG PRINT KEX_ENGINE
         # Compare dropbears and outrs
         self._log(DEBUG, "Kex: {}".format(agreed_kex[0]))
 
@@ -3186,7 +3132,7 @@ class Transport(threading.Thread, ClosingContextManager):
             self._expect_packet(MSG_NEWKEYS)
         except Exception as e:
             print('Newkeys sent, but cannot proceed with processing because of missing information')
-            raise e #TODO REMOVE THIS BEFORE FUZZING
+            # raise e #TODO REMOVE THIS BEFORE FUZZING
             print("Exception: ",e, "\n") # int() argument must be a string, a bytes-like object or a number, not 'NoneType' 
 
     def _auth_trigger(self):

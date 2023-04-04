@@ -122,7 +122,7 @@ def safe_string(s):
 
 def bit_length(n):
     try:
-        return n.bit_length() #NOTE WAS bitlength()
+        return n.bit_length()
     except AttributeError:
         norm = deflate_long(n, False)
         hbyte = byte_ord(norm[0])

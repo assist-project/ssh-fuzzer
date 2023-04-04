@@ -64,7 +64,6 @@ def deflate_long(n, add_sign_padding=True):
     (adapted from Crypto.Util.number)"""
     # after much testing, this algorithm was deemed to be the fastest
     s = bytes()
-    print("WHAT IS N???", n, "\nIt is a :", type(n))
     n = int(n)
     while (n != 0) and (n != -1):
         s = struct.pack(">I", n & xffffffff) + s
@@ -123,9 +122,8 @@ def safe_string(s):
 
 def bit_length(n):
     try:
-        return n.bit_length() #NOTE WAS bitlength()
+        return n.bit_length()
     except AttributeError:
-        print("util.py line 128: ", n)
         norm = deflate_long(n, False)
         hbyte = byte_ord(norm[0])
         if hbyte == 0:

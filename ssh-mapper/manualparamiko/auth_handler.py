@@ -223,7 +223,7 @@ class AuthHandler:
     def _get_session_blob(self, key, service, username, algorithm):
         m = Message()
 
-        # A default is set here #NOTE THIS else-if WAS ADDED
+        # A default is set here
         if self.transport.session_id:
             sesid = self.transport.session_id
         else:
@@ -287,7 +287,7 @@ class AuthHandler:
         self._disconnect_service_not_available()
 
 
-    def custom_parse_service_request(self): #NOTE THIS FUNCTION WAS ADDED
+    def custom_parse_service_request(self):
         self.transport._log(DEBUG, 'userauth is OK')
         m = Message()
         m.add_byte(cMSG_USERAUTH_REQUEST)
@@ -304,7 +304,7 @@ class AuthHandler:
             algorithm = self._finalize_pubkey_algorithm(key_type)
             m.add_string(algorithm)
             m.add_string(bits)
-            blob = self._get_session_blob( #Q? This differ so 
+            blob = self._get_session_blob(
                 self.private_key,
                 "ssh-connection",
                 self.username,
@@ -478,7 +478,7 @@ class AuthHandler:
             )
         if key_type.endswith("-cert-v01@openssh.com"):
             pubkey_algo += "-cert-v01@openssh.com"
-        self.transport._agreed_pubkey_algorithm = pubkey_algo #Q? Interesting?
+        self.transport._agreed_pubkey_algorithm = pubkey_algo
         return pubkey_algo
 
     def _parse_service_accept(self, m):
@@ -500,7 +500,7 @@ class AuthHandler:
             elif self.auth_method == "publickey":
                 m.add_boolean(True)
                 key_type, bits = self._get_key_type_and_bits(self.private_key)
-                algorithm = self._finalize_pubkey_algorithm(key_type) #Q? This as well
+                algorithm = self._finalize_pubkey_algorithm(key_type)
                 m.add_string(algorithm)
                 m.add_string(bits)
                 blob = self._get_session_blob(

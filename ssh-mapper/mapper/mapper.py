@@ -7,8 +7,6 @@ import argparse
 
 from messages import MSG_MAPPING
 
-from messages import MSG_NAMES #BUG DUBUG PURPOSE
-
 
 
 class Processor:
@@ -196,7 +194,7 @@ class Processor:
                     for i in range(repeat):
                         result = ''
                         for ci, command in enumerate(commands):
-                            print('[%s]' % self.transport)  #BUG This does not print encryption method
+                            print('[%s]' % self.transport)
                             print('Sending %s...' % command)
                             response = self.process_learlib_query(command.decode('UTF-8'))
                             result += response
