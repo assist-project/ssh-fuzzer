@@ -24,6 +24,7 @@ manualparamiko/ber.py
 manualparamiko/buffered_pipe.py
 manualparamiko/channel.py
 manualparamiko/client.py
+manualparamiko/client_fuzz_driver.py
 manualparamiko/common.py
 manualparamiko/compress.py
 manualparamiko/config.py

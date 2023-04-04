@@ -179,16 +179,24 @@ class Transport(threading.Thread, ClosingContextManager):
     _preferred_keys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521","rsa-sha2-512",
                        "rsa-sha2-256","ssh-rsa","ssh-dss")
     # ~= PubKeyAcceptedAlgorithms    
-    _preferred_pubkeys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521",
-                          "rsa-sha2-512","rsa-sha2-256","ssh-rsa","ssh-dss")
+    _preferred_pubkeys = (  #NOTE Removed in order to force sha1 pubkeys (client fuzzing)
+                        # "ssh-ed25519",
+                        # "ecdsa-sha2-nistp256",
+                        # "ecdsa-sha2-nistp384",
+                        # "ecdsa-sha2-nistp521",
+                        # "rsa-sha2-512",
+                        # "rsa-sha2-256",
+                        "ssh-rsa",
+                        "ssh-dss",
+                        )
     _preferred_kex = ( #NOTE For thesis: only supporting diffie-hellman key-exchange
                     #   "ecdh-sha2-nistp256",
                     #   "ecdh-sha2-nistp384",
                     #   "ecdh-sha2-nistp521",
-                      "diffie-hellman-group16-sha512",
-                      "diffie-hellman-group-exchange-sha256",
-                      "diffie-hellman-group14-sha256",
-                      "diffie-hellman-group-exchange-sha1",
+                    #   "diffie-hellman-group16-sha512", #NOTE Removed in order to force sha1 kex (client fuzzing)
+                    #   "diffie-hellman-group-exchange-sha256",
+                    #   "diffie-hellman-group14-sha256",
+                    #   "diffie-hellman-group-exchange-sha1",
                       "diffie-hellman-group14-sha1",
                       "diffie-hellman-group1-sha1")
     # if KexCurve25519.is_available():
@@ -481,7 +489,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self.server_sig_algs = server_sig_algs
 
         # server mode:
-        self.server_mode = False
+        self.server_mode = True
         self.server_object = None
         self.server_key_dict = {}
         self.server_accepts = []
@@ -764,9 +772,9 @@ class Transport(threading.Thread, ClosingContextManager):
         # Handle SHA-2 extensions for RSA by ensuring that lookups into
         # self.server_key_dict will yield this key for any of the algorithm
         # names.
-        if isinstance(key, RSAKey):
-            self.server_key_dict["rsa-sha2-256"] = key
-            self.server_key_dict["rsa-sha2-512"] = key
+        # if isinstance(key, RSAKey): #NOTE Don't support this right now
+        #     self.server_key_dict["rsa-sha2-256"] = key
+        #     self.server_key_dict["rsa-sha2-512"] = key
 
     def get_server_key(self):
         """
@@ -2035,6 +2043,13 @@ class Transport(threading.Thread, ClosingContextManager):
         return '%s|%s|%s' % (kexinit, kexdh, newkeys)
 
     def fuzz_kex_init(self):
+        
+
+        if self.server_mode:
+            default_path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
+            private_key = manualparamiko.RSAKey.from_private_key_file(default_path)
+            self.add_server_key(private_key)
+        
         self._send_kex_init()
 
         return self.read_multiple_responses()
@@ -2057,6 +2072,17 @@ class Transport(threading.Thread, ClosingContextManager):
         # if not isinstance(used_kex_engine, KexGroup1):
         #     raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a ', used_kex_engine)
 
+        return self.read_multiple_responses()
+
+    def fuzz_kexdb_client_init(self):
+        #TODO Implement kex31
+        if self.kex_engine:
+            used_kex_engine = self.kex_engine
+        else:
+            used_kex_engine = KexGroup1(self)
+
+        used_kex_engine.start_kex()
+        
         return self.read_multiple_responses()
 
     def fuzz_ignore(self):
@@ -2404,8 +2430,9 @@ class Transport(threading.Thread, ClosingContextManager):
             self.last_ptype = ptype
 
             # (Mostly) state-changing handlers.
-            handlers = {
+            handlers_fuzz_server = {
                 MSG_KEXINIT: lambda m: self._negotiate_keys(m),
+                30: lambda m: self.kex_engine._parse_kexdh_init(m),
                 31: lambda m: self.kex_engine._parse_kexdh_reply(m),
                 MSG_NEWKEYS: lambda m: self._parse_newkeys(m),
                 MSG_USERAUTH_SUCCESS: lambda m: self.auth_handler._parse_userauth_success(m),
@@ -2416,8 +2443,22 @@ class Transport(threading.Thread, ClosingContextManager):
                 MSG_EXT_INFO: lambda m: self._parse_ext_info(m),
             }
 
-            if ptype in handlers:
-                handlers[ptype](self.last_message)
+            handlers_fuzz_client = {
+                MSG_KEXINIT: lambda m: self._negotiate_keys(m),
+                30: lambda m: self.kex_engine._parse_kexdh_init(m),
+                MSG_NEWKEYS: lambda m: self._parse_newkeys(m),
+                MSG_USERAUTH_SUCCESS: lambda m: self.auth_handler._parse_userauth_success(m),
+                MSG_USERAUTH_FAILURE: lambda m: self.auth_handler._parse_userauth_failure(m),
+                MSG_CHANNEL_OPEN_SUCCESS: lambda m: self._parse_channel_open_success(m),
+                MSG_SERVICE_ACCEPT: lambda m: self._set_service_accept(m),
+                MSG_GLOBAL_REQUEST: lambda m: self.print_msg(m),
+                MSG_EXT_INFO: lambda m: self._parse_ext_info(m),
+            }
+
+            if ptype in handlers_fuzz_server and not self.server_mode:
+                handlers_fuzz_server[ptype](self.last_message)
+            else:
+                handlers_fuzz_client[ptype](self.last_message)
 
             # Return the message
             return ptype

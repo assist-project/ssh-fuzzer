@@ -6,14 +6,16 @@ import manualparamiko
 import argparse
 
 from messages import MSG_MAPPING
+from manualparamiko.client_fuzz_driver import ClientFuzzer
 
+import os
 
 
 class Processor:
     ssh_sock = None
     transport = None
 
-    def __init__(self, learnlib, ssh, config=None):
+    def __init__(self, learnlib, ssh, config=None, fuzz="server"):
         #Mapper
         self.learnlib_host = learnlib[0]
         self.learnlib_port = learnlib[1]
@@ -21,6 +23,9 @@ class Processor:
         #Adapter
         self.ssh_host = ssh[0]
         self.ssh_port = ssh[1]
+
+        # Which part should be fuzzed
+        self.fuzz = fuzz
 
         if config is None or config == "OpenSSH":
             #Timing params (for openSSH)
@@ -63,8 +68,19 @@ class Processor:
 	
         #Adapter
         try:
-            self.ssh_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.ssh_sock.connect((self.ssh_host, self.ssh_port))
+            if self.fuzz == "server":
+                self.ssh_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.ssh_sock.connect((self.ssh_host, self.ssh_port))
+            elif self.fuzz == "client":
+                #client = ClientFuzzer(self.ssh_host, self.ssh_port)
+                sock = socket.socket()
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.bind((self.ssh_host, self.ssh_port))
+                sock.listen(10)
+                print("Waiting for SUT to connect")
+                conn, addr = sock.accept()
+                print('Connected with ' + addr[0] + ':' + str(addr[1]))
+                self.ssh_sock = conn
         except Exception as e:
             print('*** Connect failed: ' + str(e))
             traceback.print_exc()
@@ -119,6 +135,7 @@ class Processor:
             # self.process_learlib_query("SERVICE_REQUEST_AUTH")
             # self.process_learlib_query("UA_PK_OK")
 
+
             return 'resetok'
 
         # Handle empty queries
@@ -151,7 +168,14 @@ class Processor:
 
         # Listen to a connection (blocking call)
         #Mapper
-        print('Waiting for client to connect')
+        if self.fuzz == "server":
+            SUT = "client"
+        elif self.fuzz == "client":
+            SUT = "server"
+        else:
+            raise("Error, fuzzing error")
+
+        print('Waiting for', SUT, 'to connect')
 
         # Wait for the client to connect (note: most socket commands are blocking)
         while True:
@@ -161,6 +185,7 @@ class Processor:
             #Adapter
             print('Connected with ' + addr[0] + ':' + str(addr[1]))
             self.init_ssh_connection()
+            print("\nDEBUG mapper:186\n\n")
 
             while True:
                 try:
@@ -195,7 +220,7 @@ class Processor:
                         result = ''
                         for ci, command in enumerate(commands):
                             print('[%s]' % self.transport)
-                            print('Sending %s...' % command)
+                            print('Sending %s...' % command.decode('UTF-8'))
                             response = self.process_learlib_query(command.decode('UTF-8'))
                             result += response
                             # If this is not the last command, add a space
@@ -218,6 +243,7 @@ class Processor:
         print('Closing connection')
         sock.close()
 
+
 def parse_address(address_str):
     host_port = address_str.split(":")
     if len(host_port) != 2:
@@ -234,13 +260,15 @@ Responses are received, abstracted and relayed back to the client.')
 parser.add_argument('-l', "--listen", required=True, type=str, help="Listening address in the form host:port.")
 parser.add_argument('-s', "--server", required=True, type=str, help="SSH server address in the form host:port.")
 parser.add_argument('-c', "--config", required=False, default=None, choices=['OpenSSH', 'BitVise', 'Dropbear'], help="(Optional) Select a timing/alphabet configuration proven to sort of work with a particular implementation.")
+parser.add_argument('-f', "--fuzz", required=False, type=str, choices=['server', 'client'], help="(Optional) Select this if you want to fuzz client")
 args = parser.parse_args()
 
 #Unclear, contains both connection to SUT and learner
 learnlib_addr = parse_address(args.listen)
 server_addr = parse_address(args.server)
 config = args.config
+fuzz = args.fuzz
 
-proc = Processor(learnlib=learnlib_addr, ssh=server_addr, config=args.config)
+proc = Processor(learnlib=learnlib_addr, ssh=server_addr, config=args.config, fuzz=args.fuzz)
 print( "Starting mapper with parameters\n", vars(proc))
 proc.listen()

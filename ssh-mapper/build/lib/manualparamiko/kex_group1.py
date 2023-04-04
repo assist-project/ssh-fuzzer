@@ -65,6 +65,7 @@ class KexGroup1:
         m.add_byte(c_MSG_KEXDH_INIT)
         m.add_mpint(self.e)
         self.transport._send_message(m)
+        print("In kex_group1:68\n======\nKex30 message sent to server: ", m, "\n\n")
         self.transport._expect_packet(_MSG_KEXDH_REPLY)
 
     def parse_next(self, ptype, m):
