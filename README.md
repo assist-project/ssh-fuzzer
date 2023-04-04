@@ -36,3 +36,9 @@ It needs some python packages to work with.
 A Google search will quickly determine which packages are missing.
 
 [learning-ssh-artifact]:https://repository.ubn.ru.nl/handle/2066/184275
+
+
+# Client Fuzzing
+
+## Dropbear
+With ```dropbearkeys``` add id_dropbear to ~/.ssh/ as well as append the content of id_dropbear to authorized_keys

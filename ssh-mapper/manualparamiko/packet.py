@@ -472,7 +472,7 @@ class Packetizer:
         :raises: `.NeedRekeyException` -- if the transport should rekey
         """
         header = self.read_all(self.__block_size_in, check_rekey=True)
-        if self.__etm_in:   #Q? This if is new, migth this be the problem?
+        if self.__etm_in:
             packet_size = struct.unpack(">I", header[:4])[0]
             remaining = packet_size - self.__block_size_in + 4
             packet = header[4:] + self.read_all(remaining, check_rekey=False)
