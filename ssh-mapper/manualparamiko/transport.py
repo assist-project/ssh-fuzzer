@@ -176,8 +176,16 @@ class Transport(threading.Thread, ClosingContextManager):
     _preferred_macs = ("hmac-sha2-256","hmac-sha2-512","hmac-sha2-256-etm@openssh.com","hmac-sha2-512-etm@openssh.com",
                        "hmac-sha1","hmac-md5","hmac-sha1-96","hmac-md5-96")
     # ~= HostKeyAlgorithms in OpenSSH land
-    _preferred_keys = ("ssh-ed25519","ecdsa-sha2-nistp256","ecdsa-sha2-nistp384","ecdsa-sha2-nistp521","rsa-sha2-512",
-                       "rsa-sha2-256","ssh-rsa","ssh-dss")
+    _preferred_keys = ( #NOTE Removed in order to force sha1 pubkeys (client fuzzing)
+                        # "ssh-ed25519",
+                        # "ecdsa-sha2-nistp256",
+                        # "ecdsa-sha2-nistp384",
+                        # "ecdsa-sha2-nistp521",
+                        # "rsa-sha2-512",
+                        # "rsa-sha2-256",
+                        "ssh-rsa",
+                        "ssh-dss",
+                        )
     # ~= PubKeyAcceptedAlgorithms    
     _preferred_pubkeys = (  #NOTE Removed in order to force sha1 pubkeys (client fuzzing)
                         # "ssh-ed25519",
@@ -235,30 +243,30 @@ class Transport(threading.Thread, ClosingContextManager):
         # longer supports it. Question becomes at what point do we want to
         # prevent users with older setups from using this?
         "ssh-rsa": RSAKey,
-        "ssh-rsa-cert-v01@openssh.com": RSAKey,
-        "rsa-sha2-256": RSAKey,
-        "rsa-sha2-256-cert-v01@openssh.com": RSAKey,
-        "rsa-sha2-512": RSAKey,
-        "rsa-sha2-512-cert-v01@openssh.com": RSAKey,
-        "ssh-dss": DSSKey,
-        "ssh-dss-cert-v01@openssh.com": DSSKey,
-        "ecdsa-sha2-nistp256": ECDSAKey,
-        "ecdsa-sha2-nistp256-cert-v01@openssh.com": ECDSAKey,
-        "ecdsa-sha2-nistp384": ECDSAKey,
-        "ecdsa-sha2-nistp384-cert-v01@openssh.com": ECDSAKey,
-        "ecdsa-sha2-nistp521": ECDSAKey,
-        "ecdsa-sha2-nistp521-cert-v01@openssh.com": ECDSAKey,
-        "ssh-ed25519": Ed25519Key,
-        "ssh-ed25519-cert-v01@openssh.com": Ed25519Key,
+        # "ssh-rsa-cert-v01@openssh.com": RSAKey,
+        # "rsa-sha2-256": RSAKey,
+        # "rsa-sha2-256-cert-v01@openssh.com": RSAKey,
+        # "rsa-sha2-512": RSAKey,
+        # "rsa-sha2-512-cert-v01@openssh.com": RSAKey,
+        # "ssh-dss": DSSKey,
+        # "ssh-dss-cert-v01@openssh.com": DSSKey,
+        # "ecdsa-sha2-nistp256": ECDSAKey,
+        # "ecdsa-sha2-nistp256-cert-v01@openssh.com": ECDSAKey,
+        # "ecdsa-sha2-nistp384": ECDSAKey,
+        # "ecdsa-sha2-nistp384-cert-v01@openssh.com": ECDSAKey,
+        # "ecdsa-sha2-nistp521": ECDSAKey,
+        # "ecdsa-sha2-nistp521-cert-v01@openssh.com": ECDSAKey,
+        # "ssh-ed25519": Ed25519Key,
+        # "ssh-ed25519-cert-v01@openssh.com": Ed25519Key,
     }
 
     _kex_info = { #NOTE For thesis: only supporting diffie-hellman key-exchange
         "diffie-hellman-group1-sha1": KexGroup1,
         "diffie-hellman-group14-sha1": KexGroup14,
-        "diffie-hellman-group-exchange-sha1": KexGex,
-        "diffie-hellman-group-exchange-sha256": KexGexSHA256,
-        "diffie-hellman-group14-sha256": KexGroup14SHA256,
-        "diffie-hellman-group16-sha512": KexGroup16SHA512,
+        # "diffie-hellman-group-exchange-sha1": KexGex,
+        # "diffie-hellman-group-exchange-sha256": KexGexSHA256,
+        # "diffie-hellman-group14-sha256": KexGroup14SHA256,
+        # "diffie-hellman-group16-sha512": KexGroup16SHA512,
         # "gss-group1-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGroup1,
         # "gss-group14-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGroup14,
         # "gss-gex-sha1-toWM5Slw5Ew8Mqkay+al2g==": KexGSSGex,
@@ -298,7 +306,8 @@ class Transport(threading.Thread, ClosingContextManager):
         global_to_total=1.0,
 # replaces all outputs concatenated after KEX30+NEWKEY by the single output "BUFFERED", thus "KEX30+NEWKEYS+UA_SUCCESS*+UA_FAILURE*" becomes "KEX30+NEWKEYS+BUFFERED"
         buffer_after_newkey=False,
-        filter_out = list()
+        filter_out = list(),
+        server = False
     ):
         """
         Create a new SSH session over an existing socket, or socket-like
@@ -489,7 +498,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self.server_sig_algs = server_sig_algs
 
         # server mode:
-        self.server_mode = True
+        self.server_mode = server
         self.server_object = None
         self.server_key_dict = {}
         self.server_accepts = []
@@ -2042,7 +2051,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
         return '%s|%s|%s' % (kexinit, kexdh, newkeys)
 
-    def fuzz_kex_init(self):
+    def fuzz_kex_init(self): #Sending kexinit
         if self.server_mode: #ADDED in order to authenticate the server
             default_path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
             private_key = manualparamiko.RSAKey.from_private_key_file(default_path)
@@ -2057,7 +2066,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
         return self.read_multiple_responses()
 
-    def fuzz_kexdh_init(self):
+    def fuzz_kexdh_init(self):  #Sending kex30
         # Here we have to assume a kex engine if we do not already have one.
 
         if self.kex_engine:
@@ -2071,16 +2080,9 @@ class Transport(threading.Thread, ClosingContextManager):
         #     raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a ', used_kex_engine)
 
         return self.read_multiple_responses()
-
-    def fuzz_kexdb_client_init(self):
-        #TODO Implement kex31
-        if self.kex_engine:
-            used_kex_engine = self.kex_engine
-        else:
-            used_kex_engine = KexGroup1(self)
-
-        used_kex_engine.start_kex()
-        
+    
+    def fuzz_kexdh_init_reply(self):
+        self.kex_engine._fuzz_send_kexdh_reply()
         return self.read_multiple_responses()
 
     def fuzz_ignore(self):
@@ -2455,7 +2457,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
             if ptype in handlers_fuzz_server and not self.server_mode:
                 handlers_fuzz_server[ptype](self.last_message)
-            else:
+            elif ptype in handlers_fuzz_client:
                 handlers_fuzz_client[ptype](self.last_message)
 
             # Return the message
@@ -3159,6 +3161,7 @@ class Transport(threading.Thread, ClosingContextManager):
                 and self.server_sig_algs
                 and self._remote_ext_info == "ext-info-c"
             ):
+                #Q? This might be un-commented 
                 # extensions = {"server-sig-algs": ",".join(self.preferred_pubkeys)}
                 m = Message()
                 m.add_byte(cMSG_EXT_INFO)
