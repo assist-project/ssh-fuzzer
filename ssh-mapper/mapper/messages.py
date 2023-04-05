@@ -87,7 +87,7 @@ MSG_MAPPING = {
     'SEQ_REKEY': 'seq_rekey',
 
     # For client fuzzing
-    'KEX31': 'fuzz_kexdb_client_init',
+    'KEX31': 'fuzz_kexdh_init_reply',
 }
 
 # Message names:
