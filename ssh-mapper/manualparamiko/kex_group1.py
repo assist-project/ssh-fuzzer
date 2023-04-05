@@ -52,7 +52,7 @@ class KexGroup1:
         self.e = 0
         self.f = 0
 
-    def start_kex(self):
+    def start_kex(self): #Q? This seems to not be called when in server_mode
         self._generate_x()
         if self.transport.server_mode:
             # compute f = g^x mod p, but don't send it yet
@@ -65,7 +65,6 @@ class KexGroup1:
         m.add_byte(c_MSG_KEXDH_INIT)
         m.add_mpint(self.e)
         self.transport._send_message(m)
-        print("In kex_group1:68\n======\nKex30 message sent to server: ", m, "\n\n")
         self.transport._expect_packet(_MSG_KEXDH_REPLY)
 
     def parse_next(self, ptype, m):
@@ -123,9 +122,45 @@ class KexGroup1:
 
     def _parse_kexdh_init(self, m):
         # server mode
-        self.e = m.get_mpint()
+        print("\n===\nG: ", self.G, "\nx: ", self.x, "\f: ", self.f, "\n===\n")
+        self.start_kex()
+        self.e = m.get_mpint()  #Q? Why is this < 1
+        print("\n====\ne: ", self.e, "\n====\n")
         if (self.e < 1) or (self.e > self.P - 1):
             raise SSHException('Client kex "e" is out of range')
+        # This did responde with kex31 to client, we want to send every command manually
+
+        # K = pow(self.e, self.x, self.P)
+        # key = self.transport.get_server_key().asbytes()
+        # # okay, build up the hash H of
+        # # (V_C || V_S || I_C || I_S || K_S || e || f || K)
+        # hm = Message()
+        # hm.add(
+        #     self.transport.remote_version,
+        #     self.transport.local_version,
+        #     self.transport.remote_kex_init,
+        #     self.transport.local_kex_init,
+        # )
+        # hm.add_string(key)
+        # hm.add_mpint(self.e)
+        # hm.add_mpint(self.f)
+        # hm.add_mpint(K)
+        # H = self.hash_algo(hm.asbytes()).digest()
+        # self.transport._set_K_H(K, H)
+        # # sign it
+        # sig = self.transport.get_server_key().sign_ssh_data(
+        #     H, self.transport.host_key_type
+        # )
+        # # send reply #Q? Extract this to seperate function?
+        # m = Message()
+        # m.add_byte(c_MSG_KEXDH_REPLY)
+        # m.add_string(key)
+        # m.add_mpint(self.f)
+        # m.add_string(sig)
+        # self.transport._send_message(m)
+        # self.transport._activate_outbound()
+
+    def _fuzz_send_kexdh_reply(self):
         K = pow(self.e, self.x, self.P)
         key = self.transport.get_server_key().asbytes()
         # okay, build up the hash H of
@@ -147,11 +182,11 @@ class KexGroup1:
         sig = self.transport.get_server_key().sign_ssh_data(
             H, self.transport.host_key_type
         )
-        # send reply
+        # send reply #Q? Extract this to seperate function?
         m = Message()
         m.add_byte(c_MSG_KEXDH_REPLY)
         m.add_string(key)
         m.add_mpint(self.f)
         m.add_string(sig)
         self.transport._send_message(m)
-        self.transport._activate_outbound()
+        #self.transport._activate_outbound()
