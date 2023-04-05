@@ -88,6 +88,11 @@ MSG_MAPPING = {
 
     # For client fuzzing
     'KEX31': 'fuzz_kexdh_init_reply',
+    'SR_ACCEPT': 'fuzz_sr_accept',
+    'UA_SUCCESS': 'fuzz_ua_success',
+    'UA_FAILURE': 'fuzz_ua_failure',
+    'EXT_INFO': 'fuzz_ext_info',
+
 }
 
 # Message names:

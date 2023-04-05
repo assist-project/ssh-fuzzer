@@ -88,6 +88,9 @@ from manualparamiko.common import (
     cMSG_DEBUG,
     cMSG_DISCONNECT,
     cMSG_EXT_INFO,
+    cMSG_SERVICE_ACCEPT,
+    cMSG_USERAUTH_FAILURE,
+    cMSG_USERAUTH_SUCCESS,
     cMSG_CHANNEL_EOF,
     cMSG_CHANNEL_CLOSE,
     cMSG_CHANNEL_DATA,
@@ -2080,10 +2083,6 @@ class Transport(threading.Thread, ClosingContextManager):
         #     raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a ', used_kex_engine)
 
         return self.read_multiple_responses()
-    
-    def fuzz_kexdh_init_reply(self):
-        self.kex_engine._fuzz_send_kexdh_reply()
-        return self.read_multiple_responses()
 
     def fuzz_ignore(self):
         self.send_ignore()
@@ -2219,7 +2218,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
         return self.read_multiple_responses()
 
-    def fuzz_newkeys(self): #Q? Change this for client fuzzing?
+    def fuzz_newkeys(self):
         #    and that object does not contain any info how do we access the correct element?
         self._activate_outbound()
 
@@ -2366,6 +2365,43 @@ class Transport(threading.Thread, ClosingContextManager):
 
         return self.read_multiple_responses()
 
+    #NOTE Client fuzzing functions below
+    def fuzz_kexdh_init_reply(self):
+        self.kex_engine._fuzz_send_kexdh_reply()
+        return self.read_multiple_responses()
+    
+    def fuzz_ext_info(self):
+        extensions = {"server-sig-algs": ",".join(self.preferred_pubkeys)}
+        m = Message()
+        m.add_byte(cMSG_EXT_INFO)
+        m.add_int(len(extensions))
+        for name, value in sorted(extensions.items()):
+            m.add_string(name)
+            m.add_string(value)
+        self._send_message(m)
+
+        return self.read_multiple_responses()
+
+    def fuzz_sr_accept(self):
+        #TODO
+        m = Message()
+        m.add_byte(cMSG_SERVICE_ACCEPT)
+        self._send_message(m)
+        return self.read_multiple_responses()
+
+    def fuzz_ua_success(self):
+        #TODO
+        m = Message()
+        m.add_byte(cMSG_USERAUTH_SUCCESS)
+        self._send_message(m)
+        return self.read_multiple_responses()
+    
+    def fuzz_ua_failure(self):
+        m = Message()
+        m.add_byte(cMSG_USERAUTH_FAILURE)
+        self._send_message(m)
+        return self.read_multiple_responses()
+
     def read_multiple_responses(self, timeout=None, total_timeout=None):
         if timeout is None:
             timeout = self.global_to
@@ -2444,8 +2480,8 @@ class Transport(threading.Thread, ClosingContextManager):
             }
 
             handlers_fuzz_client = {
-                MSG_KEXINIT: lambda m: self._negotiate_keys(m), #Q? Either we send kex30 in this branch
-                30: lambda m: self.kex_engine._parse_kexdh_init(m), #Q?And/or we send it in this branch
+                MSG_KEXINIT: lambda m: self._negotiate_keys(m),
+                30: lambda m: self.kex_engine._parse_kexdh_init(m),
                 MSG_NEWKEYS: lambda m: self._parse_newkeys(m),
                 MSG_USERAUTH_SUCCESS: lambda m: self.auth_handler._parse_userauth_success(m),
                 MSG_USERAUTH_FAILURE: lambda m: self.auth_handler._parse_userauth_failure(m),
@@ -2459,7 +2495,8 @@ class Transport(threading.Thread, ClosingContextManager):
                 handlers_fuzz_server[ptype](self.last_message)
             elif ptype in handlers_fuzz_client and self.server_mode:
                 handlers_fuzz_client[ptype](self.last_message)
-
+            else:
+                print("Ptype not found and is: ", ptype)
             # Return the message
             return ptype
 
@@ -3161,15 +3198,16 @@ class Transport(threading.Thread, ClosingContextManager):
                 and self.server_sig_algs
                 and self._remote_ext_info == "ext-info-c"
             ):
+                pass
                 #Q? This might be un-commented 
                 # extensions = {"server-sig-algs": ",".join(self.preferred_pubkeys)}
-                m = Message()
-                m.add_byte(cMSG_EXT_INFO)
+                # m = Message()
+                # m.add_byte(cMSG_EXT_INFO)
                 # m.add_int(len(extensions))
                 # for name, value in sorted(extensions.items()):
-                    # m.add_string(name)
-                    # m.add_string(value)
-                self._send_message(m)
+                #     m.add_string(name)
+                #     m.add_string(value)
+                # self._send_message(m)
             # we always expect to receive NEWKEYS now
             self._expect_packet(MSG_NEWKEYS)
         except Exception as e:
