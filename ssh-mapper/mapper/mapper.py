@@ -97,9 +97,9 @@ class Processor:
             sys.exit(1)
 
         if self.fuzz == "server":
-            server_mode = True
-        else:
             server_mode = False
+        else:
+            server_mode = True
         #Adapter
         self.transport = manualparamiko.Transport(self.ssh_sock, auth_pw_ok_to=self.auth_pw_ok_to, auth_pw_ok_to_total=self.auth_pw_ok_to_total, auth_pw_nok_to=self.auth_pw_nok_to, auth_pw_nok_to_total = self.auth_pw_nok_to_total, global_to=self.global_to, global_to_total=self.global_to_total, buffer_after_newkey = self.buffer_after_newkey, server = server_mode)
         self.transport.active = True
@@ -148,8 +148,6 @@ class Processor:
             # self.process_learlib_query("NEWKEYS")
             # self.process_learlib_query("SERVICE_REQUEST_AUTH")
             # self.process_learlib_query("UA_PK_OK")
-            print(MSG_NAMES.keys())
-            raise
 
             return 'resetok'
 

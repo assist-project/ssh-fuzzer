@@ -2056,8 +2056,7 @@ class Transport(threading.Thread, ClosingContextManager):
             default_path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
             private_key = manualparamiko.RSAKey.from_private_key_file(default_path)
             self.add_server_key(private_key)
-            #self.start_kex()
-        
+
         self._send_kex_init()
 
         return self.read_multiple_responses()
@@ -2075,8 +2074,7 @@ class Transport(threading.Thread, ClosingContextManager):
         else:
             used_kex_engine = KexGroup1(self)
 
-        if not self.server_mode:
-            used_kex_engine.start_kex()
+        used_kex_engine.start_kex()
 
         # if not isinstance(used_kex_engine, KexGroup1):
         #     raise Exception('Currently, only KEXGROUP1(4) is supported. Instance is a ', used_kex_engine)
@@ -2221,7 +2219,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
         return self.read_multiple_responses()
 
-    def fuzz_newkeys(self):
+    def fuzz_newkeys(self): #Q? Change this for client fuzzing?
         #    and that object does not contain any info how do we access the correct element?
         self._activate_outbound()
 
@@ -2446,8 +2444,8 @@ class Transport(threading.Thread, ClosingContextManager):
             }
 
             handlers_fuzz_client = {
-                MSG_KEXINIT: lambda m: self._negotiate_keys(m),
-                30: lambda m: self.kex_engine._parse_kexdh_init(m),
+                MSG_KEXINIT: lambda m: self._negotiate_keys(m), #Q? Either we send kex30 in this branch
+                30: lambda m: self.kex_engine._parse_kexdh_init(m), #Q?And/or we send it in this branch
                 MSG_NEWKEYS: lambda m: self._parse_newkeys(m),
                 MSG_USERAUTH_SUCCESS: lambda m: self.auth_handler._parse_userauth_success(m),
                 MSG_USERAUTH_FAILURE: lambda m: self.auth_handler._parse_userauth_failure(m),
@@ -2459,7 +2457,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
             if ptype in handlers_fuzz_server and not self.server_mode:
                 handlers_fuzz_server[ptype](self.last_message)
-            elif ptype in handlers_fuzz_client:
+            elif ptype in handlers_fuzz_client and self.server_mode:
                 handlers_fuzz_client[ptype](self.last_message)
 
             # Return the message
