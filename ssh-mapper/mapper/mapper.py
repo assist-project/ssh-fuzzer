@@ -5,7 +5,7 @@ import traceback
 import manualparamiko
 import argparse
 
-from messages import MSG_MAPPING
+from messages import MSG_MAPPING, MSG_NAMES #MSG_NAMES ONLT FOR DEBUG
 from manualparamiko.client_fuzz_driver import ClientFuzzer
 
 import os
@@ -14,6 +14,7 @@ import os
 class Processor:
     ssh_sock = None
     transport = None
+    ssh_client_source = None
 
     def __init__(self, learnlib, ssh, config=None, fuzz="server"):
         #Mapper
@@ -37,6 +38,7 @@ class Processor:
             self.global_to = 0.9
             self.global_to_total = 1.0
             self.buffer_after_newkey = True
+            self.ssh_client_source = "ssh" #TODO Chnage depending on where OpenSSH can be accessed
 
         elif config == "BitVise":
         #Timing params (for BitVise)
@@ -48,6 +50,7 @@ class Processor:
             self.global_to_total = 0.25
             self.cmd_to = 0.2
             self.buffer_after_newkey = True
+            self.ssh_client_source = None #TODO Chnage depending on where BitVise can be accessed
 
         #Timing params (for Dropbear)
         elif config == "Dropbear":
@@ -59,9 +62,24 @@ class Processor:
             self.global_to_total = 0.35
             self.cmd_to = 0.25
             self.buffer_after_newkey = False
+            self.ssh_client_source = "~/school/exjobb/ssh-fuzzer/SUTs/dropbear-2022.83/dbclient " #TODO Chnage depending on where Dropbear can be accessed
         else:
             raise Exception("Unknown configuration " + config)
 
+
+    def init_client_ssh_connection(self):
+        msg = self.ssh_client_source + "-p " + str(self.ssh_port) + " " + str(self.ssh_host)
+        print(msg)
+        os.popen(msg)
+        # client = ClientFuzzer(self.ssh_host, self.ssh_port)
+        sock = socket.socket()
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind((self.ssh_host, self.ssh_port))
+        sock.listen(10)
+        print("Waiting for SUT to connect")
+        conn, addr = sock.accept()
+        print('Connected with ' + addr[0] + ':' + str(addr[1]))
+        self.ssh_sock = conn
 
     def init_ssh_connection(self):
         """ Create an ssh socket and transport layer object """
@@ -72,22 +90,18 @@ class Processor:
                 self.ssh_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.ssh_sock.connect((self.ssh_host, self.ssh_port))
             elif self.fuzz == "client":
-                #client = ClientFuzzer(self.ssh_host, self.ssh_port)
-                sock = socket.socket()
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                sock.bind((self.ssh_host, self.ssh_port))
-                sock.listen(10)
-                print("Waiting for SUT to connect")
-                conn, addr = sock.accept()
-                print('Connected with ' + addr[0] + ':' + str(addr[1]))
-                self.ssh_sock = conn
+                self.init_client_ssh_connection()
         except Exception as e:
             print('*** Connect failed: ' + str(e))
             traceback.print_exc()
             sys.exit(1)
 
+        if self.fuzz == "server":
+            server_mode = True
+        else:
+            server_mode = False
         #Adapter
-        self.transport = manualparamiko.Transport(self.ssh_sock, auth_pw_ok_to=self.auth_pw_ok_to, auth_pw_ok_to_total=self.auth_pw_ok_to_total, auth_pw_nok_to=self.auth_pw_nok_to, auth_pw_nok_to_total = self.auth_pw_nok_to_total, global_to=self.global_to, global_to_total=self.global_to_total, buffer_after_newkey = self.buffer_after_newkey)
+        self.transport = manualparamiko.Transport(self.ssh_sock, auth_pw_ok_to=self.auth_pw_ok_to, auth_pw_ok_to_total=self.auth_pw_ok_to_total, auth_pw_nok_to=self.auth_pw_nok_to, auth_pw_nok_to_total = self.auth_pw_nok_to_total, global_to=self.global_to, global_to_total=self.global_to_total, buffer_after_newkey = self.buffer_after_newkey, server = server_mode)
         self.transport.active = True
 
         #Adapter (not sure yet, don't know what packetizer in transport does)
@@ -134,7 +148,8 @@ class Processor:
             # self.process_learlib_query("NEWKEYS")
             # self.process_learlib_query("SERVICE_REQUEST_AUTH")
             # self.process_learlib_query("UA_PK_OK")
-
+            print(MSG_NAMES.keys())
+            raise
 
             return 'resetok'
 
@@ -147,6 +162,7 @@ class Processor:
         #Not sure, think Mapper
         if query in MSG_MAPPING:
             try:
+                print("MSG_MAPPING[query]: ", MSG_MAPPING[query])
                 x = getattr(self.transport, MSG_MAPPING[query])()
                 return x
             except Exception as e:
@@ -185,7 +201,6 @@ class Processor:
             #Adapter
             print('Connected with ' + addr[0] + ':' + str(addr[1]))
             self.init_ssh_connection()
-            print("\nDEBUG mapper:186\n\n")
 
             while True:
                 try:
