@@ -41,4 +41,15 @@ A Google search will quickly determine which packages are missing.
 # Client Fuzzing
 
 ## Dropbear
-With ```dropbearkeys``` add id_dropbear to ~/.ssh/ as well as append the content of id_dropbear to authorized_keys
+Files which has to be present:
+
+- id_rsa
+- id_rsa.pub
+- id_dropbear
+- authorized_keys (has to contain id_rsa.pub and id_dropbear)
+- known_hosts (don't really know which data is stored here, server or client?)
+
+With ```dropbearkey``` add id_dropbear to ~/.ssh/ as well as append the content of id_dropbear to authorized_keys.
+As well as running ```.../dbclient -p 7000 localhost``` and let it connect to a host, only to add the host to the ~/.ssh/knwon_hosts
+Changes has to be done in ./ssh-mapper/mapper/mapper.py:\_\_init\_\_;
+- Change the paths of self.ssh_client_source to where each ssh client can be run from 
