@@ -1,3 +1,14 @@
+## TODO
+
+### Implement answers:
+- [ ] RFC 4254
+  - [ ] SSH_MSG_CHANNEL_OPEN_CONFIRMATION
+  - [ ] SSH_MSG_CHANNEL_OPEN_FAILURE
+- [ ] RFC 4250
+  - [ ] Implement responses as stated in _4.1.2. Initial Assignments_
+
+
+
 **SSH-Fuzzer** is a protocol state fuzzer for SSH, derived from the [artifact][learning-ssh-artifact] of the publication "Model Learning and Model Checking of SSH Implementations".
 
 This project consists of several components:
