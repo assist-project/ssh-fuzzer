@@ -24,11 +24,12 @@ Standard SSH key exchange ("kex" if you wanna sound cool).  Diffie-Hellman of
 import os
 from hashlib import sha1
 
+import manualparamiko
 from manualparamiko import util
 from manualparamiko.common import max_byte, zero_byte, byte_chr, byte_mask
 from manualparamiko.message import Message
 from manualparamiko.ssh_exception import SSHException
-
+from manualparamiko.rsakey import RSAKey
 
 _MSG_KEXDH_INIT, _MSG_KEXDH_REPLY = range(30, 32)
 c_MSG_KEXDH_INIT, c_MSG_KEXDH_REPLY = [byte_chr(c) for c in range(30, 32)]
@@ -122,11 +123,11 @@ class KexGroup1:
 
     def _parse_kexdh_init(self, m):
         # server mode
-        print("\n===\nG: ", self.G, "\nx: ", self.x, "\f: ", self.f, "\n===\n")
         self.start_kex()
         self.e = m.get_mpint()  #Q? Why is this < 1
-        print("\n====\ne: ", self.e, "\n====\n")
         if (self.e < 1) or (self.e > self.P - 1):
+            if self.e != 0: #NOTE Bypass this check for now. Is recieaving a lot of large negative numbers
+                return
             raise SSHException('Client kex "e" is out of range')
         # This did responde with kex31 to client, we want to send every command manually
 
@@ -162,7 +163,17 @@ class KexGroup1:
 
     def _fuzz_send_kexdh_reply(self):
         K = pow(self.e, self.x, self.P)
-        key = self.transport.get_server_key().asbytes()
+        key = self.transport.get_server_key()#.asbytes()
+
+        if key == None: #NOTE This is in order to send a KEX31 before KEXINIT
+            path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
+            key = manualparamiko.RSAKey.from_private_key_file(path)
+            self.transport.add_server_key(key)
+            self.transport.host_key_type = key.get_name()
+            self.transport.remote_kex_init = ""
+            self.transport.local_kex_init = ""
+        key = key.asbytes()
+
         # okay, build up the hash H of
         # (V_C || V_S || I_C || I_S || K_S || e || f || K)
         hm = Message()

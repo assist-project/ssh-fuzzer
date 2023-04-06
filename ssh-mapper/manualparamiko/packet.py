@@ -335,6 +335,8 @@ class Packetizer:
                     raise EOFError()
                 else:
                     raise
+            except Exception as e:
+                return out #NOTE Just so the mapper don't crash #Q? Why? Got MemmoryError from self.__socket.recv(n)
             if got_timeout:
                 if self.__closed:
                     raise EOFError()
@@ -505,6 +507,7 @@ class Packetizer:
             # length field)
             leftover = header[4:]
             if (packet_size - len(leftover)) % self.__block_size_in != 0:
+                return 90000, b'Invalid packet blocking' #NOTE Self implemented message, We receive/parse invalid packet from SUT
                 raise SSHException("Invalid packet blocking")
             buf = self.read_all(
                 packet_size + self.__mac_size_in - len(leftover)
@@ -529,6 +532,7 @@ class Packetizer:
                 self.__mac_key_in, mac_payload, self.__mac_engine_in
             )[: self.__mac_size_in]
             if not util.constant_time_bytes_eq(my_mac, mac):
+                return 90001, b'Mismatched MAC' #NOTE Self implemented message, There is a mismatch of MAC between SUT and mapper. Not sure which is wrong
                 raise SSHException("Mismatched MAC")
         padding = byte_ord(packet[0])
         payload = packet[1 : packet_size - padding]

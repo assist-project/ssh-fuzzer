@@ -64,7 +64,7 @@ setup(
         "Changelog": "https://www.paramiko.org/changelog.html",
         "CI": "https://app.circleci.com/pipelines/github/paramiko/paramiko",
     },
-    packages=["manualparamiko"],
+    packages=["manualparamiko", "paramiko"],
     license="LGPL",
     platforms="Posix; MacOS X; Windows",
     classifiers=[

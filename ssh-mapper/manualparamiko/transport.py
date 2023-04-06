@@ -2367,9 +2367,13 @@ class Transport(threading.Thread, ClosingContextManager):
 
     #NOTE Client fuzzing functions below
     def fuzz_kexdh_init_reply(self):
-        self.kex_engine._fuzz_send_kexdh_reply()
+        if self.kex_engine: #NOTE Same as in fuzz_kexdh_init; If we don't have a designated kex_engine, assume KexGroup1
+            used_kex_engine = self.kex_engine
+        else:
+            used_kex_engine = KexGroup1(self)
+        used_kex_engine._fuzz_send_kexdh_reply()
         return self.read_multiple_responses()
-    
+
     def fuzz_ext_info(self):
         extensions = {"server-sig-algs": ",".join(self.preferred_pubkeys)}
         m = Message()

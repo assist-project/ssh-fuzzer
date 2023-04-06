@@ -6,7 +6,6 @@ import manualparamiko
 import argparse
 
 from messages import MSG_MAPPING, MSG_NAMES #MSG_NAMES ONLT FOR DEBUG
-from manualparamiko.client_fuzz_driver import ClientFuzzer
 
 import os
 
@@ -68,22 +67,22 @@ class Processor:
 
 
     def init_client_ssh_connection(self):
-        msg = self.ssh_client_source + "-p " + str(self.ssh_port) + " " + str(self.ssh_host)
-        print(msg)
-        os.popen(msg)
         # client = ClientFuzzer(self.ssh_host, self.ssh_port)
         sock = socket.socket()
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((self.ssh_host, self.ssh_port))
         sock.listen(10)
         print("Waiting for SUT to connect")
+
+        msg = self.ssh_client_source + "-p " + str(self.ssh_port) + " " + str(self.ssh_host)
+        os.popen(msg)
+
         conn, addr = sock.accept()
         print('Connected with ' + addr[0] + ':' + str(addr[1]))
         self.ssh_sock = conn
 
     def init_ssh_connection(self):
         """ Create an ssh socket and transport layer object """
-	
         #Adapter
         try:
             if self.fuzz == "server":
@@ -148,6 +147,11 @@ class Processor:
             # self.process_learlib_query("NEWKEYS")
             # self.process_learlib_query("SERVICE_REQUEST_AUTH")
             # self.process_learlib_query("UA_PK_OK")
+
+            # if self.fuzz == "client": #NOTE Should not need this, already there in kex_group1.py:_fuzz_send_kexdh_reply if KEX31 is sent before KEXINIT
+            #     path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
+            #     key = manualparamiko.RSAKey.from_private_key_file(path)
+            #     self.transport.add_server_key(key)
 
             return 'resetok'
 
