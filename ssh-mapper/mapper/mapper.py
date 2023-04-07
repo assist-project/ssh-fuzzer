@@ -148,10 +148,10 @@ class Processor:
             # self.process_learlib_query("SERVICE_REQUEST_AUTH")
             # self.process_learlib_query("UA_PK_OK")
 
-            # if self.fuzz == "client": #NOTE Should not need this, already there in kex_group1.py:_fuzz_send_kexdh_reply if KEX31 is sent before KEXINIT
-            #     path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
-            #     key = manualparamiko.RSAKey.from_private_key_file(path)
-            #     self.transport.add_server_key(key)
+            if self.fuzz == "client": #NOTE Should not need this, already there in kex_group1.py:_fuzz_send_kexdh_reply if KEX31 is sent before KEXINIT
+                path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
+                key = manualparamiko.RSAKey.from_private_key_file(path)
+                self.transport.add_server_key(key)
 
             return 'resetok'
 

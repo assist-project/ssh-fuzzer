@@ -2419,12 +2419,17 @@ class Transport(threading.Thread, ClosingContextManager):
         # If total_timeout=None, it will act as read single message
         # Otherwise, it will read messages up to the total timeout
 
+        self_impl_error = []
+
         start = time.time()
         lastMsgTo = 0
         response = ''
         while True:
             ptype = self.read_response(timeout)
             if MSG_NAMES[ptype] == 'IGNORE' or MSG_NAMES[ptype] == 'DEBUG':
+                continue
+            if ptype >= 90000:
+                self_impl_error.append(ptype)
                 continue
 
             if response == '':
@@ -2459,6 +2464,18 @@ class Transport(threading.Thread, ClosingContextManager):
             otherResponses = self.read_multiple_responses(timeout, total_timeout)
             if otherResponses != 'NO_RESP':
                 print("Also got ", otherResponses, " which is also included in buffer")
+
+        if self_impl_error:
+            path = os.path.join(os.environ['HOME'], 'self-impl-errorlog.txt')
+            f = open(path, "a")
+            f.write("====\nThe response from SUT was: ")
+            f.write(str(response))
+            f.write("\nError message occurring during the run was: ")
+            for a in self_impl_error:
+                f.write(str(a))
+                f.write(" - ")
+            f.write("\n====\n")
+            f.close()
 
         return response
 
