@@ -1,0 +1,53 @@
+digraph g {
+s0 [label="s0", shape="circle"];
+s1 [label="s1", shape="circle"];
+s2 [label="s2", shape="circle"];
+s3 [label="s3", shape="circle"];
+s4 [label="s4", shape="circle"];
+s5 [label="s5", shape="circle"];
+s6 [label="s6", shape="circle"];
+s7 [label="s7", shape="circle"];
+s8 [label="s8", shape="circle"];
+s9 [label="s9", shape="circle"];
+s10 [label="s10", shape="circle"];
+s11 [label="s11", shape="circle"];
+s0 -> s2  [label="UA_SUCCESS / CH_OPEN"];
+s0 -> s1  [label="UA_FAILURE / NO_CONN"];
+s0 -> s3  [label="REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s1 -> s1  [label="UA_SUCCESS / NO_CONN
+UA_FAILURE / NO_CONN
+REKEY / NO_CONN|NO_CONN|NO_CONN"];
+s2 -> s6  [label="UA_SUCCESS / CH_OPEN"];
+s2 -> s10  [label="UA_FAILURE / NO_RESP"];
+s2 -> s11  [label="REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s3 -> s11  [label="UA_SUCCESS / CH_OPEN"];
+s3 -> s1  [label="UA_FAILURE / NO_CONN"];
+s3 -> s4  [label="REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s4 -> s5  [label="UA_SUCCESS / CH_OPEN"];
+s4 -> s1  [label="UA_FAILURE / NO_CONN"];
+s4 -> s3  [label="REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s5 -> s11  [label="UA_SUCCESS / CH_OPEN
+REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s5 -> s6  [label="UA_FAILURE / NO_RESP"];
+s6 -> s11  [label="UA_SUCCESS / CH_OPEN
+REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s6 -> s7  [label="UA_FAILURE / NO_RESP"];
+s7 -> s8  [label="UA_SUCCESS / CH_OPEN"];
+s7 -> s11  [label="UA_FAILURE / NO_RESP
+REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s8 -> s9  [label="UA_SUCCESS / CH_OPEN"];
+s8 -> s11  [label="UA_FAILURE / NO_RESP
+REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s9 -> s11  [label="UA_SUCCESS / CH_OPEN
+UA_FAILURE / NO_RESP"];
+s9 -> s1  [label="REKEY / KEXINIT|KEX30*|NO_CONN"];
+s10 -> s5  [label="UA_SUCCESS / CH_OPEN"];
+s10 -> s11  [label="UA_FAILURE / NO_RESP"];
+s10 -> s2  [label="REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+s11 -> s11  [label="UA_SUCCESS / CH_OPEN
+UA_FAILURE / NO_RESP
+REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+__start0 [height="0", label="", shape="none", width="0"];
+__start0 -> s0;
+"\n\n";
+}

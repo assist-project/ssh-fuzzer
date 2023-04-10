@@ -1,0 +1,63 @@
+digraph g {
+
+	s0 [shape="circle" label="s0"];
+	s1 [shape="circle" label="s1"];
+	s2 [shape="circle" label="s2"];
+	s3 [shape="circle" label="s3"];
+	s4 [shape="circle" label="s4"];
+	s5 [shape="circle" label="s5"];
+	s6 [shape="circle" label="s6"];
+	s7 [shape="circle" label="s7"];
+	s0 -> s3 [label="KEXINIT / KEXINIT+KEX30"];
+	s0 -> s2 [label="KEX31 / KEXINIT+UNIMPL"];
+	s0 -> s3 [label="NEWKEYS / KEXINIT+UNIMPL+KEX30"];
+	s0 -> s3 [label="SR_ACCEPT / KEXINIT+UNIMPL+KEX30"];
+	s0 -> s1 [label="UA_SUCCESS / KEXINIT"];
+	s0 -> s1 [label="UA_FAILURE / KEXINIT"];
+	s1 -> s1 [label="KEXINIT / NO_CONN"];
+	s1 -> s1 [label="KEX31 / NO_CONN"];
+	s1 -> s1 [label="NEWKEYS / NO_CONN"];
+	s1 -> s1 [label="SR_ACCEPT / NO_CONN"];
+	s1 -> s1 [label="UA_SUCCESS / NO_CONN"];
+	s1 -> s1 [label="UA_FAILURE / NO_CONN"];
+	s2 -> s6 [label="KEXINIT / KEX30"];
+	s2 -> s2 [label="KEX31 / UNIMPL"];
+	s2 -> s1 [label="NEWKEYS / UNIMPL"];
+	s2 -> s2 [label="SR_ACCEPT / UNIMPL"];
+	s2 -> s1 [label="UA_SUCCESS / NO_CONN"];
+	s2 -> s1 [label="UA_FAILURE / NO_CONN"];
+	s3 -> s1 [label="KEXINIT / NO_CONN"];
+	s3 -> s4 [label="KEX31 / NEWKEYS"];
+	s3 -> s3 [label="NEWKEYS / UNIMPL"];
+	s3 -> s3 [label="SR_ACCEPT / UNIMPL"];
+	s3 -> s1 [label="UA_SUCCESS / NO_CONN"];
+	s3 -> s1 [label="UA_FAILURE / NO_CONN"];
+	s4 -> s4 [label="KEXINIT / UNIMPL"];
+	s4 -> s4 [label="KEX31 / UNIMPL"];
+	s4 -> s5 [label="NEWKEYS / SR_REQUEST"];
+	s4 -> s4 [label="SR_ACCEPT / UNIMPL"];
+	s4 -> s1 [label="UA_SUCCESS / NO_CONN"];
+	s4 -> s1 [label="UA_FAILURE / NO_CONN"];
+	s5 -> s1 [label="KEXINIT / NO_CONN"];
+	s5 -> s1 [label="KEX31 / NO_CONN"];
+	s5 -> s1 [label="NEWKEYS / NO_CONN"];
+	s5 -> s5 [label="SR_ACCEPT / UA_REQUEST"];
+	s5 -> s1 [label="UA_SUCCESS / NO_CONN"];
+	s5 -> s1 [label="UA_FAILURE / NO_CONN"];
+	s6 -> s1 [label="KEXINIT / NO_CONN"];
+	s6 -> s7 [label="KEX31 / NEWKEYS"];
+	s6 -> s1 [label="NEWKEYS / UNIMPL"];
+	s6 -> s6 [label="SR_ACCEPT / UNIMPL"];
+	s6 -> s1 [label="UA_SUCCESS / NO_CONN"];
+	s6 -> s1 [label="UA_FAILURE / NO_CONN"];
+	s7 -> s7 [label="KEXINIT / NO_RESP"];
+	s7 -> s7 [label="KEX31 / NO_RESP"];
+	s7 -> s1 [label="NEWKEYS / NO_RESP"];
+	s7 -> s7 [label="SR_ACCEPT / NO_RESP"];
+	s7 -> s1 [label="UA_SUCCESS / NO_CONN"];
+	s7 -> s1 [label="UA_FAILURE / NO_CONN"];
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> s0;
+
+}

@@ -1,0 +1,11 @@
+digraph g {
+
+	s0 [shape="circle" label="s0"];
+	s0 -> s0 [label="UA_SUCCESS / CH_OPEN"];
+	s0 -> s0 [label="UA_FAILURE / NO_CONN"];
+	s0 -> s0 [label="REKEY / KEXINIT+KEX30*|NEWKEYS|NO_RESP"];
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> s0;
+
+}

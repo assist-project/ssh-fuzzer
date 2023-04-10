@@ -172,6 +172,7 @@ class KexGroup1:
             self.transport.host_key_type = key.get_name()
             self.transport.remote_kex_init = ""
             self.transport.local_kex_init = ""
+            #key = self.transport.get_server_key()
         key = key.asbytes()
 
         # okay, build up the hash H of

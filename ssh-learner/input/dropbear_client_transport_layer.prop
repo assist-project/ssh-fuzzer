@@ -1,5 +1,9 @@
 # the name of the sut you want to learn
+<<<<<<< HEAD:ssh-learner/input/dropbear_client_transport_layer.prop
 name=DROPBEAR_CLIENT_TRANSPORT_LAYER_
+=======
+name=NEW_2_Client_Transport_and_Auth
+>>>>>>> c30b297 (added results):ssh-learner/input/first_client_fuzz.prop
 # the equ oracles used (RANDOM, EXHAUSTIVE, WORDS, CONFORMANCE), sep. by ';'
 eqOracle=RANDOM
 # the maximum number of tests (for the RANDOM equ oracle)
@@ -14,7 +18,11 @@ timeLimit=PT6H
 #roundLimit=2
 # initialize the cache with that of a previous experiment  
 # path from ssh-learner root dir
+<<<<<<< HEAD:ssh-learner/input/dropbear_client_transport_layer.prop
 #cache=./cache/which-test/cache.db
+=======
+cache=./output/NEW_1_Client_Transport_and_Auth1680856304651/cache.db
+>>>>>>> c30b297 (added results):ssh-learner/input/first_client_fuzz.prop
 # the maximum number of retries attempted in case of non-determinism before concluding that it cannot be resolved
 maxNonDeterminismRetries=3
 # the address at which the mapper is listening 
@@ -30,7 +38,7 @@ KEXINIT;\
 KEX31;\
 NEWKEYS;\
 !SR_AUTH;\
-SR_ACCEPT;\
+!SR_ACCEPT;\
 !SR_CONN;\
 !UA_PK_NOK;\
 !UA_PK_OK;\
@@ -38,7 +46,10 @@ SR_ACCEPT;\
 !UA_PW_OK;\
 !UA_NONE;\
 !UA_SUCCESS;\
+<<<<<<< HEAD:ssh-learner/input/dropbear_client_transport_layer.prop
 !UA_FAILURE;\
+=======
+>>>>>>> c30b297 (added results):ssh-learner/input/first_client_fuzz.prop
 !CH_OPEN;\
 !CH_CLOSE;\
 !CH_EOF;\
