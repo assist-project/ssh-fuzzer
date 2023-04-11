@@ -2387,14 +2387,12 @@ class Transport(threading.Thread, ClosingContextManager):
         return self.read_multiple_responses()
 
     def fuzz_sr_accept(self):
-        #TODO
         m = Message()
         m.add_byte(cMSG_SERVICE_ACCEPT)
         self._send_message(m)
         return self.read_multiple_responses()
 
     def fuzz_ua_success(self):
-        #TODO
         m = Message()
         m.add_byte(cMSG_USERAUTH_SUCCESS)
         self._send_message(m)
@@ -2404,6 +2402,49 @@ class Transport(threading.Thread, ClosingContextManager):
         m = Message()
         m.add_byte(cMSG_USERAUTH_FAILURE)
         self._send_message(m)
+        return self.read_multiple_responses()
+
+    def fuzz_ch_open_failure(self):
+        msg = Message()
+        msg.add_byte(cMSG_CHANNEL_OPEN_FAILURE)
+        msg.add_int(10)
+        msg.add_int(10)
+        msg.add_string("")
+        msg.add_string("en")
+        self._send_message(msg)
+
+        return self.read_multiple_responses()
+    
+    def fuzz_ch_open_success(self):
+        #HACK This is a bif of a hack
+        #     Has to specify my_chanid/ chanid/ initial_window_size/ max_packet_size
+        my_chanid = self._next_channel()
+        chanid = 10
+        initial_window_size = 10
+        max_packet_size = 10
+
+        chan = Channel(my_chanid)
+        self.lock.acquire()
+        try:
+            self._channels.put(my_chanid, chan)
+            self.channels_seen[my_chanid] = True
+            chan._set_transport(self)
+            chan._set_window(
+                self.default_window_size, self.default_max_packet_size
+            )
+            chan._set_remote_channel(
+                chanid, initial_window_size, max_packet_size
+            )
+        finally:
+            self.lock.release()
+        m = Message()
+        m.add_byte(cMSG_CHANNEL_OPEN_SUCCESS)
+        m.add_int(chanid)
+        m.add_int(my_chanid)
+        m.add_int(self.default_window_size)
+        m.add_int(self.default_max_packet_size)
+        self._send_message(m)
+
         return self.read_multiple_responses()
 
     def read_multiple_responses(self, timeout=None, total_timeout=None):
@@ -2487,7 +2528,7 @@ class Transport(threading.Thread, ClosingContextManager):
             self.last_ptype = ptype
 
             # (Mostly) state-changing handlers.
-            handlers_fuzz_server = {
+            handlers = {
                 MSG_KEXINIT: lambda m: self._negotiate_keys(m),
                 30: lambda m: self.kex_engine._parse_kexdh_init(m),
                 31: lambda m: self.kex_engine._parse_kexdh_reply(m),
@@ -2496,29 +2537,16 @@ class Transport(threading.Thread, ClosingContextManager):
                 MSG_USERAUTH_FAILURE: lambda m: self.auth_handler._parse_userauth_failure(m),
                 MSG_CHANNEL_OPEN_SUCCESS: lambda m: self._parse_channel_open_success(m),
                 MSG_SERVICE_ACCEPT: lambda m: self._set_service_accept(m),
+                MSG_CHANNEL_OPEN: lambda m: self._parse_channel_open(m),
                 MSG_GLOBAL_REQUEST: lambda m: self.print_msg(m),
                 MSG_EXT_INFO: lambda m: self._parse_ext_info(m),
             }
 
-            handlers_fuzz_client = {
-                MSG_KEXINIT: lambda m: self._negotiate_keys(m),
-                30: lambda m: self.kex_engine._parse_kexdh_init(m),
-                MSG_NEWKEYS: lambda m: self._parse_newkeys(m),
-                MSG_USERAUTH_SUCCESS: lambda m: self.auth_handler._parse_userauth_success(m),
-                MSG_USERAUTH_FAILURE: lambda m: self.auth_handler._parse_userauth_failure(m),
-                MSG_CHANNEL_OPEN_SUCCESS: lambda m: self._parse_channel_open_success(m),
-                MSG_SERVICE_ACCEPT: lambda m: self._set_service_accept(m),
-                MSG_GLOBAL_REQUEST: lambda m: self.print_msg(m),
-                MSG_EXT_INFO: lambda m: self._parse_ext_info(m),
-            }
-
-            if ptype in handlers_fuzz_server and not self.server_mode:
-                handlers_fuzz_server[ptype](self.last_message)
-            elif ptype in handlers_fuzz_client and self.server_mode:
-                handlers_fuzz_client[ptype](self.last_message)
+            if ptype in handlers:
+                handlers[ptype](self.last_message)
             else:
                 print("Ptype not found and is: ", ptype)
-            # Return the message
+
             return ptype
 
         except NoTimelyResponse:
@@ -3471,51 +3499,59 @@ class Transport(threading.Thread, ClosingContextManager):
                     'Rejecting "{}" channel request from client.'.format(kind),
                 )
                 reject = True
-        if reject:
-            msg = Message()
-            msg.add_byte(cMSG_CHANNEL_OPEN_FAILURE)
-            msg.add_int(chanid)
-            msg.add_int(reason)
-            msg.add_string("")
-            msg.add_string("en")
-            self._send_message(msg)
-            return
 
-        chan = Channel(my_chanid)
-        self.lock.acquire()
-        try:
-            self._channels.put(my_chanid, chan)
-            self.channels_seen[my_chanid] = True
-            chan._set_transport(self)
-            chan._set_window(
-                self.default_window_size, self.default_max_packet_size
-            )
-            chan._set_remote_channel(
-                chanid, initial_window_size, max_packet_size
-            )
-        finally:
-            self.lock.release()
-        m = Message()
-        m.add_byte(cMSG_CHANNEL_OPEN_SUCCESS)
-        m.add_int(chanid)
-        m.add_int(my_chanid)
-        m.add_int(self.default_window_size)
-        m.add_int(self.default_max_packet_size)
-        self._send_message(m)
-        self._log(
-            DEBUG, "Secsh channel {:d} ({}) opened.".format(my_chanid, kind)
-        )
-        if kind == "auth-agent@openssh.com":
-            self._forward_agent_handler(chan)
-        elif kind == "x11":
-            self._x11_handler(chan, (origin_addr, origin_port))
-        elif kind == "forwarded-tcpip":
-            chan.origin_addr = (origin_addr, origin_port)
-            self._tcp_handler(
-                chan, (origin_addr, origin_port), (server_addr, server_port)
-            )
-        else:
-            self._queue_incoming_channel(chan)
+        # For thesis work this negative response is removed
+        # want to send commands manually
+        
+        # if reject:
+        #     #TODO Abstract this into a different function
+        #     msg = Message()
+        #     msg.add_byte(cMSG_CHANNEL_OPEN_FAILURE)
+        #     msg.add_int(chanid)
+        #     msg.add_int(reason)
+        #     msg.add_string("")
+        #     msg.add_string("en")
+        #     self._send_message(msg)
+        #     return
+
+        # For thesis work this positive response is removed as well
+
+        # chan = Channel(my_chanid)
+        # self.lock.acquire()
+        # try:
+        #     self._channels.put(my_chanid, chan)
+        #     self.channels_seen[my_chanid] = True
+        #     chan._set_transport(self)
+        #     chan._set_window(
+        #         self.default_window_size, self.default_max_packet_size
+        #     )
+        #     chan._set_remote_channel(
+        #         chanid, initial_window_size, max_packet_size
+        #     )
+        # finally:
+        #     self.lock.release()
+        # #TODO Abstract this into a spearate function
+        # m = Message()
+        # m.add_byte(cMSG_CHANNEL_OPEN_SUCCESS)
+        # m.add_int(chanid)
+        # m.add_int(my_chanid)
+        # m.add_int(self.default_window_size)
+        # m.add_int(self.default_max_packet_size)
+        # self._send_message(m)
+        # self._log(
+        #     DEBUG, "Secsh channel {:d} ({}) opened.".format(my_chanid, kind)
+        # )
+        # if kind == "auth-agent@openssh.com":
+        #     self._forward_agent_handler(chan)
+        # elif kind == "x11":
+        #     self._x11_handler(chan, (origin_addr, origin_port))
+        # elif kind == "forwarded-tcpip":
+        #     chan.origin_addr = (origin_addr, origin_port)
+        #     self._tcp_handler(
+        #         chan, (origin_addr, origin_port), (server_addr, server_port)
+        #     )
+        # else:
+        #     self._queue_incoming_channel(chan)
 
     def _parse_debug(self, m):
         m.get_boolean()  # always_display
