@@ -13,15 +13,11 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     echo "Usage: ./sut.sh [opt]"
     echo "[opt]:"
     echo -e "\t-db  --dropbear"
-    echo -e "\t-os  --oppenssh"
     echo -e "\t-p\tport to listen to"
     exit
     ;;
   -db | --dropbear )
     db=1
-    ;;
-  -os | --openssh )
-    openssh=1
     ;;
   -p | --port )
 	shift; port=$1
@@ -36,6 +32,3 @@ if [[ $db -eq 1 ]]; then
     make
   fi
 	sudo ./dropbear -R -F -E -p  localhost:$port
-elif [[ $openssh -eq 1 ]]; then
-	echo "OpenSSH"
-fi

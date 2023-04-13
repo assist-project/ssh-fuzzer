@@ -15,10 +15,14 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     echo -e "\t-db  --dropbear"
     echo -e "\t-l\tport to learner"
     echo -e "\t-s\tport to server"
+    echo -e "\t-f   --fuzz [client | server]"
     exit
     ;;
   -db | --dropbear )
     mapper="Dropbear"
+    ;;
+  -ssh | --openssh )
+    mapper="OpenSSH"
     ;;
   -l )
     shift; lport=$1
@@ -26,10 +30,13 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
   -s )
     shift; sport=$1
     ;;
+  -f | --fuzz )
+    shift; sut="-f $1"
+    ;;
 esac; shift; done
 if [[ "$1" == '--' ]]; then shift; fi
 
 
 
 cd ssh-mapper/
-python3 mapper/mapper.py -l localhost:$lport -s localhost:$sport -c $mapper
+python3 mapper/mapper.py -l localhost:$lport -s localhost:$sport -c $mapper $sut
