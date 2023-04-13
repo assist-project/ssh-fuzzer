@@ -28,6 +28,7 @@ public class AlphabetFactory {
 					,"UA_PW_OK"
 					,"UA_NONE"
                                         ,"UA_SUCCESS"
+										,"UA_FAILURE"
 					,"CH_OPEN"
 					,"CH_CLOSE"
 					,"CH_EOF"
