@@ -30,7 +30,7 @@ alphabet=!DISCONNECT;\
 !KEX31;\
 !NEWKEYS;\
 !SR_AUTH;\
-!SR_ACCEPT;\
+SR_ACCEPT;\
 !SR_CONN;\
 !UA_PK_NOK;\
 !UA_PK_OK;\

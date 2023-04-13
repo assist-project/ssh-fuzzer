@@ -14,7 +14,7 @@ specification=bv_spec.smv
 roundLimit=2
 # initialize the cache with that of a previous experiment  
 # path from ssh-learner root dir
-#cache=./output/Test1679554166777/cache.db
+#cache=./cache/which-test/cache.db
 # the maximum number of retries attempted in case of non-determinism before concluding that it cannot be resolved
 maxNonDeterminismRetries=3
 # the address at which the mapper is listening 
