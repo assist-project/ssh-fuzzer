@@ -2048,9 +2048,15 @@ class Transport(threading.Thread, ClosingContextManager):
 
     def fuzz_rekey(self):
         # This performs a complete rekey procedure
-        kexinit = self.fuzz_kex_init()
-        kexdh = self.fuzz_kexdh_init()
-        newkeys = self.fuzz_newkeys()
+
+        if self.server_mode:
+            kexinit = self.fuzz_kex_init()
+            kexdh = self.fuzz_kexdh_init_reply()
+            newkeys = self.fuzz_newkeys()
+        else:
+            kexinit = self.fuzz_kex_init()
+            kexdh = self.fuzz_kexdh_init()
+            newkeys = self.fuzz_newkeys()
 
         return '%s|%s|%s' % (kexinit, kexdh, newkeys)
 
@@ -2415,35 +2421,24 @@ class Transport(threading.Thread, ClosingContextManager):
 
         return self.read_multiple_responses()
     
-    def fuzz_ch_open_success(self):
-        #HACK This is a bif of a hack
-        #     Has to specify my_chanid/ chanid/ initial_window_size/ max_packet_size
-        my_chanid = self._next_channel()
-        chanid = 10
-        initial_window_size = 10
-        max_packet_size = 10
-
-        chan = Channel(my_chanid)
-        self.lock.acquire()
-        try:
-            self._channels.put(my_chanid, chan)
-            self.channels_seen[my_chanid] = True
-            chan._set_transport(self)
-            chan._set_window(
-                self.default_window_size, self.default_max_packet_size
+    def fuzz_ch_open_confirmation(self):
+   
+        if self.ch_success_message:
+            # There is a real message to be sent
+            self._send_message(self.ch_success_message)
+        else:
+            self._log(
+                DEBUG, "Not sending a real channel success message: {}".format(self.ch_success_message)
             )
-            chan._set_remote_channel(
-                chanid, initial_window_size, max_packet_size
-            )
-        finally:
-            self.lock.release()
-        m = Message()
-        m.add_byte(cMSG_CHANNEL_OPEN_SUCCESS)
-        m.add_int(chanid)
-        m.add_int(my_chanid)
-        m.add_int(self.default_window_size)
-        m.add_int(self.default_max_packet_size)
-        self._send_message(m)
+            #HACK This is a bif of a hack
+            #     Has to specify my_chanid/ chanid/ initial_window_size/ max_packet_size
+            m = Message()
+            m.add_byte(cMSG_CHANNEL_OPEN_SUCCESS)
+            m.add_int(10)
+            m.add_int(10)
+            m.add_int(self.default_window_size)
+            m.add_int(self.default_max_packet_size)
+            self._send_message(m)
 
         return self.read_multiple_responses()
 
@@ -3425,6 +3420,8 @@ class Transport(threading.Thread, ClosingContextManager):
         initial_window_size = m.get_int()
         max_packet_size = m.get_int()
         reject = False
+
+
         if (
             kind == "auth-agent@openssh.com"
             and self._forward_agent_handler is not None
@@ -3478,27 +3475,31 @@ class Transport(threading.Thread, ClosingContextManager):
                 my_chanid = self._next_channel()
             finally:
                 self.lock.release()
-            if kind == "direct-tcpip":
-                # handle direct-tcpip requests coming from the client
-                dest_addr = m.get_text()
-                dest_port = m.get_int()
-                origin_addr = m.get_text()
-                origin_port = m.get_int()
-                reason = self.server_object.check_channel_direct_tcpip_request(
-                    my_chanid,
-                    (origin_addr, origin_port),
-                    (dest_addr, dest_port),
-                )
-            else:
-                reason = self.server_object.check_channel_request(
-                    kind, my_chanid
-                )
-            if reason != OPEN_SUCCEEDED:
-                self._log(
-                    DEBUG,
-                    'Rejecting "{}" channel request from client.'.format(kind),
-                )
-                reject = True
+
+            # For thesis, removed this we don't really have to open up a channel
+
+            # if kind == "direct-tcpip":
+            #     # handle direct-tcpip requests coming from the client
+            #     dest_addr = m.get_text()
+            #     dest_port = m.get_int()
+            #     origin_addr = m.get_text()
+            #     origin_port = m.get_int()
+            #     reason = self.server_object.check_channel_direct_tcpip_request(
+            #         my_chanid,
+            #         (origin_addr, origin_port),
+            #         (dest_addr, dest_port),
+            #     )
+            # else:
+            #     reason = self.server_object.check_channel_request(
+            #         kind, my_chanid
+            #     )
+            # if reason != OPEN_SUCCEEDED:
+            #     self._log(
+            #         DEBUG,
+            #         'Rejecting "{}" channel request from client.'.format(kind),
+            #     )
+            #     reject = True
+
 
         # For thesis work this negative response is removed
         # want to send commands manually
@@ -3516,42 +3517,43 @@ class Transport(threading.Thread, ClosingContextManager):
 
         # For thesis work this positive response is removed as well
 
-        # chan = Channel(my_chanid)
-        # self.lock.acquire()
-        # try:
-        #     self._channels.put(my_chanid, chan)
-        #     self.channels_seen[my_chanid] = True
-        #     chan._set_transport(self)
-        #     chan._set_window(
-        #         self.default_window_size, self.default_max_packet_size
-        #     )
-        #     chan._set_remote_channel(
-        #         chanid, initial_window_size, max_packet_size
-        #     )
-        # finally:
-        #     self.lock.release()
-        # #TODO Abstract this into a spearate function
-        # m = Message()
-        # m.add_byte(cMSG_CHANNEL_OPEN_SUCCESS)
-        # m.add_int(chanid)
-        # m.add_int(my_chanid)
-        # m.add_int(self.default_window_size)
-        # m.add_int(self.default_max_packet_size)
+        chan = Channel(my_chanid)
+        self.lock.acquire()
+        try:
+            self._channels.put(my_chanid, chan)
+            self.channels_seen[my_chanid] = True
+            chan._set_transport(self)
+            chan._set_window(
+                self.default_window_size, self.default_max_packet_size
+            )
+            chan._set_remote_channel(
+                chanid, initial_window_size, max_packet_size
+            )
+        finally:
+            self.lock.release()
+        #TODO Abstract this into a spearate function
+        m = Message()
+        m.add_byte(cMSG_CHANNEL_OPEN_SUCCESS)
+        m.add_int(chanid)
+        m.add_int(my_chanid)
+        m.add_int(self.default_window_size)
+        m.add_int(self.default_max_packet_size)
+        self.ch_success_message = m
         # self._send_message(m)
-        # self._log(
-        #     DEBUG, "Secsh channel {:d} ({}) opened.".format(my_chanid, kind)
-        # )
-        # if kind == "auth-agent@openssh.com":
-        #     self._forward_agent_handler(chan)
-        # elif kind == "x11":
-        #     self._x11_handler(chan, (origin_addr, origin_port))
-        # elif kind == "forwarded-tcpip":
-        #     chan.origin_addr = (origin_addr, origin_port)
-        #     self._tcp_handler(
-        #         chan, (origin_addr, origin_port), (server_addr, server_port)
-        #     )
-        # else:
-        #     self._queue_incoming_channel(chan)
+        self._log(
+            DEBUG, "Secsh channel {:d} ({}) opened.".format(my_chanid, kind)
+        )
+        if kind == "auth-agent@openssh.com":
+            self._forward_agent_handler(chan)
+        elif kind == "x11":
+            self._x11_handler(chan, (origin_addr, origin_port))
+        elif kind == "forwarded-tcpip":
+            chan.origin_addr = (origin_addr, origin_port)
+            self._tcp_handler(
+                chan, (origin_addr, origin_port), (server_addr, server_port)
+            )
+        else:
+            self._queue_incoming_channel(chan)
 
     def _parse_debug(self, m):
         m.get_boolean()  # always_display

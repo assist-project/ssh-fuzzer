@@ -37,7 +37,7 @@ class Processor:
             self.global_to = 0.9
             self.global_to_total = 1.0
             self.buffer_after_newkey = True
-            self.ssh_client_source = "ssh" #TODO Chnage depending on where OpenSSH can be accessed
+            self.ssh_client_source = "ssh -oKexAlgorithms=+diffie-hellman-group1-sha1" #TODO Chnage depending on where OpenSSH can be accessed
 
         elif config == "BitVise":
         #Timing params (for BitVise)
@@ -61,7 +61,7 @@ class Processor:
             self.global_to_total = 0.35
             self.cmd_to = 0.25
             self.buffer_after_newkey = False
-            self.ssh_client_source = "~/school/exjobb/ssh-fuzzer/SUTs/dropbear-2022.83/dbclient " #TODO Chnage depending on where Dropbear can be accessed
+            self.ssh_client_source = "dbclient" #TODO Chnage depending on where Dropbear can be accessed
         else:
             raise Exception("Unknown configuration " + config)
 
@@ -74,8 +74,9 @@ class Processor:
         sock.listen(10)
         print("Waiting for SUT to connect")
 
-        msg = self.ssh_client_source + "-p " + str(self.ssh_port) + " " + str(self.ssh_host)
+        msg = self.ssh_client_source + " -p " + str(self.ssh_port) + " " + str(self.ssh_host)
         os.popen(msg)
+        print("MSG: ", msg)
 
         conn, addr = sock.accept()
         print('Connected with ' + addr[0] + ':' + str(addr[1]))
@@ -164,7 +165,7 @@ class Processor:
         #Not sure, think Mapper
         if query in MSG_MAPPING:
             try:
-                print("MSG_MAPPING[query]: ", MSG_MAPPING[query])
+                #print("MSG_MAPPING[query]: ", MSG_MAPPING[query])
                 x = getattr(self.transport, MSG_MAPPING[query])()
                 return x
             except Exception as e:

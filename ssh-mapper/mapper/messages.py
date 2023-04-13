@@ -87,11 +87,21 @@ MSG_MAPPING = {
     'SEQ_REKEY': 'seq_rekey',
 
     # For client fuzzing
+
+    # Transport layer RFC 4253
     'KEX31': 'fuzz_kexdh_init_reply',
     'SR_ACCEPT': 'fuzz_sr_accept',
+    'EXT_INFO': 'fuzz_ext_info',
+
+    # Authenitcation layer RFC 4252
     'UA_SUCCESS': 'fuzz_ua_success',
     'UA_FAILURE': 'fuzz_ua_failure',
-    'EXT_INFO': 'fuzz_ext_info',
+    
+    # Connection layer RFC 4254
+    'CH_OPEN_CONF': 'fuzz_ch_open_confirmation',
+    'CH_OPEN_FAIL': 'fuzz_ch_open_failure',
+    
+    
 
 }
 
