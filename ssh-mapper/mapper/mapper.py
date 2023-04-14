@@ -9,7 +9,7 @@ from messages import MSG_MAPPING
 
 
 
-class Processor(object):
+class Processor:
     ssh_sock = None
     transport = None
 
@@ -130,7 +130,8 @@ class Processor(object):
         #Not sure, think Mapper
         if query in MSG_MAPPING:
             try:
-                return getattr(self.transport, MSG_MAPPING[query])()
+                x = getattr(self.transport, MSG_MAPPING[query])()
+                return x
             except Exception as e:
                 print('An exception has occured: %s' % e)
                 traceback.print_exc()
@@ -185,18 +186,17 @@ class Processor(object):
                         repeat = 1
 
                     #Mapper
-                    if len(commands) > 1 and 'reset' not in commands:
+                    if len(commands) > 1 and b'reset' not in commands:
                         raise Exception('You are doing a multiquery but you are not resetting your sut')
 
                     # Execute single OR multiquery 'repeat'-many times
                     #Mapper
-                    for i in xrange(repeat):
+                    for i in range(repeat):
                         result = ''
                         for ci, command in enumerate(commands):
                             print('[%s]' % self.transport)
                             print('Sending %s...' % command)
-                            response = self.process_learlib_query(command)
-
+                            response = self.process_learlib_query(command.decode('UTF-8'))
                             result += response
                             # If this is not the last command, add a space
                             if ci != len(commands)-1:
@@ -207,7 +207,9 @@ class Processor(object):
                             time.sleep(self.cmd_to)
 
                         # Add a newline after a run of one or many commands
-                        conn.send('%s\n' % result)
+                        result += '\n'
+                        
+                        conn.send(str.encode(result))
                 except socket.error:
                     print('\nCient disconnected (socket.error)')
                     break
@@ -240,5 +242,5 @@ server_addr = parse_address(args.server)
 config = args.config
 
 proc = Processor(learnlib=learnlib_addr, ssh=server_addr, config=args.config)
-print "Starting mapper with parameters\n", vars(proc)
+print( "Starting mapper with parameters\n", vars(proc))
 proc.listen()

@@ -1,0 +1,27 @@
+bcrypt>=3.2
+cryptography>=3.3
+pynacl>=1.5
+
+[all]
+invoke>=2.0
+pyasn1>=0.1.7
+
+[all:platform_system != "Windows"]
+gssapi>=1.4.1
+
+[all:platform_system == "Windows"]
+pywin32>=2.1.8
+
+[ed25519]
+
+[gssapi]
+pyasn1>=0.1.7
+
+[gssapi:platform_system != "Windows"]
+gssapi>=1.4.1
+
+[gssapi:platform_system == "Windows"]
+pywin32>=2.1.8
+
+[invoke]
+invoke>=2.0

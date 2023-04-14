@@ -8,7 +8,9 @@ eqOracle=RANDOM
 maxNumTests=20000
 
 # the time limit set for learning experiments
-#timeLimit=P2D
+# PT <num> H/M/S        PT10M
+# P <num> D             P1D     P1DT6H
+#timeLimit=P1DT1M
 
 # a maximum number of learning rounds (= hypotheses generated)
 #roundLimit=1
@@ -29,25 +31,25 @@ maxNonDeterminismRetries=3
 mapperAddress=localhost:8000
 
 # the input alphabet, sep by ';', start with '!' inputs that you want commented out 
-alphabet=DISCONNECT;\
-IGNORE;\
-UNIMPL;\
-DEBUG;\
+alphabet=!DISCONNECT;\
+!IGNORE;\
+!UNIMPL;\
+!DEBUG;\
 KEXINIT;\
-KEXINIT_PROCEED;\
+!KEXINIT_PROCEED;\
 KEX30;\
 NEWKEYS;\
 SR_AUTH;\
-SR_CONN;\
-UA_PK_NOK;\
+!SR_CONN;\
+!UA_PK_NOK;\
 UA_PK_OK;\
-UA_PW_NOK;\
-UA_PW_OK;\
-UA_NONE;\
-CH_OPEN;\
-CH_CLOSE;\
-CH_EOF;\
-CH_DATA;\
-CH_EXTENDED_DATA;\
-CH_WINDOW_ADJUST;\
-CH_REQUEST_PTY
+!UA_PW_NOK;\
+!UA_PW_OK;\
+!UA_NONE;\
+!CH_OPEN;\
+!CH_CLOSE;\
+!CH_EOF;\
+!CH_DATA;\
+!CH_EXTENDED_DATA;\
+!CH_WINDOW_ADJUST;\
+!CH_REQUEST_PTY

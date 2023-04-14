@@ -21,7 +21,7 @@ public class WordProcessor implements MealyMembershipOracle<String, String> {
 		// Set the logger
 		this.sqllog = sqllog;
 		
-		this.retrieveFromCache = true;
+		this.retrieveFromCache = retrieveFromCache;
 		
 		this.queryCounter = queryCounter;
 	}
@@ -125,7 +125,7 @@ public class WordProcessor implements MealyMembershipOracle<String, String> {
 	public void processQueries(Collection<? extends Query<String, Word<String>>> queries) {
 		for (Query<String, Word<String>> query : queries) {
 			Word<String> answer = processQuery(query.getInput());
-			query.answer(answer);
+			query.answer(answer.subWord(query.getPrefix().length()));
 		}
 	}
 }
