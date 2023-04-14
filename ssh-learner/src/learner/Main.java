@@ -114,13 +114,13 @@ public class Main {
 		Logger sqllog = new Logger(dbFile, config.sutName);
 
 		// And test oracle
-		MealyMembershipOracle<String, String> testOracle = new TestOracle(sut, sqllog);
+		Counter testQueryCounter = new Counter("Test Query Counter");
+		MealyMembershipOracle<String, String> testOracle = new WordProcessor(sut, sqllog, true, testQueryCounter);
 		if (config.testWords != null) {
 			runTests(testOracle, config.testWords);
 			System.exit(0);
 		}
 		
-		Counter testQueryCounter = ((TestOracle) testOracle).getQueryCounter();
 		testOracle = new NonDeterminismRetryingSutOracle<>(testOracle, config.maxNonDeterminismRetries, System.out);
 		if (config.timeTimit != null) {
 			testOracle = new TimeoutOracleWrapper<>(testOracle, config.timeTimit);
@@ -128,9 +128,8 @@ public class Main {
 		Integer roundLimit = config.roundLimit;
 
 		// Create learnlib objects: membershipOracle, EquivalenceOracles and
-		// Learner
-		MealyMembershipOracle<String, String> membershipOracle = new MembershipOracle(sut, sqllog);
-		Counter membershipQueryCounter = ((MembershipOracle) membershipOracle).getQueryCounter();
+		Counter membershipQueryCounter = new Counter("Membership Query Counter");
+		MealyMembershipOracle<String, String> membershipOracle = new WordProcessor(sut, sqllog, true, membershipQueryCounter);
 		membershipOracle = new NonDeterminismRetryingSutOracle<>(membershipOracle, config.maxNonDeterminismRetries, System.out);
 		if (config.timeTimit != null) {
 			membershipOracle = new TimeoutOracleWrapper<>(membershipOracle, config.timeTimit);
