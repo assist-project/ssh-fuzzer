@@ -487,6 +487,7 @@ class Packetizer:
                 self.__mac_key_in, mac_payload, self.__mac_engine_in
             )[: self.__mac_size_in]
             if not util.constant_time_bytes_eq(my_mac, mac):
+                return 90001, b'Mismatched MAC' #NOTE Self implemented message, There is a mismatch of MAC between SUT and mapper. Not sure which is wrong
                 raise SSHException("Mismatched MAC")
             header = packet
 

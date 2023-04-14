@@ -2413,8 +2413,18 @@ class Transport(threading.Thread, ClosingContextManager):
     def fuzz_ch_open_failure(self):
         msg = Message()
         msg.add_byte(cMSG_CHANNEL_OPEN_FAILURE)
-        msg.add_int(10)
-        msg.add_int(10)
+
+        if self.ch_success_message:
+            self.ch_success_message.get_string()
+            self.ch_success_message.get_string()
+            self.ch_success_message.get_int()
+            chanid = self.ch_success_message.get_int()
+            msg.add_int(chanid)
+            msg.add_int(10) #NOTE Error code, is just set to something
+        else:
+            msg.add_int(10)
+            msg.add_int(10)
+
         msg.add_string("")
         msg.add_string("en")
         self._send_message(msg)
@@ -2427,9 +2437,6 @@ class Transport(threading.Thread, ClosingContextManager):
             # There is a real message to be sent
             self._send_message(self.ch_success_message)
         else:
-            self._log(
-                DEBUG, "Not sending a real channel success message: {}".format(self.ch_success_message)
-            )
             #HACK This is a bif of a hack
             #     Has to specify my_chanid/ chanid/ initial_window_size/ max_packet_size
             m = Message()
