@@ -76,7 +76,6 @@ class Processor:
 
         msg = self.ssh_client_source + " -p " + str(self.ssh_port) + " " + str(self.ssh_host)
         os.popen(msg)
-        print("MSG: ", msg)
 
         conn, addr = sock.accept()
         print('Connected with ' + addr[0] + ':' + str(addr[1]))
@@ -149,10 +148,11 @@ class Processor:
             # self.process_learlib_query("SERVICE_REQUEST_AUTH")
             # self.process_learlib_query("UA_PK_OK")
 
-            if self.learnlib_port == 9000 and self.fuzz == "client":
+            if self.learnlib_port >= 10000 and self.fuzz == "client":
                 self.process_learlib_query("KEXINIT")
                 self.process_learlib_query("KEX31")
                 self.process_learlib_query("NEWKEYS")
+                self.process_learlib_query("SR_ACCEPT")
 
             if self.fuzz == "client": #NOTE Should not need this, already there in kex_group1.py:_fuzz_send_kexdh_reply if KEX31 is sent before KEXINIT
                 path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')

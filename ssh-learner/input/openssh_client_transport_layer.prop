@@ -1,5 +1,5 @@
 # the name of the sut you want to learn
-name=NO_1_CLIENT_TRANSPORT_LAYER_
+name=OPENSSH_CLIENT_TRANSPORT_LAYER_
 # the equ oracles used (RANDOM, EXHAUSTIVE, WORDS, CONFORMANCE), sep. by ';'
 eqOracle=RANDOM
 # the maximum number of tests (for the RANDOM equ oracle)
@@ -9,12 +9,12 @@ specification=bv_spec.smv
 # the time limit set for learning experiments
 # PT <num> H/M/S        PT10M
 # P <num> D             P1D     P1DT6H
-#timeLimit=P1DT1M
+timeLimit=PT6H
 # a maximum number of learning rounds (= hypotheses generated)
-roundLimit=2
+#roundLimit=2
 # initialize the cache with that of a previous experiment  
 # path from ssh-learner root dir
-#cache=./output/Test1679554166777/cache.db
+#cache=./cache/which-test/cache.db
 # the maximum number of retries attempted in case of non-determinism before concluding that it cannot be resolved
 maxNonDeterminismRetries=3
 # the address at which the mapper is listening 
@@ -24,11 +24,12 @@ alphabet=!DISCONNECT;\
 !IGNORE;\
 !UNIMPL;\
 !DEBUG;\
-!KEXINIT;\
+!REKEY;\
+KEXINIT;\
 !KEXINIT_PROCEED;\
 !KEX30;\
-!KEX31;\
-!NEWKEYS;\
+KEX31;\
+NEWKEYS;\
 !SR_AUTH;\
 SR_ACCEPT;\
 !SR_CONN;\
@@ -37,8 +38,8 @@ SR_ACCEPT;\
 !UA_PW_NOK;\
 !UA_PW_OK;\
 !UA_NONE;\
-UA_SUCCESS;\
-UA_FAILURE;\
+!UA_SUCCESS;\
+!UA_FAILURE;\
 !CH_OPEN;\
 !CH_CLOSE;\
 !CH_EOF;\
