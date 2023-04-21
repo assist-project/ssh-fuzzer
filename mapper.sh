@@ -4,19 +4,29 @@ lport="8000"
 sport="7000"
 mapper="Dropbear"
 
+
+print_help(){
+  echo "Usage: ./mapper.sh [opt]"
+  echo "[opt]:"
+  echo -e "\t-db   --dropbear\n\t    Fuzz Dropbear\n"
+  echo -e "\t-ssh  --openssh\n\t    Fuzz OpenSSH\n"
+  echo -e "\t-p    --protocol [Dropbear | OpenSSH]\n\t    Alternate way to define protocol\n"
+  echo -e "\t-l <num>\n\t    port to learner\n"
+  echo -e "\t-s <num>\n\t    port to server\n"
+  echo -e "\t-f   --fuzz [client | server]\n\t    Fuzz the client or the server\n"
+  exit
+}
+
+if [[ $# < 1 ]]; then
+  print_help
+fi
+
 while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
-  -V | --version )
-    echo "$version"
-    exit
-    ;;
   -h | --help )
-    echo "Usage: ./mapper.sh [opt]"
-    echo "[opt]:"
-    echo -e "\t-db  --dropbear"
-    echo -e "\t-l\tport to learner"
-    echo -e "\t-s\tport to server"
-    echo -e "\t-f   --fuzz [client | server]"
-    exit
+    print_help
+    ;;
+  -p | --protocol )
+    shift; mapper=$1
     ;;
   -db | --dropbear )
     mapper="Dropbear"
