@@ -2,14 +2,12 @@
 
 lport="8000"
 sport="7000"
-mapper="Dropbear"
-
 
 print_help(){
   echo "Usage: ./mapper.sh [opt]"
   echo "[opt]:"
-  echo -e "\t-db   --dropbear\n\t    Fuzz Dropbear\n"
-  echo -e "\t-ssh  --openssh\n\t    Fuzz OpenSSH\n"
+  echo -e "\t--db\n\t    Fuzz Dropbear\n"
+  echo -e "\t--ssh\n\t    Fuzz OpenSSH\n"
   echo -e "\t-p    --protocol [Dropbear | OpenSSH]\n\t    Alternate way to define protocol\n"
   echo -e "\t-l <num>\n\t    port to learner\n"
   echo -e "\t-s <num>\n\t    port to server\n"
@@ -28,10 +26,10 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
   -p | --protocol )
     shift; mapper=$1
     ;;
-  -db | --dropbear )
+  --db )
     mapper="Dropbear"
     ;;
-  -ssh | --openssh )
+  --ssh )
     mapper="OpenSSH"
     ;;
   -l )
@@ -43,8 +41,19 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
   -f | --fuzz )
     shift; sut="-f $1"
     ;;
+  --client )
+    sut="-f client"
+    ;;
+  --server )
+    sut="-f server"
+    ;;
 esac; shift; done
 if [[ "$1" == '--' ]]; then shift; fi
+
+if [[ -z "$mapper" ]]; then
+  echo -e "==> ERROR: '$mapper' is not a valid protocol"
+  print_help
+fi
 
 
 

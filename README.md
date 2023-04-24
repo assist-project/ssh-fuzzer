@@ -8,6 +8,13 @@
   - [ ] Implement responses as stated in _4.1.2. Initial Assignments_
 
 
+### Debug
+- [ ] Look into Timing parameters which might causing errors
+- [x] KEX30* (db common-kex.c:474 / cli-session.c:220)
+- [ ] Why only newkeys is sent (db cli-kex.c:101)
+- [ ] UA_FAILURE might have some issues (db generate BlockingIO and OpenSSH generate non-determinism?)
+- [ ] The Non-determinism showing for OpenSSH might be timing related
+
 
 **SSH-Fuzzer** is a protocol state fuzzer for SSH, derived from the [artifact][learning-ssh-artifact] of the publication "Model Learning and Model Checking of SSH Implementations".
 
