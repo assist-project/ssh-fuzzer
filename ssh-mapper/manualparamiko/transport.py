@@ -64,6 +64,7 @@ from manualparamiko.common import (
     cMSG_CHANNEL_OPEN_FAILURE,
     cMSG_CHANNEL_OPEN_SUCCESS,
     MSG_GLOBAL_REQUEST,
+    MSG_SERVICE_REQUEST,
     MSG_REQUEST_SUCCESS,
     MSG_REQUEST_FAILURE,
     MSG_CHANNEL_OPEN_SUCCESS,
@@ -521,6 +522,8 @@ class Transport(threading.Thread, ClosingContextManager):
         self.global_to_total = global_to_total
 
         self.buffer_after_newkey = buffer_after_newkey
+
+        self.service_requested = ""
 
 
     def _filter_algorithm(self, type_):
@@ -2227,7 +2230,9 @@ class Transport(threading.Thread, ClosingContextManager):
     def fuzz_newkeys(self):
         #    and that object does not contain any info how do we access the correct element?
         self._activate_outbound()
-
+        # m = Message()
+        # m.add_byte(cMSG_NEWKEYS)
+        # self._send_message(m)
         return self.read_multiple_responses()
 
     def fuzz_channel_open(self):
@@ -2395,6 +2400,7 @@ class Transport(threading.Thread, ClosingContextManager):
     def fuzz_sr_accept(self):
         m = Message()
         m.add_byte(cMSG_SERVICE_ACCEPT)
+        m.add_string(self.service_requested)
         self._send_message(m)
         return self.read_multiple_responses()
 
@@ -2531,6 +2537,7 @@ class Transport(threading.Thread, ClosingContextManager):
 
             # (Mostly) state-changing handlers.
             handlers = {
+                MSG_SERVICE_REQUEST: lambda m: self._parse_service_request(m),
                 MSG_KEXINIT: lambda m: self._negotiate_keys(m),
                 30: lambda m: self.kex_engine._parse_kexdh_init(m),
                 31: lambda m: self.kex_engine._parse_kexdh_reply(m),
@@ -2808,9 +2815,9 @@ class Transport(threading.Thread, ClosingContextManager):
         finally:
             
             self.clear_to_send_lock.release()
-        if self.local_kex_init is None:
+        #if self.local_kex_init is None:
             # remote side wants to renegotiate
-            self._send_kex_init()
+            #self._send_kex_init()
         self._parse_kex_init(m)
         # self.kex_engine.start_kex()
 
@@ -3291,6 +3298,9 @@ class Transport(threading.Thread, ClosingContextManager):
         # messages; the RFC explicitly states a 2nd one should overwrite the
         # 1st.
         self.server_extensions = extensions
+
+    def _parse_service_request(self, msg):
+        self.service_requested = msg.get_string()
 
     def _parse_newkeys(self, m):
         self._log(DEBUG, "Switch to new keys ...")

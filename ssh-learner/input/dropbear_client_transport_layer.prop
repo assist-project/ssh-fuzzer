@@ -14,7 +14,7 @@ timeLimit=PT6H
 #roundLimit=2
 # initialize the cache with that of a previous experiment  
 # path from ssh-learner root dir
-#cache=./cache/which-test/cache.db
+cache=./output/NEW_1_Client_Transport_and_Auth1680856304651/cache.db
 # the maximum number of retries attempted in case of non-determinism before concluding that it cannot be resolved
 maxNonDeterminismRetries=3
 # the address at which the mapper is listening 
