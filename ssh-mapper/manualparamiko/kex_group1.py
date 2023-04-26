@@ -165,7 +165,7 @@ class KexGroup1:
         K = pow(self.e, self.x, self.P)
         key = self.transport.get_server_key()#.asbytes()
 
-        if key == None: #NOTE This is in order to send a KEX31 before KEXINIT
+        if key == None or self.transport.remote_kex_init == None or self.transport.local_kex_init == None: #NOTE This is in order to send a KEX31 before KEXINIT
             path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
             key = manualparamiko.RSAKey.from_private_key_file(path)
             self.transport.add_server_key(key)
