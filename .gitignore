@@ -27,3 +27,4 @@ ssh-mapper/paramiko.egg-info/**
 ssh-mapper/build/**
 ssh-mapper/dist/**
 ssh-mapper/mapper/__pycache__/**
+ssh-learner/target/**
