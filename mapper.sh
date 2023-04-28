@@ -6,12 +6,15 @@ sport="7000"
 print_help(){
   echo "Usage: ./mapper.sh [opt]"
   echo "[opt]:"
+  echo -e "\t-v   --verbosity <num>\n\t    Select the verbosity of the (clinet) SUT.\n\t    0 - None\n\t    1 - Mild\n\t    2 - Mid\n\t    3 - High\n"
   echo -e "\t--db\n\t    Fuzz Dropbear\n"
   echo -e "\t--ssh\n\t    Fuzz OpenSSH\n"
   echo -e "\t-p    --protocol [Dropbear | OpenSSH]\n\t    Alternate way to define protocol\n"
   echo -e "\t-l <num>\n\t    port to learner\n"
   echo -e "\t-s <num>\n\t    port to server\n"
   echo -e "\t-f   --fuzz [client | server]\n\t    Fuzz the client or the server\n"
+  echo -e "\t--client\n\t    Alternate way of fuzzing client\n"
+  echo -e "\t--server\n\t    Alternate way of fuzzing server\n"
   exit
 }
 
@@ -47,6 +50,9 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
   --server )
     sut="-f server"
     ;;
+  -v | --verbosity )
+    shift; verbosity="-v $1"
+    ;;
 esac; shift; done
 if [[ "$1" == '--' ]]; then shift; fi
 
@@ -58,4 +64,4 @@ fi
 
 
 cd ssh-mapper/
-python3 mapper/mapper.py -l localhost:$lport -s localhost:$sport -c $mapper $sut
+python3 mapper/mapper.py -l localhost:$lport -s localhost:$sport $verbosity -c $mapper $sut

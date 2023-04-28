@@ -15,7 +15,7 @@ class Processor:
     transport = None
     ssh_client_source = None
 
-    def __init__(self, learnlib, ssh, config=None, fuzz="server"):
+    def __init__(self, learnlib, ssh, config=None, fuzz="server", verbosity=""):
         #Mapper
         self.learnlib_host = learnlib[0]
         self.learnlib_port = learnlib[1]
@@ -26,6 +26,8 @@ class Processor:
 
         # Which part should be fuzzed
         self.fuzz = fuzz
+
+        self.verbosity = verbosity
 
         if config is None or config == "OpenSSH":
             #Timing params (for openSSH)
@@ -74,7 +76,7 @@ class Processor:
         sock.listen(10)
         print("Waiting for SUT to connect")
 
-        msg = self.ssh_client_source + " -p " + str(self.ssh_port) + " " + str(self.ssh_host)
+        msg = self.ssh_client_source + self.verbosity + " -p " + str(self.ssh_port) + " " + str(self.ssh_host)
         os.popen(msg)
 
         conn, addr = sock.accept()
@@ -284,6 +286,7 @@ parser.add_argument('-l', "--listen", required=True, type=str, help="Listening a
 parser.add_argument('-s', "--server", required=True, type=str, help="SSH server address in the form host:port.")
 parser.add_argument('-c', "--config", required=False, default=None, choices=['OpenSSH', 'BitVise', 'Dropbear'], help="(Optional) Select a timing/alphabet configuration proven to sort of work with a particular implementation.")
 parser.add_argument('-f', "--fuzz", required=False, type=str, choices=['server', 'client'], help="(Optional) Select this if you want to fuzz client")
+parser.add_argument('-v', "--verbosity", required=False, default=0, type=int, choices=range(0,4), help="(Optional) Selects the verbosity level of the client SUT")
 args = parser.parse_args()
 
 #Unclear, contains both connection to SUT and learner
@@ -291,7 +294,15 @@ learnlib_addr = parse_address(args.listen)
 server_addr = parse_address(args.server)
 config = args.config
 fuzz = args.fuzz
+verbosity=""
 
-proc = Processor(learnlib=learnlib_addr, ssh=server_addr, config=args.config, fuzz=args.fuzz)
+if args.verbosity > 0:
+    verbosity = " -"
+
+for _ in range(args.verbosity):
+    verbosity += "v"
+
+
+proc = Processor(learnlib=learnlib_addr, ssh=server_addr, config=args.config, fuzz=args.fuzz, verbosity=verbosity)
 print( "Starting mapper with parameters\n", vars(proc))
 proc.listen()
