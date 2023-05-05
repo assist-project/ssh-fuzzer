@@ -165,14 +165,25 @@ class KexGroup1:
         K = pow(self.e, self.x, self.P)
         key = self.transport.get_server_key()#.asbytes()
 
-        if key == None or self.transport.remote_kex_init == None or self.transport.local_kex_init == None: #NOTE This is in order to send a KEX31 before KEXINIT
+        if key == None: #NOTE This is in order to send a KEX31 before KEXINIT
             path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
             key = manualparamiko.RSAKey.from_private_key_file(path)
             self.transport.add_server_key(key)
             self.transport.host_key_type = key.get_name()
+
+        try:
+            key = key.asbytes()
+        except:
+            key = ""
+
+        if self.transport.remote_version == None:
+            self.transport.remote_version = ""
+        if self.transport.local_version == None:
+            self.transport.local_version = ""
+        if self.transport.remote_kex_init == None:
             self.transport.remote_kex_init = ""
+        if self.transport.local_kex_init == None:
             self.transport.local_kex_init = ""
-        key = key.asbytes()
 
         # okay, build up the hash H of
         # (V_C || V_S || I_C || I_S || K_S || e || f || K)
@@ -200,4 +211,8 @@ class KexGroup1:
         m.add_mpint(self.f)
         m.add_string(sig)
         self.transport._send_message(m)
+        # print("MEssage M :", m)
+        # print("Sig: ", sig)
+        # The sig is differnet for the different KEX31 sent in the sequence KEXINIT KEX31 KECINIT KEX31..
+        # 
         #self.transport._activate_outbound()
