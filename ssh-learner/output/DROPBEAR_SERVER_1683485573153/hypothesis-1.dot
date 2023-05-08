@@ -1,0 +1,25 @@
+digraph g {
+
+	s0 [shape="circle" label="s0"];
+	s1 [shape="circle" label="s1"];
+	s2 [shape="circle" label="s2"];
+	s0 -> s2 [label="KEXINIT / KEXINIT"];
+	s0 -> s1 [label="KEX30 / KEXINIT+UNIMPL"];
+	s0 -> s1 [label="NEWKEYS / KEXINIT+UNIMPL"];
+	s0 -> s2 [label="SR_AUTH / KEXINIT"];
+	s0 -> s2 [label="UA_PK_OK / KEXINIT"];
+	s1 -> s2 [label="KEXINIT / NO_RESP"];
+	s1 -> s1 [label="KEX30 / UNIMPL"];
+	s1 -> s1 [label="NEWKEYS / UNIMPL"];
+	s1 -> s2 [label="SR_AUTH / NO_CONN"];
+	s1 -> s2 [label="UA_PK_OK / NO_CONN"];
+	s2 -> s2 [label="KEXINIT / NO_CONN"];
+	s2 -> s2 [label="KEX30 / NO_CONN"];
+	s2 -> s2 [label="NEWKEYS / NO_CONN"];
+	s2 -> s2 [label="SR_AUTH / NO_CONN"];
+	s2 -> s2 [label="UA_PK_OK / NO_CONN"];
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> s0;
+
+}
