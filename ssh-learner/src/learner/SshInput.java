@@ -6,6 +6,10 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abst
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.context.ExecutionContext;
 
 public class SshInput extends AbstractInput {
+    
+    public SshInput(String name) {
+        super(name);
+    }
 
     @Override
     public void preSendUpdate(ExecutionContext context) {

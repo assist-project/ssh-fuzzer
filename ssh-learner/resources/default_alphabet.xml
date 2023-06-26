@@ -1,0 +1,5 @@
+<alphabet>
+    <SshInput name="KEXINIT"/>
+    <SshInput name="KEX30"/>
+    <SshInput name="NEWKEYS"/>
+</alphabet>

@@ -6,11 +6,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class SocketSut implements Sut {
+public class SocketSul {
 	private PrintWriter sockout;
 	private BufferedReader sockin;
 
-	public SocketSut(Socket sock) {
+	public SocketSul(Socket sock) {
 		try {
 			// Create socket out (no buffering) and in 
 			sockout = new PrintWriter(sock.getOutputStream(), true);
@@ -23,7 +23,7 @@ public class SocketSut implements Sut {
 
 	public String sendInput(String input) {
 		try {	
-			// Send input to SUT
+			// Send input to SUL
 			sockout.println(input);
 			
 			return sockin.readLine();
@@ -35,8 +35,9 @@ public class SocketSut implements Sut {
 	}
 	
 	public void reset() {
-		// Perform a reset on the SUT: empty input list on wrapper and send reset signal
+		// Perform a reset on the SUL: empty input list on wrapper and send reset signal
 		sockout.println("reset");
+		sockout.flush();
 		
 		// Check if reset succeeded. Note: this is also needed because not receiving after reset will immediately continue
 		// to sending Input, allowing the possibility for the client to receive "reset INPUT" in one string. Reading in between
