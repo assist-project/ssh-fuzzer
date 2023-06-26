@@ -12,10 +12,10 @@ public class SshSulBuilder implements SulBuilder {
     public SshSul build(SulConfig sulConfig, CleanupTasks cleanupTasks) {
         try {
             if (sulConfig.isFuzzingClient()) {
-                    return new SshSul(new SshSulClientConfig(), cleanupTasks);
+                    return new SshSul((SshSulClientConfig) sulConfig, cleanupTasks);
                 
             } else {
-                return new SshSul(new SshSulServerConfig(), cleanupTasks);
+                return new SshSul((SshSulServerConfig) sulConfig, cleanupTasks);
             }
         } catch (IOException  e) {
             e.printStackTrace();

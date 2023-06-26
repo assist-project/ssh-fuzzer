@@ -11,13 +11,13 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abst
 import com.github.protocolfuzzing.protocolstatefuzzer.utils.CleanupTasks;
 
 public class SshSul extends AbstractSul {
-    private SocketSut socketSul;
+    private SocketSul socketSul;
 
-    public <T extends SulConfig & SshMapperAddress> SshSul(T sulConfig, CleanupTasks cleanupTasks) throws UnknownHostException, IOException {
+    public <T extends SulConfig & SshMapperHostProvider> SshSul(T sulConfig, CleanupTasks cleanupTasks) throws UnknownHostException, IOException {
         super(sulConfig, cleanupTasks);
         String host = sulConfig.getHost();
         String[] hostSplit = host.split("\\:");
-        if (hostSplit.length != 1) {
+        if (hostSplit.length != 2) {
             throw new RuntimeException("Invalid host, expected hostAddress:hostPort");
         }
         String hostAddress = hostSplit[0];
@@ -26,9 +26,10 @@ public class SshSul extends AbstractSul {
         cleanupTasks.submit(new Runnable() {
             @Override
             public void run() {
+                if (socketSul != null) {
+                    socketSul.reset();
+                }
                 try {
-                    sock.getInputStream().close();
-                    sock.getOutputStream().close();
                     sock.close();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
@@ -37,7 +38,7 @@ public class SshSul extends AbstractSul {
             }
         });
         
-        socketSul = new SocketSut(new Socket(hostAddress, hostPort));
+        socketSul = new SocketSul(sock);
     }
 
     @Override
@@ -54,5 +55,4 @@ public class SshSul extends AbstractSul {
         String output = socketSul.sendInput(in.getName());
         return new SshOutput(output);
     }
-
 }

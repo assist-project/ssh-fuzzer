@@ -48,20 +48,6 @@
             <artifactId>protocolstatefuzzer</artifactId>
             <version>1.0.0</version>
         </dependency>
-        
-        <!-- jaxb api -->
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>${jaxb-api.version}</version>
-        </dependency>
-
-        <!-- jaxb implementation -->
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>${jaxb-impl.version}</version>
-        </dependency>
 	</dependencies>
 	<build>
 		<finalName>ssh-learner</finalName>

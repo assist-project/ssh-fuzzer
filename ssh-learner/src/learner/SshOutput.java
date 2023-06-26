@@ -6,5 +6,4 @@ public class SshOutput extends AbstractOutput {
     public SshOutput(String name) {
         super(name);
     }
-
 }
