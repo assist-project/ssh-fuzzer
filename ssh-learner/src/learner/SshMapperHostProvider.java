@@ -1,5 +1,5 @@
 package learner;
 
-public interface SshMapperAddress {
+public interface SshMapperHostProvider {
     String getHost();
 }

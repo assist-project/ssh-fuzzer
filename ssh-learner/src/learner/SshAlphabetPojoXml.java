@@ -1,17 +1,18 @@
 package learner;
 
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.bind.annotation.XmlAccessType;
+import java.util.stream.Collectors;
 
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.alphabet.xml.AlphabetPojoXml;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractInput;
+
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElements;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 
 @XmlRootElement(name = "alphabet")
@@ -19,15 +20,24 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abst
 public class SshAlphabetPojoXml extends AlphabetPojoXml {
     
     @XmlElements(value = {
-            @XmlElement(type = SshInput.class, name = "SshInput")
+            @XmlElement(type = SshInputPojoXml.class, name = "SshInput")
     })
-    private List<SshInput> inputs;
+    private List<SshInputPojoXml> xmlInputs;
     
     public SshAlphabetPojoXml() {
+        xmlInputs = new ArrayList<>();
     }
     
     
     public List<AbstractInput> getInputs() {
-        return new ArrayList<>(inputs);
+        return xmlInputs.stream().map(xmlInput -> new SshInput(xmlInput.name)).collect(Collectors.toList());
+    }
+    
+    public static class SshInputPojoXml {
+        @XmlAttribute(name = "name", required = true)
+        private String name;
+        
+        public SshInputPojoXml( ) {
+        }
     }
 }
