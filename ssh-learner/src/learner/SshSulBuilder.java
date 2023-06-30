@@ -9,18 +9,16 @@ import com.github.protocolfuzzing.protocolstatefuzzer.utils.CleanupTasks;
 public class SshSulBuilder implements SulBuilder {
 
     @Override
-    public SshSul build(SulConfig sulConfig, CleanupTasks cleanupTasks) {
+    public SshMapperSul build(SulConfig sulConfig, CleanupTasks cleanupTasks) {
         try {
             if (sulConfig.isFuzzingClient()) {
-                    return new SshSul((SshSulClientConfig) sulConfig, cleanupTasks);
-                
+                    return new SshMapperSul((SshSulClientConfig) sulConfig, cleanupTasks);
             } else {
-                return new SshSul((SshSulServerConfig) sulConfig, cleanupTasks);
+                return new SshMapperSul((SshSulServerConfig) sulConfig, cleanupTasks);
             }
         } catch (IOException  e) {
-            e.printStackTrace();
+            throw new MapperException("Error creating SshMapperSul", e);
         } 
-        return null;
     }
 
 }
