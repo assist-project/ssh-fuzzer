@@ -1,5 +1,6 @@
 package learner;
 
+import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.protocol.ProtocolMessage;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractInput;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractOutput;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractOutputChecker;
@@ -13,25 +14,27 @@ public class SshInput extends AbstractInput {
 
     @Override
     public void preSendUpdate(ExecutionContext context) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public SshMessage generateProtocolMessage(ExecutionContext context) {
-        return new SshMessage(super.getName());
+    public ProtocolMessage generateProtocolMessage(ExecutionContext context) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void postSendUpdate(ExecutionContext context) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void postReceiveUpdate(AbstractOutput output, AbstractOutputChecker abstractOutputChecker,
             ExecutionContext context) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Enum<?> getInputType() {
-        return null;
+        throw new UnsupportedOperationException();
     }
-
 }
