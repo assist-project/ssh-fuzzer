@@ -10,6 +10,8 @@ public class SshSulClientConfig extends SulClientConfig implements SshMapperHost
     protected String host;
     public SshSulClientConfig() {
         super.setPort(0);
+        super.setResponseWait(0L);
+        super.setStartWait(0L);
     }
 
     @Override

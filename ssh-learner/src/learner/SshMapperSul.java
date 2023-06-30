@@ -10,15 +10,15 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abst
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractOutput;
 import com.github.protocolfuzzing.protocolstatefuzzer.utils.CleanupTasks;
 
-public class SshSul extends AbstractSul {
-    private SocketSul socketSul;
+public class SshMapperSul extends AbstractSul {
+    private SocketMapperSul socketSul;
 
-    public <T extends SulConfig & SshMapperHostProvider> SshSul(T sulConfig, CleanupTasks cleanupTasks) throws UnknownHostException, IOException {
+    public <T extends SulConfig & SshMapperHostProvider> SshMapperSul(T sulConfig, CleanupTasks cleanupTasks) throws UnknownHostException, IOException {
         super(sulConfig, cleanupTasks);
         String host = sulConfig.getHost();
         String[] hostSplit = host.split("\\:");
         if (hostSplit.length != 2) {
-            throw new RuntimeException("Invalid host, expected hostAddress:hostPort");
+            throw new MapperException("Invalid mapper host, expected hostAddress:hostPort");
         }
         String hostAddress = hostSplit[0];
         Integer hostPort = Integer.valueOf(hostSplit[1]);
@@ -32,13 +32,12 @@ public class SshSul extends AbstractSul {
                 try {
                     sock.close();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    throw new MapperException(e);
                 }
             }
         });
         
-        socketSul = new SocketSul(sock);
+        socketSul = new SocketMapperSul(sock);
     }
 
     @Override
