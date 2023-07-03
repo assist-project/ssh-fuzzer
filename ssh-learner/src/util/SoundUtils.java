@@ -7,10 +7,10 @@ import javax.sound.sampled.SourceDataLine;
 
 /***
  * Taken from tcp-learner:
- * 
+ *
  * Copy pasted from http://stackoverflow.com/questions/3780406/how-to-play-a-sound-alert-in-a-java-application
  * Useful to notify when learning is done :)
- * 
+ *
  */
 
 public class SoundUtils {
@@ -54,10 +54,10 @@ public class SoundUtils {
 			Thread.sleep(100);
 			SoundUtils.tone(400, 500, 0.2);
 		} catch (Exception e) {
-			
+
 		}
 	}
-	
+
 	public static void failure(){
 		try {
 			SoundUtils.tone(450, 100);

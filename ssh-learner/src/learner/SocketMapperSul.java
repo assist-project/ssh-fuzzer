@@ -15,31 +15,31 @@ public class SocketMapperSul {
 
 	public SocketMapperSul(Socket sock) {
 		try {
-			// Create socket out (no buffering) and in 
+			// Create socket out (no buffering) and in
 			sockout = new PrintWriter(sock.getOutputStream(), true);
 			sockin = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-		} 
+		}
 		catch (IOException e) {
 			throw new MapperException("Failed to create communication streams with mapper", e);
 		}
 	}
 
 	public String sendInput(String input) {
-		try {	
+		try {
 			// Send input to SUL
 			sockout.println(input);
-			
+
 			return sockin.readLine();
-		} 
+		}
 		catch (IOException e) {
 			throw new MapperException("Input could not be sent", e);
 		}
 	}
-	
+
 	public void reset() {
 		// Perform a reset on the SUL: empty input list on wrapper and send reset signal
 		sockout.println("reset");
-		
+
 		// Check if reset succeeded. Note: this is also needed because not receiving after reset will immediately continue
 		// to sending Input, allowing the possibility for the client to receive "reset INPUT" in one string. Reading in between
 		// will force a break since reading is blocking.

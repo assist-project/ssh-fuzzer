@@ -12,7 +12,7 @@ public class FileManager {
 
 	/**
 	 * Copies a file at path to a different path, also creating the necessary directory.
-	 * Doesn't do anything if the from path doesn't exist. 
+	 * Doesn't do anything if the from path doesn't exist.
 	 */
 	public static void copy(String from, String to) throws IOException{
 		Path fromPath = FileSystems.getDefault().getPath(from);
@@ -21,7 +21,7 @@ public class FileManager {
 			copyFromTo(fromPath, toPath);
 		}
 	}
-	
+
 	public static void copyFromTo(Path fromPath, Path toPath) throws IOException{
 		File fromFile = fromPath.toFile();
 		Files.createDirectories(toPath.getParent());
@@ -37,7 +37,7 @@ public class FileManager {
 			}
 		}
 	}
-	
+
 	public static void move(String from, String to) throws IOException {
 		Path fromPath = FileSystems.getDefault().getPath(from);
 		Path toPath = FileSystems.getDefault().getPath(to);
