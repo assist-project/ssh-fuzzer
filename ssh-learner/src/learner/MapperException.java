@@ -9,11 +9,11 @@ public class MapperException extends RuntimeException {
 	public MapperException(String message) {
 		super(message);
 	}
-	
+
 	public MapperException(Exception e) {
         super(e);
     }
-	
+
 	public MapperException(String message, Exception e) {
         super(message, e);
     }

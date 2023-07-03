@@ -1,10 +1,9 @@
 package learner;
 
-import java.io.IOException;
-
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.SulBuilder;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.config.SulConfig;
 import com.github.protocolfuzzing.protocolstatefuzzer.utils.CleanupTasks;
+import java.io.IOException;
 
 public class SshSulBuilder implements SulBuilder {
 
@@ -18,7 +17,7 @@ public class SshSulBuilder implements SulBuilder {
             }
         } catch (IOException  e) {
             throw new MapperException("Error creating SshMapperSul", e);
-        } 
+        }
     }
 
 }
