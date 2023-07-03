@@ -10,8 +10,7 @@ public class SshSulServerConfig extends SulServerConfig  implements SshMapperCon
     private SshMapperConfig sshMapperConfig;
 
     public SshSulServerConfig() {
-        super.setHost("");
-        this.sshMapperConfig = new SshMapperConfig();
+        sshMapperConfig = new SshMapperConfig();
     }
 
     @Override

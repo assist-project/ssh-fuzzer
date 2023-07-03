@@ -10,9 +10,6 @@ public class SshSulClientConfig extends SulClientConfig implements SshMapperConf
     private SshMapperConfig sshMapperConfig;
 
     public SshSulClientConfig() {
-        super.setPort(0);
-        super.setResponseWait(0L);
-        super.setStartWait(0L);
         sshMapperConfig = new SshMapperConfig();
     }
 
