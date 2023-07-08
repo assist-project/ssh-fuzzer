@@ -7,6 +7,5 @@ public class SshStateFuzzerClientConfig extends StateFuzzerClientConfigStandard 
 
     public SshStateFuzzerClientConfig(SulClientConfig sulClientConfig) {
         super(sulClientConfig);
-        sulClientConfig.setPort(0);
     }
 }
