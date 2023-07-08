@@ -7,10 +7,3 @@ localhost:20000
 /usr/bin/python3 ${fuzzer.dir}/../ssh-mapper/mapper/mapper.py -l localhost:20000 -s 192.168.56.102:7001
 -sshMapperStartWait
 1000
-# ignored parameters
--connect
-localhost:20000
--responseWait
-0
--startWait
-0
