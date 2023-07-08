@@ -11,7 +11,7 @@ public class SshSulBuilder implements SulBuilder {
     public SshMapperSul build(SulConfig sulConfig, CleanupTasks cleanupTasks) {
         try {
             if (sulConfig.isFuzzingClient()) {
-                    return new SshMapperSul((SshSulClientConfig) sulConfig, cleanupTasks);
+                return new SshMapperSul((SshSulClientConfig) sulConfig, cleanupTasks);
             } else {
                 return new SshMapperSul((SshSulServerConfig) sulConfig, cleanupTasks);
             }
