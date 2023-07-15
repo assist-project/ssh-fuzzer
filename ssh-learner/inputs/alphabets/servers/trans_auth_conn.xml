@@ -1,0 +1,14 @@
+<alphabet>
+    <SshInput name="KEXINIT"/>
+    <SshInput name="KEX30"/>
+    <SshInput name="NEWKEYS"/>
+    <SshInput name="SR_AUTH"/>
+	<SshInput name="SR_CONN"/>
+    <SshInput name="UA_PK_OK"/>
+	<SshInput name="UA_PK_NOK"/>
+	<SshInput name="CH_OPEN"/>
+	<SshInput name="CH_CLOSE"/>
+	<SshInput name="CH_EOF"/>
+	<SshInput name="CH_DATA"/>
+	<SshInput name="CH_REQUEST_PTY"/>
+</alphabet>

@@ -1,16 +1,16 @@
 package learner;
 
+import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.LearnerResult;
 import com.github.protocolfuzzing.protocolstatefuzzer.entrypoints.CommandLineParser;
+import java.io.IOException;
+import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // multibuilder implements all necessary builders
         MultiBuilder mb = new MultiBuilder();
 
-        // single parentLogger, since Main resides in the outmost package
-        String[] lgrs = {"learner"};
-
-        CommandLineParser commandLineParser = new CommandLineParser(mb, mb, mb, mb, lgrs);
-        commandLineParser.parse(args);
+        CommandLineParser commandLineParser = new CommandLineParser(mb, mb, mb, mb);
+        List<LearnerResult> results = commandLineParser.parse(args);
     }
 }

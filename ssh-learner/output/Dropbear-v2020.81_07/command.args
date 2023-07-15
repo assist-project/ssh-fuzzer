@@ -7,3 +7,7 @@ localhost:20000
 /usr/bin/python3 ${fuzzer.dir}/../ssh-mapper/mapper/mapper.py -l localhost:20000 -s 192.168.56.102:7001
 -sshMapperStartWait
 1000
+-output
+${fuzzer.dir}/output/Dropbear-${dropbear.version}_${timestamp}-Dtimestamp.format=MM
+-roundLimit
+1
