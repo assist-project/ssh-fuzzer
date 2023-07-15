@@ -1,0 +1,12 @@
+state-fuzzer-server
+-alphabet
+${fuzzer.dir}/input/alphabets/ssh_server_alphabet.xml
+-sshMapperAddress
+localhost:20000
+-sshMapperCommand
+/usr/bin/python3 ${fuzzer.dir}/../ssh-mapper/mapper/mapper.py -l localhost:20000 -s 192.168.56.102:7001
+-sshMapperStartWait
+1000
+-output
+${fuzzer.dir}/output/Dropbear-${dropbear.version}-${timestamp}-roundLimit
+1
