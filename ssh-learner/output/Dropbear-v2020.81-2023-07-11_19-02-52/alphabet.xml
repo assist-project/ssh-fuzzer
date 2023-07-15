@@ -3,5 +3,7 @@
     <SshInput name="KEX30"/>
     <SshInput name="NEWKEYS"/>
     <SshInput name="SR_AUTH"/>
+	<SshInput name="SR_CONN"/>
     <SshInput name="UA_PK_OK"/>
+	<SshInput name="UA_PK_NOK"/>
 </alphabet>
