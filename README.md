@@ -1,31 +1,16 @@
-## TODO
-
-### Implement answers:
-- [ ] RFC 4254
-  - [ ] SSH_MSG_CHANNEL_OPEN_CONFIRMATION
-  - [ ] SSH_MSG_CHANNEL_OPEN_FAILURE
-- [ ] RFC 4250
-  - [ ] Implement responses as stated in _4.1.2. Initial Assignments_
-
-
-### Debug
-- [ ] Look into Timing parameters which might causing errors
-- [x] KEX30* (db common-kex.c:474 / cli-session.c:220)
-- [ ] Why only newkeys is sent (db cli-kex.c:101)
-- [ ] UA_FAILURE might have some issues (db generate BlockingIO and OpenSSH generate non-determinism?)
-- [ ] The Non-determinism showing for OpenSSH might be timing related
-
-
-**SSH-Fuzzer** is a protocol state fuzzer for SSH, derived from the [artifact][learning-ssh-artifact] of the publication "Model Learning and Model Checking of SSH Implementations".
+**SSH-Fuzzer** is a protocol state fuzzer which can generate Mealy machine models for SSH implementations.
+Originally it was derived from the [artifact][learning-ssh-artifact] used to generate models for SSH server implementations in the publication "Model Learning and Model Checking of SSH Implementations" (link to publication PDF [here][learning-ssh]).
+Since then, it was updated by Robert Lasu to support generating models for SSH clients (see thesis PDF [robert-thesis][here]).
+>>>>>>> 7519059 (Update README)
 
 This project consists of several components:
 * the learner (ssh-learner)
 * the mapper (ssh-mapper)
 * results (ssh-learner/results)
-* .dot trimming script (mypydot)
+* DOT trimming script (mypydot)
 
 # Learner
-The learner is implemented by a java Eclipse project. 
+The learner is implemented by a Java Eclipse project. 
 
 To deploy, make sure you include the two provided jar files (sqlite and learnlib) in the build path (libraries tab under project properties).
 
@@ -53,21 +38,17 @@ Feed it a .dot file and let it do its magic.
 It needs some python packages to work with. 
 A Google search will quickly determine which packages are missing.
 
+# Useful links
+- the SPIN 2017 [publication][learning-ssh] which used what would become **SSH-Fuzzer** to analyze SSH server implementations;
+- Robert Lasu's [Bachelor's thesis][robert-thesis]. As part of this work, Robert extended **SSH-Fuzzer** to support SSH clients and subsequently used it to analyze implementations of Dropbear and OpenSSH. The SSH-Fuzzer version used in this work is available as a [release][robert-thesis-code];
+- [**SMBugFinder**][https://github.com/assist-project/state-machine-bug-finder], a tool which can automatically analyze for bugs the models that **SSH-Fuzzer** produces. 
+Also relevant are the two publications, at [ISSTA '24][smbugfinderpaper] and [NDSS '23][ndss23paper], describing **SMBugFinder** and, respectively the technique behind it.
+
+
 [learning-ssh-artifact]:https://repository.ubn.ru.nl/handle/2066/184275
-
-
-# Client Fuzzing
-
-## Dropbear
-Files which has to be present:
-
-- id_rsa
-- id_rsa.pub
-- id_dropbear
-- authorized_keys (has to contain id_rsa.pub and id_dropbear)
-- known_hosts (don't really know which data is stored here, server or client?)
-
-With ```dropbearkey``` add id_dropbear to ~/.ssh/ as well as append the content of id_dropbear to authorized_keys.
-As well as running ```.../dbclient -p 7000 localhost``` and let it connect to a host, only to add the host to the ~/.ssh/knwon_hosts
-Changes has to be done in ./ssh-mapper/mapper/mapper.py:\_\_init\_\_;
-- Change the paths of self.ssh_client_source to where each ssh client can be run from 
+[learning-ssh]:https://paulfiterau.github.io/publications/2017-SPIN.pdf
+[robert-thesis]:https://www.diva-portal.org/smash/get/diva2:1795754/FULLTEXT01.pdf
+[robert-thesis-code]:https://github.com/assist-project/ssh-fuzzer/releases/tag/robert-thesis
+[smbugfinder]:https://github.com/assist-project/state-machine-bug-finder
+[smbugfinderpaper]:https://dl.acm.org/doi/pdf/10.1145/3650212.3685310
+[ndss23paper]:https://www.ndss-symposium.org/wp-content/uploads/2023/02/ndss2023_s68_paper.pdf
