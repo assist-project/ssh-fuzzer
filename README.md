@@ -1,7 +1,6 @@
 **SSH-Fuzzer** is a protocol state fuzzer which can generate Mealy machine models for SSH implementations.
 Originally it was derived from the [artifact][learning-ssh-artifact] used to generate models for SSH server implementations in the publication "Model Learning and Model Checking of SSH Implementations" (link to publication PDF [here][learning-ssh]).
 Since then, it was updated by Robert Lasu to support generating models for SSH clients (see thesis PDF [robert-thesis][here]).
->>>>>>> 7519059 (Update README)
 
 This project consists of several components:
 * the learner (ssh-learner)
@@ -41,7 +40,7 @@ A Google search will quickly determine which packages are missing.
 # Useful links
 - the SPIN 2017 [publication][learning-ssh] which used what would become **SSH-Fuzzer** to analyze SSH server implementations;
 - Robert Lasu's [Bachelor's thesis][robert-thesis]. As part of this work, Robert extended **SSH-Fuzzer** to support SSH clients and subsequently used it to analyze implementations of Dropbear and OpenSSH. The SSH-Fuzzer version used in this work is available as a [release][robert-thesis-code];
-- [**SMBugFinder**][https://github.com/assist-project/state-machine-bug-finder], a tool which can automatically analyze for bugs the models that **SSH-Fuzzer** produces. 
+- [**SMBugFinder**][smbugfinder], a tool which can automatically analyze for bugs the models that **SSH-Fuzzer** produces.
 Also relevant are the two publications, at [ISSTA '24][smbugfinderpaper] and [NDSS '23][ndss23paper], describing **SMBugFinder** and, respectively the technique behind it.
 
 
