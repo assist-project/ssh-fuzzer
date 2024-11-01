@@ -41,7 +41,7 @@ A Google search will quickly determine which packages are missing.
 - the SPIN 2017 [publication][learning-ssh] which used what would become **SSH-Fuzzer** to analyze SSH server implementations;
 - Robert Lasu's [Bachelor's thesis][robert-thesis]. As part of this work, Robert extended **SSH-Fuzzer** to support SSH clients and subsequently used it to analyze implementations of Dropbear and OpenSSH. The SSH-Fuzzer version used in this work is available as a [release][robert-thesis-code];
 - [**SMBugFinder**][smbugfinder], a tool which can automatically analyze for bugs the models that **SSH-Fuzzer** produces.
-Also relevant are the two publications, at [ISSTA '24][smbugfinderpaper] and [NDSS '23][ndss23paper], describing **SMBugFinder** and, respectively the technique behind it.
+Also relevant are the two publications, at [ISSTA '24][smbugfinderpaper] and [NDSS '23][ndss23paper], describing **SMBugFinder** and, respectively, the technique behind it.
 
 
 [learning-ssh-artifact]:https://repository.ubn.ru.nl/handle/2066/184275
