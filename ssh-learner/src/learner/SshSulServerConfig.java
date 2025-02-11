@@ -1,9 +1,9 @@
 package learner;
 
 import com.beust.jcommander.ParametersDelegate;
-import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.config.SulServerConfigEmpty;
+import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.config.SulServerConfigStandard;
 
-public class SshSulServerConfig extends SulServerConfigEmpty  implements SshMapperConfigProvider {
+public class SshSulServerConfig extends SulServerConfigStandard  implements SshMapperConfigProvider {
 
     @ParametersDelegate
     private SshMapperConfig sshMapperConfig;
