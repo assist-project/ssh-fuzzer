@@ -1,40 +1,33 @@
 package learner;
 
-import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.protocol.ProtocolMessage;
-import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractInput;
-import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractOutput;
-import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractOutputChecker;
+import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractInputXml;
+import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.OutputChecker;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.context.ExecutionContext;
 
-public class SshInput extends AbstractInput {
+public class SshInput extends AbstractInputXml<SshOutput, String, ExecutionContext<SshInput, SshOutput, String>> {
 
     public SshInput(String name) {
         super(name);
     }
 
     @Override
-    public void preSendUpdate(ExecutionContext context) {
+    public void preSendUpdate(ExecutionContext<SshInput, SshOutput, String> context) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public ProtocolMessage generateProtocolMessage(ExecutionContext context) {
+    public String generateProtocolMessage(ExecutionContext<SshInput, SshOutput, String> context) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void postSendUpdate(ExecutionContext context) {
+    public void postSendUpdate(ExecutionContext<SshInput, SshOutput, String> context) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void postReceiveUpdate(AbstractOutput output, AbstractOutputChecker abstractOutputChecker,
-            ExecutionContext context) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Enum<?> getInputType() {
+    public void postReceiveUpdate(SshOutput output, OutputChecker<SshOutput> outputChecker,
+            ExecutionContext<SshInput, SshOutput, String> context) {
         throw new UnsupportedOperationException();
     }
 }
