@@ -38,8 +38,8 @@ public class SshMapperSul implements AbstractSul<SshInput, SshOutput, ExecutionC
         this.sulConfig = sulConfig;
         this.cleanupTasks = cleanupTasks;
         // mapper and sulAdapter will be provided in subclasses
-        this.mapper = null;
-        this.sulAdapter = null;
+        this.mapper = new SshMapper();
+        this.sulAdapter = new SshSulAdapter();
         // -------------------------------------------------------------------
 
         String mapperAddress = sulConfig.getSshMapperConfig().getMapperAddress();
