@@ -23,7 +23,7 @@ public class SshMapper implements Mapper<SshInput, SshOutput, ExecutionContext<S
     @Override
     public OutputBuilder<SshOutput> getOutputBuilder() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getOutputBuilder'");
+        return new SshOutputBuilder();
     }
 
     @Override
