@@ -134,6 +134,7 @@ class Processor:
 
     def process_learlib_query(self, query):
         """ Processes a query identified by a keyword (e.g. DISCONNECT) """
+        query = query.decode("utf-8")
 
         # Handle reset queries
         #Mapper (process_reset is more adapter-like, however, processing other queries like they originate from the learner means that this should be a task for the mapper)
