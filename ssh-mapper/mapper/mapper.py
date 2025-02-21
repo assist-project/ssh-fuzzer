@@ -134,7 +134,6 @@ class Processor:
 
     def process_learlib_query(self, query):
         """ Processes a query identified by a keyword (e.g. DISCONNECT) """
-        query = query.decode("utf-8")
 
         # Handle reset queries
         #Mapper (process_reset is more adapter-like, however, processing other queries like they originate from the learner means that this should be a task for the mapper)
@@ -244,8 +243,8 @@ class Processor:
                         result = ''
                         for ci, command in enumerate(commands):
                             print('[%s]' % self.transport)
-                            print('Sending %s...' % command)
-                            response = self.process_learlib_query(command)
+                            print('Sending %s...' % command.decode('UTF-8'))
+                            response = self.process_learlib_query(command.decode('UTF-8'))
                             result += response
                             # If this is not the last command, add a space
                             if ci != len(commands)-1:
