@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  # Dropbear service
+  dropbear-ssh:
+    build:
+      context: .
+      dockerfile: Dockerfile.dropbear
+    container_name: dropbear-ssh
+    ports:
+      - "2222:22"
+    networks:
+      - fuzzer_network
+    volumes:
+      - ./ssh-keys:${HOME}/.ssh/:ro
+
+  # SSH Mapper service
+  ssh-mapper:
+    build:
+      context: ./ssh-mapper
+      dockerfile: Dockerfile
+    container_name: ssh-mapper
+    ports:
+      - "8080:8080"
+    depends_on:
+      - dropbear
+    networks:
+      - fuzzer_network
+    volumes:
+      - ./ssh-keys/learner-ssh.pub:/root/.ssh/id_rsa.pub:ro
+      - ./ssh-keys/learner-ssh:/root/.ssh/id_rsa:ro
+    command: -l 0.0.0.0:8080 -s dropbear-ssh:22 -f server
+
+  # SSH Learner service
+  ssh-learner:
+    build:
+      context: ./ssh-learner
+      dockerfile: Dockerfile
+    container_name: ssh-learner
+    networks:
+      - fuzzer_network
+    depends_on:
+      - dropbear
+      - ssh-mapper
+    volumes:
+      - ./learner_output:/app/output_folder
+    command: ["state-fuzzer-server", "-connect", "ssh-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-ceReruns", "3", "-depth", "2", "-learningAlgorithm", "LSTAR", "-output", "/app/output_folder", "-ros", "-sshMapperAddress", "ssh-mapper:8080"]
+
+networks:
+  fuzzer_network:
+    driver: bridge

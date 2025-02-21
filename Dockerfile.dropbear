@@ -1,0 +1,51 @@
+# Use a minimal base image
+FROM alpine:latest
+
+# Set Dropbear version
+ENV DROPBEAR_VERSION=2024.84
+
+# Install required dependencies
+RUN apk add --no-cache \
+    build-base \
+    wget \
+    tar \
+    zlib-dev \
+    openssl-dev \
+    musl-dev \
+    util-linux \
+    linux-pam-dev \
+    shadow \
+    && wget https://matt.ucc.asn.au/dropbear/releases/dropbear-${DROPBEAR_VERSION}.tar.bz2 \
+    && tar -xjf dropbear-${DROPBEAR_VERSION}.tar.bz2 \
+    && cd dropbear-${DROPBEAR_VERSION} \
+    && ./configure --disable-loginfunc --disable-shadow --disable-lastlog --disable-utmp --disable-wtmp \
+    && make -j$(nproc) \
+    && make install \
+    && cd .. \
+    && rm -rf dropbear-${DROPBEAR_VERSION} dropbear-${DROPBEAR_VERSION}.tar.bz2 \
+    && apk del build-base wget tar
+
+
+# Create necessary directories for Dropbear
+RUN mkdir -p /etc/dropbear \
+    && mkdir -p /home/dropbearuser/.ssh \
+    && chmod 700 /home/dropbearuser/.ssh
+
+# Create a non-root user
+RUN adduser -D -s /bin/sh dropbearuser
+
+# Generate Dropbear host keys at runtime
+RUN dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key && \
+    dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key && \
+    dropbearkey -t ed25519 -f /etc/dropbear/dropbear_ed25519_host_key
+
+# Set Dropbear server to run on port 22 (override in `docker run -p`)
+EXPOSE 22
+
+COPY ssh-keys/learner-ssh.pub .
+
+RUN mkdir ~/.ssh; cat learner-ssh.pub >> ~/.ssh/authorized_keys
+
+# Command to run Dropbear SSH server
+CMD ["/usr/local/sbin/dropbear", "-F", "-E", "-j", "-k", "-s"]
+
