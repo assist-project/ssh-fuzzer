@@ -23,7 +23,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - dropbear
+      - dropbear-ssh
     networks:
       - fuzzer_network
     volumes:
@@ -40,7 +40,7 @@ services:
     networks:
       - fuzzer_network
     depends_on:
-      - dropbear
+      - dropbear-ssh
       - ssh-mapper
     volumes:
       - ./learner_output:/app/output_folder
