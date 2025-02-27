@@ -23,6 +23,7 @@ jobs:
       - name: Verify Result
         run: |
           pwd
+          docker ps
           ls -al
           echo "learner output dir:"
           ls learner_output
