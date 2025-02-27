@@ -23,7 +23,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - dropbear
+      - dropbear-ssh
     networks:
       - fuzzer_network
     volumes:
@@ -40,11 +40,11 @@ services:
     networks:
       - fuzzer_network
     depends_on:
-      - dropbear
+      - dropbear-ssh
       - ssh-mapper
     volumes:
       - ./learner_output:/app/output_folder
-    command: ["state-fuzzer-server", "-connect", "ssh-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-ceReruns", "3", "-depth", "2", "-learningAlgorithm", "LSTAR", "-output", "/app/output_folder", "-ros", "-sshMapperAddress", "ssh-mapper:8080"]
+    command: ["state-fuzzer-server", "-connect", "ssh-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "ssh-mapper:8080", "-roundLimit", "3"]
 
 networks:
   fuzzer_network:
