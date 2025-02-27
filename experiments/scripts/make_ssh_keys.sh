@@ -3,10 +3,8 @@ base_path="${curr_dir}/../.."
 
 pushd ${base_path}
 
-if [ -z "$( ls -A './ssh-keys' )" ]; then
-   mkdir ${base_path}/ssh-keys
-   mkdir ${base_path}/learner_output
-   ls ${base_path}/learner_output
-   ssh-keygen -t rsa -f ${base_path}/ssh-keys/learner-ssh -N ""
-fi
+mkdir ${base_path}/ssh-keys
+mkdir ${base_path}/learner_output
+ls ${base_path}/learner_output
+ssh-keygen -t rsa -f ${base_path}/ssh-keys/learner-ssh -N ""
 popd
