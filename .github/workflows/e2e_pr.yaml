@@ -22,9 +22,7 @@ jobs:
 
       - name: Verify Result
         run: |
-          pwd
-          docker ps
-          ls -al
-          echo "learner output dir:"
-          ls learner_output
+          # wait for the learning to be over
+          while [ "$( docker container inspect -f '{{.State.Running}}' ssh-learner )" = "true" ]; do date; echo "still learning"; sleep 5; done
+
           experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear ${PWD}/learner_output 3
