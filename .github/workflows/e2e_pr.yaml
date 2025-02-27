@@ -8,19 +8,18 @@ jobs:
     strategy:
       fail-fast: true
     steps:
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: Ready SSH keys
-          run: experiments/scripts/make_ssh_keys.sh
+      - name: Ready SSH keys
+        run: experiments/scripts/make_ssh_keys.sh
 
-        - name: Start learning DropbearSSH server
-        uses: hoverkraft-tech/compose-action@v2.0.1
-        with:
-          compose-file: "./docker-compose.yml"
-          up-flags: "--build"
+      - name: Start learning DropbearSSH server
+      uses: hoverkraft-tech/compose-action@v2.0.1
+      with:
+        compose-file: "./docker-compose.yml"
+        up-flags: "--build"
 
-        - name: Verify Result
-          run: |
-            experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear ./learner_output 3
+      - name: Verify Result
+        run: |
+          experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear ./learner_output 3
