@@ -5,6 +5,6 @@ pushd ${base_path}
 
 mkdir ${base_path}/ssh-keys
 mkdir ${base_path}/learner_output
-ls ${base_path}/learner_output
 ssh-keygen -t rsa -f ${base_path}/ssh-keys/learner-ssh -N ""
+
 popd

@@ -22,4 +22,6 @@ jobs:
 
       - name: Verify Result
         run: |
+          pwd
+          ls -al
           experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear ${PWD}/learner_output 3
