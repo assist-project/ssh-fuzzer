@@ -44,7 +44,7 @@ services:
       - ssh-mapper
     volumes:
       - ./learner_output:/app/output_folder
-    command: ["state-fuzzer-server", "-connect", "ssh-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-ceReruns", "3", "-depth", "2", "-learningAlgorithm", "LSTAR", "-output", "/app/output_folder", "-ros", "-sshMapperAddress", "ssh-mapper:8080"]
+    command: ["state-fuzzer-server", "-connect", "ssh-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "ssh-mapper:8080"]
 
 networks:
   fuzzer_network:
