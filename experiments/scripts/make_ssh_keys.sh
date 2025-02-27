@@ -6,6 +6,7 @@ pushd ${base_path}
 if [ -z "$( ls -A './ssh-keys' )" ]; then
    mkdir ${PWD}/ssh-keys
    mkdir ${PWD}/learner_output
+   ls ${PWD}/learner_output
    ssh-keygen -t rsa -f ${PWD}/ssh-keys/learner-ssh -N ""
 fi
 popd

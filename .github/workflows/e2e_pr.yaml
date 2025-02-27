@@ -22,4 +22,4 @@ jobs:
 
       - name: Verify Result
         run: |
-          experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear ./learner_output 3
+          experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear ${PWD}/learner_output 3
