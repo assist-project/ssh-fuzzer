@@ -15,10 +15,10 @@ jobs:
         run: experiments/scripts/make_ssh_keys.sh
 
       - name: Start learning DropbearSSH server
-      uses: hoverkraft-tech/compose-action@v2.0.1
-      with:
-        compose-file: "./docker-compose.yml"
-        up-flags: "--build"
+        uses: hoverkraft-tech/compose-action@v2.0.1
+        with:
+          compose-file: "./docker-compose.yml"
+          up-flags: "--build"
 
       - name: Verify Result
         run: |
