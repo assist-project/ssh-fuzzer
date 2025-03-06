@@ -1,0 +1,89 @@
+=== RUN DESCRIPTION ===
+Alphabet: [KEXINIT, KEX30, NEWKEYS, SR_AUTH, SR_CONN, UA_PK_OK, UA_PK_NOK]
+
+StateFuzzerConfig Parameters
+Help: false
+Debug: false
+Quiet: false
+Output Directory: /app/output_folder
+Fuzzing Client: false
+
+LearnerConfig Parameters
+Alphabet: /app/inputs/alphabets/servers/openssh.xml
+Learning Algorithm: TTT
+Equivalence Algorithms: [RANDOM_WP_METHOD]
+Max Depth: 1
+Min Length: 5
+Max Length: 15
+Max Equivalence Queries: 1000
+Runs Per Membership Query: 1
+Random Length: 5
+Membership Query Retries: 3
+Log Queries: false
+Prob Reset: 0.0
+Test File: null
+Seed: 0
+Cache Tests: false
+Ce Sanitization: true
+Skip Non Det Tests: false
+Ce Reruns: 3
+Probabilistic Sanitization: true
+Time Limit: null
+Test Limit: null
+Round Limit: 3
+IOMode: true
+Probability of Choosing a New DataValue: 0.1
+Max Runs: 1
+Max Depth for Register Automata: 1
+Reset Runs: true
+Seed transitions: true
+Draw symbols uniformly: true
+
+SulConfig Parameters
+Fuzzing Role: client
+Fuzzing Client: true
+Response Wait: 100
+Input Response Timeout: null
+Command: null
+Terminate Command: null
+Process Dir: null
+Redirect Output Streams: false
+Process Trigger: NEW_TEST
+Start Wait: 0
+
+SulServerConfigStandard Parameters
+Connect to: openssh-mapper:8080
+
+MapperConfig Parameters
+Mapper Connection Config: null
+Repeating Outputs: null
+Socket Closed as Timeout: false
+Disabled as Timeout: false
+Merge Repeating: true
+
+SulAdapterConfig Parameters
+Adapter Port: null
+Adapter Address: localhost
+
+=== STATISTICS ===
+Learning finished: false
+Reason: hypothesis construction round limit reached
+Size of the input alphabet: 7
+Number of states: 9
+Number of hypotheses: 3
+Number of inputs: 868
+Number of tests: 186
+Number of learning inputs: 742
+Number of learning tests: 174
+Number of inputs up to last hypothesis: 868
+Number of tests up to last hypothesis: 186
+Time (ms) to learn model: 1834564
+Counterexamples:
+CE 1:Query[ε|NEWKEYS SR_CONN NEWKEYS SR_CONN KEXINIT UA_PK_NOK NEWKEYS SR_CONN KEXINIT KEX30 SR_CONN / KEXINIT+UNIMPL UNIMPL UNIMPL UNIMPL UNIMPL NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN]
+CE 2:Query[ε|KEX30 NEWKEYS KEX30 NEWKEYS UA_PK_NOK SR_AUTH UA_PK_NOK SR_AUTH UA_PK_NOK NEWKEYS UA_PK_NOK KEXINIT / KEXINIT+UNIMPL UNIMPL KEX31+NEWKEYS+BUFFERED NO_RESP UNIMPL SR_ACCEPT UA_FAILURE SR_ACCEPT UA_FAILURE UNIMPL NO_CONN NO_CONN]
+Number of inputs when hypothesis was generated: [7, 131, 868]
+Number of tests when hypothesis was generated: [7, 44, 186]
+Time (ms) when hypothesis was generated: [14969, 181299, 1834556]
+Number of inputs when counterexample was found: [51, 213]
+Number of tests when counterexample was found: [11, 52]
+Time (ms) when counterexample was found: [63897, 300750]

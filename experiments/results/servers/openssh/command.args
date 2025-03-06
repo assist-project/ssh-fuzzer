@@ -1,0 +1,11 @@
+state-fuzzer-server
+-connect
+openssh-mapper:8080
+-alphabet
+/app/inputs/alphabets/servers/openssh.xml
+-output
+/app/output_folder
+-sshMapperAddress
+openssh-mapper:8080
+-roundLimit
+3
