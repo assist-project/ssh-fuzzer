@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  openssh-server:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.openssh
+    container_name: openssh-server
+    # ports:
+    #   - "2222:22"
+    networks:
+      - openssh_network
+    volumes:
+      - ./ssh-keys/learner-ssh.pub:/root/.ssh/id_rsa.pub:ro
+      - ./ssh-keys/learner-ssh:/root/.ssh/id_rsa:ro
+
+
+  openssh-mapper:
+    build:
+      context: ../../ssh-mapper
+      dockerfile: Dockerfile
+    container_name: openssh-mapper
+    # ports:
+    #   - "8080:8080"
+    depends_on:
+      - openssh-server
+    networks:
+      - openssh_network
+    volumes:
+      - ./ssh-keys/learner-ssh.pub:/root/.ssh/id_rsa.pub:ro
+      - ./ssh-keys/learner-ssh:/root/.ssh/id_rsa:ro
+    command: -l 0.0.0.0:8080 -s openssh-server:22  -c OpenSSH -f server
+
+  openssh-learner:
+    build:
+      context: ../../ssh-learner
+      dockerfile: Dockerfile
+    container_name: openssh-learner
+    networks:
+      - openssh_network
+    depends_on:
+      - openssh-server
+      - openssh-mapper
+    volumes:
+      - ./learner_output_ssh:/app/output_folder
+      - ../../ssh-learner/inputs/alphabets/servers/:/app/inputs/alphabets/servers/
+    command: ["state-fuzzer-server", "-connect", "openssh-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/openssh.xml", "-output", "/app/output_folder", "-sshMapperAddress", "openssh-mapper:8080", "-roundLimit", "3"]
+
+networks:
+  openssh_network:
+    driver: bridge
