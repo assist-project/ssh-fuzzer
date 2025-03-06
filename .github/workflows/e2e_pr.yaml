@@ -15,14 +15,14 @@ jobs:
         run: experiments/scripts/make_ssh_keys.sh
 
       - name: Start learning DropbearSSH server
-        uses: hoverkraft-tech/compose-action@v2.0.1
-        with:
-          compose-file: "./docker-compose.yaml"
-          up-flags: "--build"
+        run: cd experiments/scripts/start_experiments.sh dropbear
+        # uses: hoverkraft-tech/compose-action@v2.0.1
+        # with:
+        #   compose-file: "./docker-compose.yaml"
+        #   up-flags: "--build"
 
       - name: Verify Result
         run: |
           # wait for the learning to be over
-          while [ "$( docker container inspect -f '{{.State.Running}}' ssh-learner )" = "true" ]; do date; echo "still learning"; sleep 5; done
-
-          experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear ${PWD}/learner_output 3
+          while [ "$( docker container inspect -f '{{.State.Running}}' dropbear-learner )" = "true" ]; do date; echo "still learning"; sleep 5; done
+          experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear experiments/orchestration/learner_output_dropbear 3
