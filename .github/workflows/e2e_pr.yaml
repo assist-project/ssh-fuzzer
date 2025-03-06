@@ -5,11 +5,11 @@ jobs:
   ssh-mapper-dropbear-server:
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
+    # strategy:
+    #   fail-fast: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Start learning DropbearSSH server
         run: cd experiments/scripts/ && bash start_experiment.sh dropbear
