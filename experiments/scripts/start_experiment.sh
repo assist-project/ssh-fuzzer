@@ -31,7 +31,7 @@ if [[ "${EXPERIMENT}" == "openssh" || "${EXPERIMENT}" == "dropbear" ]]; then
     if [[ -f "${DOCKER_COMPOSE_DIR}/${COMPOSE_FILE}" ]]; then
         pushd "${DOCKER_COMPOSE_DIR}"
         echo "Starting experiment for ${EXPERIMENT}..."
-        docker compose -f "${DOCKER_COMPOSE_DIR}/${COMPOSE_FILE}" up --build
+        docker compose -f "${DOCKER_COMPOSE_DIR}/${COMPOSE_FILE}" up --build -d
     else
         echo "Error: ${COMPOSE_FILE} not found in ${DOCKER_COMPOSE_DIR}"
         exit 1
