@@ -1940,14 +1940,14 @@ class Transport(threading.Thread, ClosingContextManager):
 
     def _verify_key(self, host_key, sig):
         key = self._key_info[self.host_key_type](Message(host_key))
-        # if key is None:
-        #     raise SSHException("Unknown host key type")
-        # if not key.verify_ssh_sig(self.H, Message(sig)):
-        #     raise SSHException(
-        #         "Signature verification ({}) failed.".format(
-        #             self.host_key_type
-        #         )
-        #     )  # noqa
+        if key is None:
+            raise SSHException("Unknown host key type")
+        if not key.verify_ssh_sig(self.H, Message(sig)):
+            raise SSHException(
+                "Signature verification ({}) failed.".format(
+                    self.host_key_type
+                )
+            )  # noqa
         self.host_key = key
 
     def _compute_key(self, id, nbytes):
