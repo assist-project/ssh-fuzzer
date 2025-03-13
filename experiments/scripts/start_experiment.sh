@@ -27,7 +27,7 @@ EXPERIMENT=$1
 COMPOSE_FILE="docker-compose-${EXPERIMENT}.yaml"
 
 # Validate input and start corresponding docker-compose
-if [[ "${EXPERIMENT}" == "openssh" || "${EXPERIMENT}" == "dropbear" ]]; then
+if [[ "${EXPERIMENT}" == "openssh7" || "${EXPERIMENT}" == "openssh8" || "${EXPERIMENT}" == "dropbear" ]]; then
     if [[ -f "${DOCKER_COMPOSE_DIR}/${COMPOSE_FILE}" ]]; then
         pushd "${DOCKER_COMPOSE_DIR}"
         echo "Starting experiment for ${EXPERIMENT}..."

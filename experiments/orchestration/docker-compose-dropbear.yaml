@@ -6,12 +6,14 @@ services:
       context: .
       dockerfile: dockerfiles/Dockerfile.dropbear
     container_name: dropbear-ssh
-    # ports:
-    #   - "2222:22"
+    ports:
+      - "2222:22"
     networks:
       - dropbear_network
     volumes:
-      - ./ssh-keys:${HOME}/.ssh/:ro
+      - ./ssh-keys/learner-ssh.pub:/root/.ssh/id_rsa.pub:ro
+      - ./ssh-keys/learner-ssh:/root/.ssh/id_rsa:ro
+    entrypoint: ["sh", "-c", "cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && /usr/local/sbin/dropbear -F -E -j -k -s"]
 
 
   dropbear-mapper:
@@ -42,8 +44,8 @@ services:
       - dropbear-mapper
     volumes:
       - ./learner_output_dropbear:/app/output_folder
-      - ../../ssh-learner/inputs/alphabets/servers/trans_auth.xml:/app/inputs/alphabets/servers/trans_auth.xml
-    command: ["state-fuzzer-server", "-connect", "dropbear-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "dropbear-mapper:8080", "-roundLimit", "3"]
+      - ../../ssh-learner/inputs/alphabets/servers/:/app/inputs/alphabets/servers/
+    command: ["state-fuzzer-server", "-connect", "dropbear-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "dropbear-mapper:8080", "-roundLimit", "6", "-debug"]
 
 networks:
   dropbear_network:
