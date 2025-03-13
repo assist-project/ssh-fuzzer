@@ -45,7 +45,7 @@ services:
     volumes:
       - ./learner_output_dropbear:/app/output_folder
       - ../../ssh-learner/inputs/alphabets/servers/:/app/inputs/alphabets/servers/
-    command: ["state-fuzzer-server", "-connect", "dropbear-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "dropbear-mapper:8080", "-roundLimit", "6", "-debug"]
+    command: ["state-fuzzer-server", "-connect", "dropbear-mapper:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "dropbear-mapper:8080", "-roundLimit", "3", "-debug"]
 
 networks:
   dropbear_network:
