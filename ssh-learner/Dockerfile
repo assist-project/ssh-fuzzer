@@ -14,7 +14,6 @@ FROM bitnami/java:17
 WORKDIR /app
 COPY --from=build /app/target/ssh-learner.jar ./ssh-learner.jar
 COPY --from=build /app/target/lib/ ./lib/
-COPY resources/ resources/
-COPY inputs/alphabets/ inputs/alphabets/
+
 
 ENTRYPOINT ["java", "-cp", "./ssh-learner.jar:./lib/*", "learner.Main"]
