@@ -5,6 +5,10 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.Learner
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.statistics.MealyMachineWrapper;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.statistics.RegisterAutomatonWrapper;
 import com.github.protocolfuzzing.protocolstatefuzzer.entrypoints.CommandLineParser;
+
+import de.learnlib.ralib.words.PSymbolInstance;
+import de.learnlib.ralib.words.ParameterizedSymbol;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -31,5 +35,17 @@ public class Main {
                 mb, mb);
         List<LearnerResult<MealyMachineWrapper<SshInput, SshOutput>>> results = commandLineParser.parse(args);
         System.out.println("Done with Mealy Machine learning");
+    }
+
+    static void runRALearner(String[] args) {
+        // multibuilder implements all necessary builders
+        RAMultiBuilder mb = new RAMultiBuilder();
+
+        CommandLineParser<RegisterAutomatonWrapper<ParameterizedSymbol, PSymbolInstance>> commandLineParser = new CommandLineParser<>(
+                mb, mb,
+                mb, mb);
+        List<LearnerResult<RegisterAutomatonWrapper<ParameterizedSymbol, PSymbolInstance>>> results = commandLineParser
+                .parse(args);
+        System.out.println("Done with RA Machine learning");
     }
 }
