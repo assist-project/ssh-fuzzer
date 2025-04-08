@@ -4,52 +4,31 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.Mapp
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.OutputBuilder;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.OutputChecker;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.config.MapperConfig;
-import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.context.ExecutionContext;
 
 public class RASshMapper
-        implements Mapper<RASshInput, RASshInput, ExecutionContext<RASshInput, RASshInput, String>> {
+        implements Mapper<RASshOutput, RASshOutput, Object> {
 
     @Override
-        public RASshInput execute(RASshInput input, ExecutionContext<RASshInput, RASshInput, String> context) {
+    public RASshOutput execute(RASshOutput input, Object context) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
-        }
+        return input;
+    }
 
-        @Override
-        public MapperConfig getMapperConfig() {
+    @Override
+    public MapperConfig getMapperConfig() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMapperConfig'");
-        }
+    }
 
-        @Override
-        public OutputBuilder<RASshInput> getOutputBuilder() {
+    @Override
+    public OutputBuilder<RASshOutput> getOutputBuilder() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getOutputBuilder'");
-        }
+    }
 
-        @Override
-        public OutputChecker<RASshInput> getOutputChecker() {
+    @Override
+    public OutputChecker<RASshOutput> getOutputChecker() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getOutputChecker'");
-        }
-
-    // public RASshMapper(MapperConfig mapperConfig, OutputBuilder<RASshInput>
-    // outputBuilder) {
-    // super(mapperConfig, outputBuilder);
-    // // TODO Auto-generated constructor stub
-    // }
-
-    // @Override
-    // public RASshInput receiveOutput(ExecutionContext<RASshInput, RASshInput,
-    // String> context) {
-    // // TODO Auto-generated method stub
-    // throw new UnsupportedOperationException("Unimplemented method
-    // 'receiveOutput'");
-    // }
-
-    // @Override
-    // protected RASshInput buildOutput(String name, List<RASshInput> messages) {
-    // return messages.get(0);
-    // }
-
+    }
 }

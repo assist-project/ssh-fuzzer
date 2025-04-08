@@ -10,6 +10,10 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RASshAlphabetPojoXml extends AlphabetPojoXml<RASshInput> {
 
+    public RASshAlphabetPojoXml() {
+        // Default constructor for JAXB
+    }
+
     // Parameterized constructor to initialize inputs
     public RASshAlphabetPojoXml(List<RASshInput> inputs) {
         super(inputs);

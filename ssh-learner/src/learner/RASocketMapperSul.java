@@ -25,13 +25,13 @@ public class RASocketMapperSul {
         }
     }
 
-    public RASshInput sendInput(RASshInput input) {
+    public RASshOutput sendInput(RASshOutput input) {
         try {
             // Create JSON string from input
             RASshSocketData socketData = new RASshSocketData(input);
             // Send input to SUL
             sockout.println(socketData);
-            return socketData.getSocketOutput(sockin.readLine());
+            return new RASshOutput(socketData.getSocketOutput(sockin.readLine()));
         } catch (IOException e) {
             throw new MapperException("Input could not be sent", e);
         }

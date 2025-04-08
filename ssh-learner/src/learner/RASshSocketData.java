@@ -14,7 +14,7 @@ public class RASshSocketData {
         this.msg = "";
     }
 
-    public RASshSocketData(RASshInput input) {
+    public RASshSocketData(RASshOutput input) {
         this.msg = String.format("{ \"msg\": \"%s\",", input.getName());
         for (RASshParams param : input.getParams()) {
             this.msg += String.format("\"%s\": \"%s\",", param.getName(), param.getValue());

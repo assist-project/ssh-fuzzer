@@ -10,11 +10,10 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.config
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.sulwrappers.DynamicPortProvider;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.sulwrappers.ProcessHandler;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.Mapper;
-import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.context.ExecutionContext;
 import com.github.protocolfuzzing.protocolstatefuzzer.utils.CleanupTasks;
 
 public class RASshMapperSul
-        implements AbstractSul<RASshInput, RASshInput, ExecutionContext<RASshInput, RASshInput, String>> {
+        implements AbstractSul<RASshOutput, RASshOutput, Object> {
     private RASocketMapperSul socketSul;
 
     /** Stores the constructor parameter. */
@@ -95,9 +94,8 @@ public class RASshMapperSul
     }
 
     @Override
-    public RASshInput step(RASshInput in) {
-        RASshInput output = socketSul.sendInput(in);
-        return output;
+    public RASshOutput step(RASshOutput in) {
+        return socketSul.sendInput(in);
     }
 
     @Override
@@ -121,7 +119,7 @@ public class RASshMapperSul
     }
 
     @Override
-    public Mapper<RASshInput, RASshInput, ExecutionContext<RASshInput, RASshInput, String>> getMapper() {
+    public Mapper<RASshOutput, RASshOutput, Object> getMapper() {
         return mapper;
     }
 
