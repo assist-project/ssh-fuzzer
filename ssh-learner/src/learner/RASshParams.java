@@ -1,16 +1,9 @@
 package learner;
 
-import jakarta.xml.bind.annotation.*;
-
-@XmlAccessorType(XmlAccessType.FIELD)
 public class RASshParams {
-    @XmlAttribute(name = "name")
     private String name;
-    @XmlAttribute(name = "type")
     private String type;
-    @XmlElement(name = "value")
     private String value;
-    @XmlAttribute(name = "baseClass")
     private String className;
 
     public RASshParams(String name, String type, String value, String className) {

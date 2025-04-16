@@ -11,9 +11,12 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.sulwra
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.sulwrappers.ProcessHandler;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.Mapper;
 import com.github.protocolfuzzing.protocolstatefuzzer.utils.CleanupTasks;
+import net.automatalib.alphabet.Alphabet;
+
+import de.learnlib.ralib.words.PSymbolInstance;
 
 public class RASshMapperSul
-        implements AbstractSul<RASshOutput, RASshOutput, Object> {
+        implements AbstractSul<PSymbolInstance, PSymbolInstance, Object> {
     private RASocketMapperSul socketSul;
 
     /** Stores the constructor parameter. */
@@ -27,13 +30,16 @@ public class RASshMapperSul
 
     /** Stores the Mapper instance. */
     protected RASshMapper mapper;
+    Alphabet<RASshInput> alphabet;
 
     /** Stores the SulAdapter instance. */
     protected SulAdapter sulAdapter;
-    protected RASshInputBuilder outputBuilder;
+    protected RASshOutputBuilder outputBuilder;
 
     public <T extends SulConfig & SshMapperConfigProvider> RASshMapperSul(T sulConfig, CleanupTasks cleanupTasks)
             throws UnknownHostException, IOException {
+
+        // this.alphabet = alphabet;
 
         // copied from the commit before the introduction of generics
         // -------------------------------------------------------------------
@@ -94,7 +100,9 @@ public class RASshMapperSul
     }
 
     @Override
-    public RASshOutput step(RASshOutput in) {
+    public PSymbolInstance step(PSymbolInstance in) {
+        // ParameterizedSymbol base = in.getBaseSymbol();
+        System.out.println("step running: " + in.toString());
         return socketSul.sendInput(in);
     }
 
@@ -119,7 +127,7 @@ public class RASshMapperSul
     }
 
     @Override
-    public Mapper<RASshOutput, RASshOutput, Object> getMapper() {
+    public Mapper<PSymbolInstance, PSymbolInstance, Object> getMapper() {
         return mapper;
     }
 

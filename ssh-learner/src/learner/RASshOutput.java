@@ -2,28 +2,21 @@ package learner;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import de.learnlib.ralib.data.DataType;
 import de.learnlib.ralib.data.DataValue;
-import de.learnlib.ralib.words.ParameterizedSymbol;
+import de.learnlib.ralib.words.PSymbolInstance;
 
-public class RASshInput
-        extends
-        ParameterizedSymbol {
+public class RASshOutput extends PSymbolInstance {
+    // private RASshInput input;
+    // private DataValue<?>[] values;
     private String name;
     private List<RASshParams> params;
 
-    public RASshInput(String name, List<RASshParams> paramList) {
-        super(name, paramList.stream().map(param -> {
-            return new DataType(param.getType(), getClassFromString(param.getClassName()));
-        }).toArray(DataType[]::new)); // Fill in ptypes from the param list
-        this.name = name;
-        this.params = paramList;
-    }
-
-    public RASshInput(String name, DataType[] data) {
-        super(name, data);
-        this.name = name;
-        this.params = new ArrayList<>();
+    public RASshOutput(RASshInput input) {
+        super(input, RASshInput.toDataValues(input));
+        this.name = input.getName();
+        this.params = input.getParams();
     }
 
     public static DataValue<?>[] toDataValues(RASshInput input) {
@@ -46,7 +39,7 @@ public class RASshInput
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public List<RASshParams> getParams() {
@@ -55,18 +48,5 @@ public class RASshInput
 
     public void addParam(String name, String type, String value, String className) {
         this.params.add(new RASshParams(name, type, value, className));
-    }
-
-    // Helper method to convert string class name to Class object
-    private static Class<?> getClassFromString(String className) {
-        try {
-            return Class.forName(className); // Convert class name to Class object
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Class not found: " + className, e);
-        }
-    }
-
-    public String toString() {
-        return super.toString();
     }
 }

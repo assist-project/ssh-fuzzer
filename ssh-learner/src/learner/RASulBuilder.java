@@ -5,19 +5,28 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.SulBui
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.config.SulConfig;
 import com.github.protocolfuzzing.protocolstatefuzzer.utils.CleanupTasks;
 
+import de.learnlib.ralib.words.PSymbolInstance;
+import net.automatalib.alphabet.Alphabet;
+
 import java.io.IOException;
 
 public class RASulBuilder
-        implements SulBuilder<RASshOutput, RASshOutput, Object> {
+        implements SulBuilder<PSymbolInstance, PSymbolInstance, Object> {
+
+    protected Alphabet<RASshInput> alphabet;
+
+    public RASulBuilder() {
+        // Alphabet<RASshInput> alphabet
+        // this.alphabet = alphabet;
+    }
 
     @Override
-    public AbstractSul<RASshOutput, RASshOutput, Object> build(
+    public AbstractSul<PSymbolInstance, PSymbolInstance, Object> build(
             SulConfig sulConfig,
             CleanupTasks cleanupTasks) {
         try {
-            AbstractSul<RASshOutput, RASshOutput, Object> sshSulConfig = null;
-            sshSulConfig = new RASshMapperSul((SshSulServerConfig) sulConfig, cleanupTasks);
-            return sshSulConfig;
+            return new RASshMapperSul(
+                    (RASulServerConfig) sulConfig, cleanupTasks);
             // }
         } catch (IOException e) {
             throw new MapperException("Error creating SshMapperSul", e);

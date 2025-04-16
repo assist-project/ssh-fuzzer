@@ -36,31 +36,26 @@ public class RASshSulAdapter implements AbstractSul<PSymbolInstance, PSymbolInst
 
     @Override
     public SulConfig getSulConfig() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSulConfig'");
+        return realSul.getSulConfig();
     }
 
     @Override
     public CleanupTasks getCleanupTasks() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getCleanupTasks'");
+        return realSul.getCleanupTasks();
     }
 
     @Override
     public void setDynamicPortProvider(DynamicPortProvider dynamicPortProvider) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setDynamicPortProvider'");
+        realSul.setDynamicPortProvider(dynamicPortProvider);
     }
 
     @Override
     public DynamicPortProvider getDynamicPortProvider() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDynamicPortProvider'");
+        return realSul.getDynamicPortProvider();
     }
 
     @Override
     public Mapper<PSymbolInstance, PSymbolInstance, Object> getMapper() {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMapper'");
     }
 

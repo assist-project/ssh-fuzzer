@@ -1,11 +1,16 @@
 package learner;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import de.learnlib.ralib.data.DataType;
+import de.learnlib.ralib.data.DataValue;
+import de.learnlib.ralib.words.PSymbolInstance;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 
 public class RASshSocketData {
     private String msg;
@@ -14,16 +19,17 @@ public class RASshSocketData {
         this.msg = "";
     }
 
-    public RASshSocketData(RASshOutput input) {
-        this.msg = String.format("{ \"msg\": \"%s\",", input.getName());
-        for (RASshParams param : input.getParams()) {
-            this.msg += String.format("\"%s\": \"%s\",", param.getName(), param.getValue());
+    public RASshSocketData(PSymbolInstance input) {
+        Map<String, String> map = new HashMap<>();
+        map.put("msg", input.getBaseSymbol().getName());
+        for (DataValue<?> param : input.getParameterValues()) {
+            map.put(param.getType().getName(), param.getId().toString());
         }
-        this.msg += "}";
         // sending json example:
         // { "msg":"KEXINIT",
         // "kex_algorithms":"ext-info-c",
         // }
+        this.msg = new Gson().toJson(map);
         System.out.println("JSON: " + this.msg);
     }
 
@@ -31,30 +37,39 @@ public class RASshSocketData {
         return msg;
     }
 
-    public RASshInput getSocketOutput(String jsonObj) {
+    public PSymbolInstance getSocketOutput(String jsonObj) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(jsonObj); // Parse JSON
+            Gson gson = new Gson();
 
-            // Extract 'msg' as the input name
-            String name = rootNode.get("msg").asText();
+            // Deserialize JSON into a Map
+            Type mapType = new TypeToken<Map<String, String>>() {
+            }.getType();
+            Map<String, String> map = gson.fromJson(jsonObj, mapType);
 
-            // Extract all other key-value pairs as RASshParams
-            List<RASshParams> paramsList = new ArrayList<>();
-            Iterator<Map.Entry<String, JsonNode>> fields = rootNode.fields();
+            // Extract symbol name
+            String symbolName = map.remove("msg");
 
-            while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> field = fields.next();
-                String paramName = field.getKey();
-                String paramValue = field.getValue().asText();
+            // Create list of DataTypes and DataValues from the rest
+            List<DataType> types = new ArrayList<>();
+            List<DataValue<?>> values = new ArrayList<>();
 
-                // Skip 'msg' as it's already used as name
-                if (!paramName.equals("msg")) {
-                    paramsList.add(new RASshParams(paramName, "STRING", paramValue, "java.lang.String"));
-                }
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                String paramName = entry.getKey();
+                String paramValue = entry.getValue();
+
+                // In a real case, you'd infer actual class type (here we just assume String)
+                DataType type = new DataType(paramName, String.class);
+                DataValue<?> value = new DataValue<>(type, paramValue);
+
+                types.add(type);
+                values.add(value);
             }
 
-            return new RASshInput(name, paramsList);
+            // Create the ParameterizedSymbol
+            RASshInput symbol = new RASshInput(symbolName, types.toArray(new DataType[0]));
+
+            // Build and return the PSymbolInstance
+            return new PSymbolInstance(symbol, values.toArray(new DataValue[0]));
 
         } catch (Exception e) {
             throw new RuntimeException("Error parsing JSON", e);

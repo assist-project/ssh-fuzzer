@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import de.learnlib.ralib.words.PSymbolInstance;
+
 /**
  * Socket interface with the external SSH mapper (test harness).
  */
@@ -25,13 +27,13 @@ public class RASocketMapperSul {
         }
     }
 
-    public RASshOutput sendInput(RASshOutput input) {
+    public PSymbolInstance sendInput(PSymbolInstance input) {
         try {
             // Create JSON string from input
             RASshSocketData socketData = new RASshSocketData(input);
             // Send input to SUL
             sockout.println(socketData);
-            return new RASshOutput(socketData.getSocketOutput(sockin.readLine()));
+            return socketData.getSocketOutput(sockin.readLine());
         } catch (IOException e) {
             throw new MapperException("Input could not be sent", e);
         }
