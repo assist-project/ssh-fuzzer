@@ -13,4 +13,4 @@ COPY README.rst ./
 RUN pip3 install -r dev-requirements.txt
 
 
-ENTRYPOINT ["python3", "mapper.py"]
+ENTRYPOINT ["python3", "-u", "mapper.py"]

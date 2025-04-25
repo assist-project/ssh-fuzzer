@@ -1,5 +1,9 @@
 <alphabet>
-    <RASshInput name="CH_OPEN"></RASshInput>
+    <RASshInput name="KEXINIT"></RASshInput>
+    <RASshInput name="KEX30"></RASshInput>
+    <RASshInput name="NEWKEYS"></RASshInput>
+    <RASshInput name="SR_AUTH"></RASshInput>
+    <RASshInput name="SR_CONN"></RASshInput>
 </alphabet>
 
 <!-- <alphabet>

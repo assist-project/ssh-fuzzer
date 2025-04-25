@@ -4,6 +4,7 @@ import sys
 import traceback
 import manualparamiko
 import argparse
+import json
 
 from messages import MSG_MAPPING, MSG_NAMES #MSG_NAMES ONLT FOR DEBUG
 
@@ -220,6 +221,18 @@ class Processor:
                     #Mapper
                     commands = conn.recv(4096).rstrip().split()
 
+                    print("commands is: {} with fmt: {}".format(commands, type(commands)))
+
+                    if len(commands) > 0:
+                        raw_bytes = commands[0]
+                        if raw_bytes != b'reset':
+                            json_str = raw_bytes.decode('utf-8')
+                            parsed_dict = json.loads(json_str)
+                            print("parsed command is: {}".format(parsed_dict))
+                            commands.insert(0,1)
+                            commands[1] = parsed_dict['msg']
+
+
                     # Repeat multiple times?
                     #Mapper
                     try:
@@ -260,10 +273,10 @@ class Processor:
 
                         # Add a newline after a run of one or many commands
                         result += '\n'
-                        
+                        print("Returning result: %s" % result)
                         conn.send(str.encode(result))
                 except socket.error:
-                    print('\nCient disconnected (socket.error)')
+                    print('\nClient disconnected (socket.error)')
                     break
             print('Ready for new connection on address ' + self.learnlib_host + ':' + str(self.learnlib_port) )
 

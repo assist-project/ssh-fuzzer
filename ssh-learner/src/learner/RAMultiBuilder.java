@@ -7,6 +7,7 @@ import java.util.Map;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.alphabet.AlphabetBuilder;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.alphabet.AlphabetBuilderStandard;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.alphabet.xml.AlphabetSerializerXml;
+import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.config.LearnerConfigRA;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.statistics.RegisterAutomatonWrapper;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.SulBuilder;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.SulWrapper;
@@ -19,11 +20,14 @@ import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.core.config.St
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.core.config.StateFuzzerConfigBuilder;
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.core.config.StateFuzzerEnabler;
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.core.config.StateFuzzerServerConfig;
+import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.core.config.StateFuzzerServerConfigStandard;
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.core.TestRunner;
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.core.TestRunnerBuilder;
+import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.core.config.TestRunnerConfigStandard;
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.core.config.TestRunnerEnabler;
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.timingprobe.TimingProbe;
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.timingprobe.TimingProbeBuilder;
+import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.timingprobe.config.TimingProbeConfigStandard;
 import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.timingprobe.config.TimingProbeEnabler;
 import de.learnlib.ralib.data.DataType;
 import de.learnlib.ralib.theory.Theory;
@@ -42,41 +46,28 @@ public class RAMultiBuilder
 
     protected SulBuilder<PSymbolInstance, PSymbolInstance, Object> sulBuilder;
 
-    // TODO: Delete new RASshSulBuilderAdapter() class
-
     SulWrapper<PSymbolInstance, PSymbolInstance, Object> sulWrapper = new SulWrapperStandard<PSymbolInstance, PSymbolInstance, Object>();
 
-    // SulClientConfigImpl and MapperConfigImpl need to be implemented
     @Override
     public StateFuzzerClientConfig buildClientConfig() {
         return new SshStateFuzzerClientConfig(new SshSulClientConfig());
     }
 
-    // SulServerConfigImpl (and MapperConfigImpl) need to be implemented
     @Override
     public StateFuzzerServerConfig buildServerConfig() {
-        return new SshStateFuzzerServerConfig(new RASulServerConfig());
+        return new StateFuzzerServerConfigStandard(
+                new LearnerConfigRA(),
+                new RASulServerConfig(),
+                new TestRunnerConfigStandard(),
+                new TimingProbeConfigStandard());
     }
 
     @Override
     public StateFuzzer<RegisterAutomatonWrapper<RASshInput, PSymbolInstance>> build(
             StateFuzzerEnabler stateFuzzerEnabler) {
-        // RASshAlphabetBuilder();
-
-        // Alphabet<RASshInput> alphabet =
-        // alphabetBuilder.build(stateFuzzerEnabler.getLearnerConfig());
-
-        // for (RASshInput input : alphabet) {
-        // DataType[] paramTypes = input.getPtypes();
-        // builder.withInput(input, paramTypes);
-        // }
-
-        // final DataType CH_OPEN = new DataType("CH_OPEN", Integer.class);
-        // IntegerEqualityTheory theory = new IntegerEqualityTheory(CH_OPEN);
 
         @SuppressWarnings("rawtypes")
         final Map<DataType, Theory> teachers = new LinkedHashMap<>();
-        // teachers.put(CH_OPEN, theory);
 
         sulBuilder = new RASulBuilder();
         StateFuzzerComposerRA<RASshInput, Object> stateFuzzerComposer = new StateFuzzerComposerRA<RASshInput, Object>(
@@ -97,42 +88,4 @@ public class RAMultiBuilder
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'build'");
     }
-
-    public void RASshAlphabetBuilder() {
-        try {
-            File file = new File("inputs/alphabets/servers/ra_input.xml");
-
-            // 2. Create JAXB context with your class
-            JAXBContext jaxbContext = JAXBContext.newInstance(RASshAlphabetPojoXml.class);
-
-            // 3. Create unmarshaller
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-
-            // 4. Unmarshal the XML to POJO
-            RASshAlphabetPojoXml alphabetPojo = (RASshAlphabetPojoXml) jaxbUnmarshaller.unmarshal(file);
-
-            System.out.println("Unmarshalled POJO: " + alphabetPojo);
-            System.out.println("Raw inputs: " + alphabetPojo.getInputs());
-
-            // 5. Get the RASshInput list
-            List<RASshInput> inputs = alphabetPojo.getInputs();
-
-            // 6. Print the inputs
-            System.out.println("Parsed Inputs:");
-            for (RASshInput input : inputs) {
-                System.out.println("  " + input.toString());
-
-                // Optional: print data values
-                System.out.println("    DataValues:");
-                for (var dv : RASshInput.toDataValues(input)) {
-                    System.out.println("      " + dv);
-                }
-            }
-        } catch (
-
-        Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 }

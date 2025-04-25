@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import de.learnlib.ralib.data.DataType;
 import de.learnlib.ralib.data.DataValue;
-import de.learnlib.ralib.words.ParameterizedSymbol;
+import de.learnlib.ralib.words.InputSymbol;
 
 public class RASshInput
         extends
-        ParameterizedSymbol {
+        InputSymbol {
     private String name;
     private List<RASshParams> params;
 

@@ -32,7 +32,7 @@ public class RASocketMapperSul {
             // Create JSON string from input
             RASshSocketData socketData = new RASshSocketData(input);
             // Send input to SUL
-            sockout.println(socketData);
+            sockout.println(socketData.getMsg());
             return socketData.getSocketOutput(sockin.readLine());
         } catch (IOException e) {
             throw new MapperException("Input could not be sent", e);
