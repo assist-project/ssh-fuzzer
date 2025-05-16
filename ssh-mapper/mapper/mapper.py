@@ -227,10 +227,13 @@ class Processor:
                         raw_bytes = commands[0]
                         if raw_bytes != b'reset':
                             json_str = raw_bytes.decode('utf-8')
-                            parsed_dict = json.loads(json_str)
-                            print("parsed command is: {}".format(parsed_dict))
-                            commands.insert(0,1)
-                            commands[1] = parsed_dict['msg']
+                            is_It = is_json(json_str)
+                            parsed_dict = ""
+                            if is_It:
+                                parsed_dict = json.loads(json_str)
+                                print("parsed command is: {}".format(parsed_dict))
+                                commands.insert(0,1)
+                                commands[1] = parsed_dict['msg']
 
 
                     # Repeat multiple times?
@@ -283,6 +286,12 @@ class Processor:
         print('Closing connection')
         sock.close()
 
+def is_json(myjson):
+  try:
+    json.loads(myjson)
+  except ValueError as e:
+    return False
+  return True
 
 def parse_address(address_str):
     host_port = address_str.split(":")
