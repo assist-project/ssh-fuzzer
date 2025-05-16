@@ -45,7 +45,7 @@ services:
     volumes:
       - ./learner_output_openssh8_ra:/app/output_folder
       - ../../ssh-learner/inputs/alphabets/servers/:/app/inputs/alphabets/servers/
-    command: ["state-fuzzer-server", "-connect", "openssh-mapper8-ra:8080", "-alphabet", "/app/inputs/alphabets/servers/ra_input.xml", "-output", "/app/output_folder", "-sshMapperAddress", "openssh-mapper8-ra:8080", "-debug", "-learningAlgorithm", "${LEARNING_ALGORITHM}", "-equivalenceAlgorithms", "IO_RANDOM_WALK"]
+    command: ["learner.RALearnerMain", "state-fuzzer-server", "-connect", "openssh-mapper8-ra:8080", "-alphabet", "/app/inputs/alphabets/servers/ra_input.xml", "-output", "/app/output_folder", "-sshMapperAddress", "openssh-mapper8-ra:8080", "-debug", "-learningAlgorithm", "${LEARNING_ALGORITHM}", "-equivalenceAlgorithms", "IO_RANDOM_WALK"]
 
 networks:
   openssh_network8_ra:

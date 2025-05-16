@@ -45,7 +45,7 @@ services:
     volumes:
       - ./learner_output_openssh8:/app/output_folder
       - ../../ssh-learner/inputs/alphabets/servers/:/app/inputs/alphabets/servers/
-    command: ["state-fuzzer-server", "-connect", "openssh-mapper8:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "openssh-mapper8:8080","-debug", "-roundLimit", "3"]
+    command: ["learner.Main", "state-fuzzer-server", "-connect", "openssh-mapper8:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "openssh-mapper8:8080","-debug", "-roundLimit", "3"]
 
 networks:
   openssh_network8:
