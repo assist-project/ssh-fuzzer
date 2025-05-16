@@ -1,0 +1,5 @@
+digraph RA {
+"" [shape=none,label=<>]
+"l0" [shape=doublecircle]
+"" -> "l0"
+}
