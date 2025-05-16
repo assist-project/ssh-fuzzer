@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  openssh-server7-ra:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.openssh7
+    container_name: openssh-server7-ra
+    # ports:
+    #   - "2222:22"
+    networks:
+      - openssh_network7_ra
+    volumes:
+      - ./ssh-keys/learner-ssh.pub:/root/.ssh/id_rsa.pub:ro
+      - ./ssh-keys/learner-ssh:/root/.ssh/id_rsa:ro
+    entrypoint: ["sh", "-c", "cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && /usr/sbin/sshd -D -e"]
+
+
+  openssh-mapper7-ra:
+    build:
+      context: ../../ssh-mapper
+      dockerfile: Dockerfile
+    container_name: openssh-mapper7-ra
+    # ports:
+    #   - "8080:8080"
+    depends_on:
+      - openssh-server7-ra
+    networks:
+      - openssh_network7_ra
+    volumes:
+      - ./ssh-keys/learner-ssh.pub:/root/.ssh/id_rsa.pub:ro
+      - ./ssh-keys/learner-ssh:/root/.ssh/id_rsa:ro
+    command: -l 0.0.0.0:8080 -s openssh-server7-ra:22  -c OpenSSH -f server
+
+  openssh-learner7-ra:
+    build:
+      context: ../../ssh-learner
+      dockerfile: Dockerfile
+    container_name: openssh-learner7-ra
+    networks:
+      - openssh_network7_ra
+    depends_on:
+      - openssh-server7-ra
+      - openssh-mapper7-ra
+    volumes:
+      - ./learner_output_openssh7_ra:/app/output_folder
+      - ../../ssh-learner/inputs/alphabets/servers/:/app/inputs/alphabets/servers/
+    command: ["state-fuzzer-server", "-connect", "openssh-mapper7-ra:8080", "-alphabet", "/app/inputs/alphabets/servers/ra_input.xml", "-output", "/app/output_folder", "-sshMapperAddress", "openssh-mapper7-ra:8080", "-debug", "-learningAlgorithm", "${LEARNING_ALGORITHM}", "-equivalenceAlgorithms", "IO_RANDOM_WALK"]
+
+networks:
+  openssh_network7_ra:
+    driver: bridge
