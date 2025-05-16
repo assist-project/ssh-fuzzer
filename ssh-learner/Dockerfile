@@ -2,10 +2,10 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 RUN git clone https://github.com/protocol-fuzzing/protocol-state-fuzzer.git psf \
     && \
-    cd psf && bash install.sh && cd ../..
+    cd psf && bash install.sh && cd /app
 COPY pom.xml .
 COPY src ./src
-RUN mvn clean package
+RUN mvn -X clean package -DskipTests
 
 
 
@@ -16,4 +16,4 @@ COPY --from=build /app/target/ssh-learner.jar ./ssh-learner.jar
 COPY --from=build /app/target/lib/ ./lib/
 
 
-ENTRYPOINT ["java", "-cp", "./ssh-learner.jar:./lib/*", "learner.Main"]
+ENTRYPOINT ["java", "-cp", "./ssh-learner.jar:./lib/*", "learner.RALearnerMain"]
