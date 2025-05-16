@@ -2,6 +2,7 @@ package learner;
 
 import de.learnlib.ralib.data.DataType;
 import de.learnlib.ralib.data.DataValue;
+import de.learnlib.ralib.words.OutputSymbol;
 import de.learnlib.ralib.words.PSymbolInstance;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +39,8 @@ public class RASshSocketData {
         List<DataType> types = new ArrayList<>();
         List<DataValue<?>> values = new ArrayList<>();
 
-        RASshInput symbol = new RASshInput(jsonObj, types.toArray(new DataType[0]));
+        OutputSymbol symbol = new OutputSymbol("O_"+jsonObj, types.toArray(new DataType[0]));
+        System.out.println("output from mapper: " + symbol.toString());
 
         return new PSymbolInstance(symbol, values.toArray(new DataValue[0]));
     }

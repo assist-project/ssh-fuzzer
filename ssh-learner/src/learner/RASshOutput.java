@@ -5,18 +5,20 @@ import java.util.List;
 
 import de.learnlib.ralib.data.DataType;
 import de.learnlib.ralib.data.DataValue;
-import de.learnlib.ralib.words.PSymbolInstance;
+import de.learnlib.ralib.words.OutputSymbol;
 
-public class RASshOutput extends PSymbolInstance {
+public class RASshOutput extends OutputSymbol {
     // private RASshInput input;
     // private DataValue<?>[] values;
     private String name;
     private List<RASshParams> params;
 
-    public RASshOutput(RASshInput input) {
-        super(input, RASshInput.toDataValues(input));
-        this.name = input.getName();
-        this.params = input.getParams();
+    public RASshOutput(String name, List<RASshParams> paramList) {
+        super(name, paramList.stream().map(param -> {
+            return new DataType(param.getType(), RASshInput.getClassFromString(param.getClassName()));
+        }).toArray(DataType[]::new));
+        this.name = name;
+        this.params = paramList;
     }
 
     public static DataValue<?>[] toDataValues(RASshInput input) {

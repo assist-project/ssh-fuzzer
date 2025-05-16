@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import de.learnlib.ralib.data.DataType;
 import de.learnlib.ralib.data.DataValue;
-import de.learnlib.ralib.words.InputSymbol;
+import de.learnlib.ralib.words.ParameterizedSymbol;
 
 public class RASshInput
         extends
-        InputSymbol {
+        ParameterizedSymbol {
+    // private OutputSymbol output;
+    // private InputSymbol input;
     private String name;
     private List<RASshParams> params;
 
     public RASshInput(String name, List<RASshParams> paramList) {
         super(name, paramList.stream().map(param -> {
             return new DataType(param.getType(), getClassFromString(param.getClassName()));
-        }).toArray(DataType[]::new)); // Fill in ptypes from the param list
+        }).toArray(DataType[]::new));
         this.name = name;
         this.params = paramList;
     }
@@ -24,6 +26,15 @@ public class RASshInput
         super(name, data);
         this.name = name;
         this.params = new ArrayList<>();
+        // this.output = new OutputSymbol(name, params.stream().map(param -> {
+        // return new DataType(param.getType(),
+        // getClassFromString(param.getClassName()));
+        // }).toArray(DataType[]::new));
+
+        // this.input = new InputSymbol(name, params.stream().map(param -> {
+        // return new DataType(param.getType(),
+        // getClassFromString(param.getClassName()));
+        // }).toArray(DataType[]::new));
     }
 
     public static DataValue<?>[] toDataValues(RASshInput input) {
@@ -58,7 +69,7 @@ public class RASshInput
     }
 
     // Helper method to convert string class name to Class object
-    private static Class<?> getClassFromString(String className) {
+    public static Class<?> getClassFromString(String className) {
         try {
             return Class.forName(className); // Convert class name to Class object
         } catch (ClassNotFoundException e) {

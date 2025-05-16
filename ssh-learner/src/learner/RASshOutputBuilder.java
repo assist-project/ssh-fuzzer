@@ -8,7 +8,6 @@ import de.learnlib.ralib.words.PSymbolInstance;
 
 public class RASshOutputBuilder extends OutputBuilder<PSymbolInstance> {
 
-    @Override
     public PSymbolInstance buildOutput(String name) {
         OutputSymbol baseSymbol = new OutputSymbol(name);
         return new PSymbolInstance(baseSymbol);

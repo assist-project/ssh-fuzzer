@@ -8,15 +8,16 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.statist
 import com.github.protocolfuzzing.protocolstatefuzzer.entrypoints.CommandLineParser;
 
 import de.learnlib.ralib.words.PSymbolInstance;
+import de.learnlib.ralib.words.ParameterizedSymbol;
 
 public class RALearnerMain {
     public static void main(String[] args) throws IOException {
         RAMultiBuilder mb = new RAMultiBuilder();
 
-        CommandLineParser<RegisterAutomatonWrapper<RASshInput, PSymbolInstance>> commandLineParser = new CommandLineParser<>(
+        CommandLineParser<RegisterAutomatonWrapper<ParameterizedSymbol, PSymbolInstance>> commandLineParser = new CommandLineParser<>(
                 mb, mb,
                 mb, mb);
-        List<LearnerResult<RegisterAutomatonWrapper<RASshInput, PSymbolInstance>>> results = commandLineParser
+        List<LearnerResult<RegisterAutomatonWrapper<ParameterizedSymbol, PSymbolInstance>>> results = commandLineParser
                 .parse(args);
 
         System.out.println("✅ Done with RA learning");

@@ -12,11 +12,14 @@ import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.sulwra
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.Mapper;
 import com.github.protocolfuzzing.protocolstatefuzzer.utils.CleanupTasks;
 import net.automatalib.alphabet.Alphabet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.learnlib.ralib.words.PSymbolInstance;
 
 public class RASshMapperSul
         implements AbstractSul<PSymbolInstance, PSymbolInstance, Object> {
+	private static final Logger LOGGER = LogManager.getLogger();
     private RASocketMapperSul socketSul;
 
     /** Stores the constructor parameter. */
@@ -102,7 +105,7 @@ public class RASshMapperSul
     @Override
     public PSymbolInstance step(PSymbolInstance in) {
         // ParameterizedSymbol base = in.getBaseSymbol();
-        System.out.println("step running: " + in.toString());
+    	LOGGER.debug("step running: " + in.toString());
         return socketSul.sendInput(in);
     }
 

@@ -1,12 +1,9 @@
 package learner;
 
-import java.io.File;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.alphabet.AlphabetBuilder;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.alphabet.AlphabetBuilderStandard;
-import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.alphabet.xml.AlphabetSerializerXml;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.config.LearnerConfigRA;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.learner.statistics.RegisterAutomatonWrapper;
 import com.github.protocolfuzzing.protocolstatefuzzer.components.sul.core.SulBuilder;
@@ -32,17 +29,16 @@ import com.github.protocolfuzzing.protocolstatefuzzer.statefuzzer.testrunner.tim
 import de.learnlib.ralib.data.DataType;
 import de.learnlib.ralib.theory.Theory;
 import de.learnlib.ralib.words.PSymbolInstance;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Unmarshaller;
+import de.learnlib.ralib.words.ParameterizedSymbol;
 
 public class RAMultiBuilder
         implements StateFuzzerConfigBuilder,
-        StateFuzzerBuilder<RegisterAutomatonWrapper<RASshInput, PSymbolInstance>>, TestRunnerBuilder,
+        StateFuzzerBuilder<RegisterAutomatonWrapper<ParameterizedSymbol, PSymbolInstance>>, TestRunnerBuilder,
         TimingProbeBuilder {
 
-    // AlphabetPojoXmlImpl needs to be implemented
-    protected AlphabetBuilder<RASshInput> alphabetBuilder = new AlphabetBuilderStandard<RASshInput>(
-            new AlphabetSerializerXml<RASshInput, RASshAlphabetPojoXml>(RASshInput.class, RASshAlphabetPojoXml.class));
+    protected AlphabetBuilder<ParameterizedSymbol> alphabetBuilder = new AlphabetBuilderStandard<ParameterizedSymbol>(
+            new RASshSerializer(RASshInput.class,
+                    RASshAlphabetPojoXml.class));
 
     protected SulBuilder<PSymbolInstance, PSymbolInstance, Object> sulBuilder;
 
@@ -63,18 +59,18 @@ public class RAMultiBuilder
     }
 
     @Override
-    public StateFuzzer<RegisterAutomatonWrapper<RASshInput, PSymbolInstance>> build(
+    public StateFuzzer<RegisterAutomatonWrapper<ParameterizedSymbol, PSymbolInstance>> build(
             StateFuzzerEnabler stateFuzzerEnabler) {
 
         @SuppressWarnings("rawtypes")
         final Map<DataType, Theory> teachers = new LinkedHashMap<>();
 
         sulBuilder = new RASulBuilder();
-        StateFuzzerComposerRA<RASshInput, Object> stateFuzzerComposer = new StateFuzzerComposerRA<RASshInput, Object>(
+        StateFuzzerComposerRA<ParameterizedSymbol, Object> stateFuzzerComposer = new StateFuzzerComposerRA<ParameterizedSymbol, Object>(
                 stateFuzzerEnabler, alphabetBuilder,
                 sulBuilder, sulWrapper, teachers);
 
-        return new StateFuzzerRA<RASshInput, Object>(stateFuzzerComposer.initialize());
+        return new StateFuzzerRA<ParameterizedSymbol, Object>(stateFuzzerComposer.initialize());
     }
 
     @Override
