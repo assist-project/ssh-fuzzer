@@ -4,6 +4,8 @@
     <RASshInput name="NEWKEYS"></RASshInput>
     <RASshInput name="SR_AUTH"></RASshInput>
     <RASshInput name="SR_CONN"></RASshInput>
+    <RASshInput name="UA_PK_OK"></RASshInput>
+    <RASshInput name="UA_PK_NOK"></RASshInput>
 </alphabet>
 
 <!-- <alphabet>

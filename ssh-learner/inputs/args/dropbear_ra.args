@@ -1,0 +1,14 @@
+state-fuzzer-server
+-connect
+127.0.0.1:8080
+-alphabet
+inputs/alphabets/servers/ra_input.xml
+-output
+output_folder_ssh_1
+-sshMapperAddress
+127.0.0.1:8080
+-debug
+-learningAlgorithm
+RASTAR
+-equivalenceAlgorithms
+IO_RANDOM_WALK
