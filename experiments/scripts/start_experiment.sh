@@ -17,26 +17,59 @@ else
     echo "SSH keys already exist. Skipping key generation."
 fi
 
-# Check user input
-if [[ "$#" -ne 1 ]]; then
-    echo "Usage: $0 <openssh|dropbear>"
+
+print_usage() {
+    echo "Usage:"
+    echo "./start-experiment.sh <experiment> [ra] [learning_algorithm]"
+    echo
+    echo "Examples:"
+    echo "RA Learning:"
+    echo "./start-experiment.sh dropbear ra RALAMBDA"
+    echo "./start-experiment.sh openssh8 ra RASTAR"
+    echo
+    echo "Mealy Learning:"
+    echo "./start-experiment.sh openssh8"
+    echo "./start-experiment.sh dropbear"
     exit 1
-fi
+}
 
 EXPERIMENT=$1
-COMPOSE_FILE="docker-compose-${EXPERIMENT}.yaml"
+MODE=$2
+ALGO=$3
+
 
 # Validate input and start corresponding docker-compose
-if [[ "${EXPERIMENT}" == "openssh7" || "${EXPERIMENT}" == "openssh8" || "${EXPERIMENT}" == "dropbear" ]]; then
-    if [[ -f "${DOCKER_COMPOSE_DIR}/${COMPOSE_FILE}" ]]; then
-        pushd "${DOCKER_COMPOSE_DIR}"
-        echo "Starting experiment for ${EXPERIMENT}..."
-        docker compose -f "${DOCKER_COMPOSE_DIR}/${COMPOSE_FILE}" up --build -d
-    else
-        echo "Error: ${COMPOSE_FILE} not found in ${DOCKER_COMPOSE_DIR}"
-        exit 1
+if [[ ! "${EXPERIMENT}" =~ ^(openssh7|openssh8|dropbear)$ ]]; then
+    echo "Error: Invalid experiment name '${EXPERIMENT}'."
+    print_usage
+fi
+
+# Determine which compose file to use
+if [[ "${MODE}" == "ra" ]]; then
+    if [[ -z "${ALGO}" ]]; then
+        echo "Error: RA mode requires a learning algorithm name."
+        print_usage
     fi
+    COMPOSE_FILE="docker-compose-${EXPERIMENT}-ra.yaml"
 else
-    echo "Invalid argument. Use 'openssh' or 'dropbear'."
+    COMPOSE_FILE="docker-compose-${EXPERIMENT}.yaml"
+fi
+
+# Run the appropriate docker compose setup
+if [[ -f "${DOCKER_COMPOSE_DIR}/${COMPOSE_FILE}" ]]; then
+    pushd "${DOCKER_COMPOSE_DIR}" > /dev/null
+    echo "Starting ${MODE:-mealy} learning experiment for ${EXPERIMENT}..."
+
+    if [[ "${MODE}" == "ra" ]]; then
+        # not running in background as not used in any ci so far
+        # and I would want ot see the progress locally
+        LEARNING_ALGORITHM=${ALGO} docker compose -f "${COMPOSE_FILE}" up --build
+    else
+        docker compose -f "${COMPOSE_FILE}" up --build -d
+    fi
+
+    popd > /dev/null
+else
+    echo "Error: ${COMPOSE_FILE} not found in ${DOCKER_COMPOSE_DIR}"
     exit 1
 fi
