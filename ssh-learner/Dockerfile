@@ -16,4 +16,4 @@ COPY --from=build /app/target/ssh-learner.jar ./ssh-learner.jar
 COPY --from=build /app/target/lib/ ./lib/
 
 
-ENTRYPOINT ["java", "-cp", "./ssh-learner.jar:./lib/*"]
+CMD ["java", "-cp", "./ssh-learner.jar:./lib/*", "learner.Main"]
