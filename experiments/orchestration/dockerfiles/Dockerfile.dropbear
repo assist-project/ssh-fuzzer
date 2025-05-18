@@ -42,9 +42,7 @@ RUN dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key && \
 # Set Dropbear server to run on port 22 (override in `docker run -p`)
 EXPOSE 22
 
-COPY ssh-keys/learner-ssh.pub .
-
-RUN mkdir ~/.ssh; cat learner-ssh.pub >> ~/.ssh/authorized_keys
+RUN mkdir ~/.ssh; chmod 700 ~/.ssh
 
 # Command to run Dropbear SSH server
 CMD ["/usr/local/sbin/dropbear", "-F", "-E", "-j", "-k", "-s"]
