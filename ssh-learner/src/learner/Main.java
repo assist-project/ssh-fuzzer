@@ -30,5 +30,6 @@ public class Main {
         CommandLineParser<MealyMachineWrapper<SshInput, SshOutput>> commandLineParser = new CommandLineParser<>(mb, mb,
                 mb, mb);
         List<LearnerResult<MealyMachineWrapper<SshInput, SshOutput>>> results = commandLineParser.parse(args);
+        System.out.println("Done with Mealy Machine learning");
     }
 }

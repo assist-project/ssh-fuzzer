@@ -242,9 +242,13 @@ class Processor:
                     for i in range(repeat):
                         result = ''
                         for ci, command in enumerate(commands):
-                            print('[%s]' % self.transport)
-                            print('Sending %s...' % command.decode('UTF-8'))
-                            response = self.process_learlib_query(command.decode('UTF-8'))
+                            final_cmd = command
+                            if type(command) != str:
+                                final_cmd = command.decode('UTF-8')
+                            # print('transport is: [%s]' % self.transport)
+                            if final_cmd != '':
+                                print('Sending %s...' %final_cmd)
+                            response = self.process_learlib_query(final_cmd)
                             result += response
                             # If this is not the last command, add a space
                             if ci != len(commands)-1:
