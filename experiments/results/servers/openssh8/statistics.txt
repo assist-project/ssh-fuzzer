@@ -1,0 +1,89 @@
+=== RUN DESCRIPTION ===
+Alphabet: [KEXINIT, KEX30, NEWKEYS, SR_AUTH, SR_CONN, UA_PK_OK, UA_PK_NOK]
+
+StateFuzzerConfig Parameters
+Help: false
+Debug: true
+Quiet: false
+Output Directory: /app/output_folder
+Fuzzing Client: false
+
+LearnerConfig Parameters
+Alphabet: /app/inputs/alphabets/servers/trans_auth.xml
+Learning Algorithm: TTT
+Equivalence Algorithms: [RANDOM_WP_METHOD]
+Max Depth: 1
+Min Length: 5
+Max Length: 15
+Max Equivalence Queries: 1000
+Runs Per Membership Query: 1
+Random Length: 5
+Membership Query Retries: 3
+Log Queries: false
+Prob Reset: 0.0
+Test File: null
+Seed: 0
+Cache Tests: false
+Ce Sanitization: true
+Skip Non Det Tests: false
+Ce Reruns: 3
+Probabilistic Sanitization: true
+Time Limit: null
+Test Limit: null
+Round Limit: 3
+IOMode: true
+Probability of Choosing a New DataValue: 0.1
+Max Runs: 1
+Max Depth for Register Automata: 1
+Reset Runs: true
+Seed transitions: true
+Draw symbols uniformly: true
+
+SulConfig Parameters
+Fuzzing Role: client
+Fuzzing Client: true
+Response Wait: 100
+Input Response Timeout: null
+Command: null
+Terminate Command: null
+Process Dir: null
+Redirect Output Streams: false
+Process Trigger: NEW_TEST
+Start Wait: 0
+
+SulServerConfigStandard Parameters
+Connect to: openssh-mapper8:8080
+
+MapperConfig Parameters
+Mapper Connection Config: null
+Repeating Outputs: null
+Socket Closed as Timeout: false
+Disabled as Timeout: false
+Merge Repeating: true
+
+SulAdapterConfig Parameters
+Adapter Port: null
+Adapter Address: localhost
+
+=== STATISTICS ===
+Learning finished: false
+Reason: Cannot invoke "String.hashCode()" because the return value of "com.github.protocolfuzzing.protocolstatefuzzer.components.sul.mapper.abstractsymbols.AbstractOutput.getName()" is null
+Size of the input alphabet: 7
+Number of states: 3
+Number of hypotheses: 2
+Number of inputs: 300
+Number of tests: 78
+Number of learning inputs: 87
+Number of learning tests: 40
+Number of inputs up to last hypothesis: 131
+Number of tests up to last hypothesis: 44
+Time (ms) to learn model: 528199
+Counterexamples:
+CE 1:Query[ε|NEWKEYS SR_CONN NEWKEYS SR_CONN KEXINIT UA_PK_NOK NEWKEYS SR_CONN KEXINIT KEX30 SR_CONN / KEXINIT+UNIMPL UNIMPL UNIMPL UNIMPL UNIMPL NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN]
+CE 2:Query[ε|KEX30 NEWKEYS KEX30 NEWKEYS UA_PK_NOK SR_AUTH UA_PK_NOK SR_AUTH UA_PK_NOK NEWKEYS UA_PK_NOK KEXINIT / KEXINIT+UNIMPL UNIMPL KEX31+NEWKEYS+BUFFERED NO_RESP UNIMPL SR_ACCEPT UA_FAILURE SR_ACCEPT UA_FAILURE UNIMPL NO_CONN NO_CONN]
+Number of inputs when hypothesis was generated: [7, 131]
+Number of tests when hypothesis was generated: [7, 44]
+Time (ms) when hypothesis was generated: [15171, 184755]
+Number of inputs when counterexample was found: [51, 213]
+Number of tests when counterexample was found: [11, 52]
+Time (ms) when counterexample was found: [64539, 307408]

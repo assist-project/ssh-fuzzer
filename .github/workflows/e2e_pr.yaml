@@ -1,0 +1,57 @@
+name: CI for ssh-mapper
+on: [push, pull_request]
+
+jobs:
+  ssh-mapper-dropbear-server:
+    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
+    runs-on: ubuntu-latest
+    # strategy:
+    #   fail-fast: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start learning DropbearSSH server
+        run: cd experiments/scripts/ && ./start_experiment.sh dropbear
+
+      - name: Verify Result
+        run: |
+          # wait for the learning to be over
+          while [ "$( docker container inspect -f '{{.State.Running}}' dropbear-learner )" = "true" ]; do date; echo "still learning"; sleep 5; done
+          experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear experiments/orchestration/learner_output_dropbear 3
+
+  ssh-mapper-openssh7-server:
+    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
+    runs-on: ubuntu-latest
+    # strategy:
+    #   fail-fast: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start learning OpenSSH7 server
+        run: cd experiments/scripts/ && ./start_experiment.sh openssh7
+
+      - name: Verify Result
+        run: |
+          # wait for the learning to be over
+          while [ "$( docker container inspect -f '{{.State.Running}}' openssh-learner7 )" = "true" ]; do date; echo "still learning"; sleep 5; done
+          experiments/scripts/diff_hyps.sh experiments/results/servers/openssh7 experiments/orchestration/learner_output_openssh7 3
+
+  ssh-mapper-openssh8-server:
+    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
+    runs-on: ubuntu-latest
+    # strategy:
+    #   fail-fast: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start learning OpenSSH8 server
+        run: cd experiments/scripts/ && ./start_experiment.sh openssh8
+
+      - name: Verify Result
+        run: |
+          # wait for the learning to be over
+          while [ "$( docker container inspect -f '{{.State.Running}}' openssh-learner8 )" = "true" ]; do date; echo "still learning"; sleep 5; done
+          experiments/scripts/diff_hyps.sh experiments/results/servers/openssh8 experiments/orchestration/learner_output_openssh8 2
