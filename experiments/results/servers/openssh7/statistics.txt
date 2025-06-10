@@ -77,13 +77,13 @@ Number of learning inputs: 328
 Number of learning tests: 99
 Number of inputs up to last hypothesis: 412
 Number of tests up to last hypothesis: 107
-Time (ms) to learn model: 706559
+Time (ms) to learn model: 709454
 Counterexamples:
 CE 1:Query[ε|NEWKEYS SR_CONN NEWKEYS SR_CONN KEXINIT UA_PK_NOK NEWKEYS SR_CONN KEXINIT KEX30 SR_CONN / KEXINIT+UNIMPL UNIMPL UNIMPL UNIMPL NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN]
 CE 2:Query[ε|KEXINIT KEX30 NEWKEYS SR_CONN KEXINIT SR_AUTH KEXINIT KEX30 SR_CONN KEXINIT / KEXINIT KEX31+NEWKEYS+BUFFERED NO_RESP DISCONNECT NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN NO_CONN]
 Number of inputs when hypothesis was generated: [7, 262, 412]
 Number of tests when hypothesis was generated: [7, 79, 107]
-Time (ms) when hypothesis was generated: [15107, 392539, 706550]
+Time (ms) when hypothesis was generated: [15333, 394630, 709440]
 Number of inputs when counterexample was found: [51, 302]
 Number of tests when counterexample was found: [11, 83]
-Time (ms) when counterexample was found: [57282, 436913]
+Time (ms) when counterexample was found: [57851, 439134]
