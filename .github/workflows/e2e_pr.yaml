@@ -12,12 +12,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start learning DropbearSSH server
-        run: cd experiments/scripts/ && ./start_learning.sh dropbear
+        run: pushd experiments/scripts/ && ./start_learning.sh dropbear && popd
 
       - name: Verify Result
         run: |
           # wait for the learning to be over
           while [ "$( docker container inspect -f '{{.State.Running}}' dropbear-learner )" = "true" ]; do date; echo "still learning"; sleep 5; done
+          echo "pwd: " pwd
+          echo "ls: " ls experiments/orchestration/learner_output_dropbear
           experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear experiments/orchestration/learner_output_dropbear 3
 
   ssh-mapper-openssh7-server:
@@ -30,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start learning OpenSSH7 server
-        run: cd experiments/scripts/ && ./start_learning.sh openssh7
+        run: pushd experiments/scripts/ && ./start_learning.sh openssh7 && popd
 
       - name: Verify Result
         run: |
@@ -48,7 +50,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start learning OpenSSH8 server
-        run: cd experiments/scripts/ && ./start_learning.sh openssh8
+        run: pushd experiments/scripts/ && ./start_learning.sh openssh8 && popd
 
       - name: Verify Result
         run: |
