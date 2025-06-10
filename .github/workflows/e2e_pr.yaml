@@ -18,8 +18,10 @@ jobs:
         run: |
           # wait for the learning to be over
           while [ "$( docker container inspect -f '{{.State.Running}}' dropbear-learner )" = "true" ]; do date; echo "still learning"; sleep 5; done
-          echo "pwd: " pwd
-          echo "ls: " ls experiments/orchestration/learner_output_dropbear
+          echo "pwd: " 
+          pwd
+          echo "ls: " 
+          ls experiments/orchestration/learner_output_dropbear
           experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear experiments/orchestration/learner_output_dropbear 3
 
   ssh-mapper-openssh7-server:
