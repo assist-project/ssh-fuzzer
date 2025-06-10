@@ -93,8 +93,6 @@ if [[ -f "${DOCKER_COMPOSE_DIR}/${COMPOSE_FILE}" ]]; then
     echo "Starting ${MODE:-mealy} learning experiment for ${SUT}..."
 
     if [[ "${MODE}" == "ra" ]]; then
-        # not running in background as not used in any ci so far
-        # and I would want ot see the progress locally
         LEARNING_ALGORITHM=${ALGO} docker compose -f "${COMPOSE_FILE}" up --build -d
     else
         docker compose -f "${COMPOSE_FILE}" up --build -d
