@@ -1,8 +1,0 @@
-<alphabet>
-    <!-- -->
-    <SshInput name="KEXINIT" />
-    <SshInput name="KEX30" />
-    <SshInput name="NEWKEYS" />
-    <SshInput name="SR_AUTH" />
-    <SshInput name="SR_CONN" />
-</alphabet>
