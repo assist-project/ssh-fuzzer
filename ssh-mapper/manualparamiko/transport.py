@@ -2182,7 +2182,7 @@ class Transport(threading.Thread, ClosingContextManager):
         self.auth_handler.private_key = manualparamiko.RSAKey.from_private_key_file(default_path)
         self.auth_handler.auth_method = 'publickey'
 #this should be changed to the username on the server
-        self.auth_handler.username = 'thetelefon' if ok else 'NOACCESS' #TODO Set username to machine specific
+        self.auth_handler.username = 'root' if ok else 'NOACCESS' #TODO Set username to machine specific
         self.auth_handler.custom_parse_service_request()
 
         return self.read_multiple_responses()
@@ -2243,7 +2243,10 @@ class Transport(threading.Thread, ClosingContextManager):
         try:
             m = Message()
             m.add_byte(cMSG_CHANNEL_EOF)
-            m.add_int(self.get_remote_chanid_fuzz())
+            remote_chan_id = self.get_remote_chanid_fuzz()
+            if remote_chan_id < 0:
+                return "WRNG_SEQ"
+            m.add_int(remote_chan_id)
             self._send_message(m)
             return self.read_multiple_responses()
         except NoChannelException:
@@ -2254,7 +2257,10 @@ class Transport(threading.Thread, ClosingContextManager):
             # Send message
             m = Message()
             m.add_byte(cMSG_CHANNEL_CLOSE)
-            m.add_int(self.get_remote_chanid_fuzz())
+            remote_chan_id = self.get_remote_chanid_fuzz()
+            if remote_chan_id < 0:
+                return "WRNG_SEQ"
+            m.add_int(remote_chan_id)
 
             # Remove channel from data structure
             self._channels._map.popitem()
@@ -2267,7 +2273,10 @@ class Transport(threading.Thread, ClosingContextManager):
         try:
             m = Message()
             m.add_byte(cMSG_CHANNEL_DATA)
-            m.add_int(self.get_remote_chanid_fuzz())
+            remote_chan_id = self.get_remote_chanid_fuzz()
+            if remote_chan_id < 0:
+                return "WRNG_SEQ"
+            m.add_int(remote_chan_id)
             m.add_string('Some fuzzing data')
 
             self._send_message(m)
@@ -2279,7 +2288,10 @@ class Transport(threading.Thread, ClosingContextManager):
         try:
             m = Message()
             m.add_byte(cMSG_CHANNEL_EXTENDED_DATA)
-            m.add_int(self.get_remote_chanid_fuzz())
+            remote_chan_id = self.get_remote_chanid_fuzz()
+            if remote_chan_id < 0:
+                return "WRNG_SEQ"
+            m.add_int(remote_chan_id)
             # SSH_EXTENDED_DATA_STDERR = 1
             m.add_int(1)
             m.add_string('Some fuzzing data')
@@ -2299,7 +2311,10 @@ class Transport(threading.Thread, ClosingContextManager):
 
             m = Message()
             m.add_byte(cMSG_CHANNEL_REQUEST)
-            m.add_int(self.get_remote_chanid_fuzz())
+            remote_chan_id = self.get_remote_chanid_fuzz()
+            if remote_chan_id < 0:
+                return "WRNG_SEQ"
+            m.add_int(remote_chan_id)
             m.add_string('pty-req')
             m.add_boolean(True)
             m.add_string(term)
@@ -2323,7 +2338,10 @@ class Transport(threading.Thread, ClosingContextManager):
         try:
             m = Message()
             m.add_byte(cMSG_CHANNEL_REQUEST)
-            m.add_int(self.get_remote_chanid_fuzz())
+            remote_chan_id = self.get_remote_chanid_fuzz()
+            if remote_chan_id < 0:
+                return "WRNG_SEQ"
+            m.add_int(remote_chan_id)
             m.add_string('env')
             m.add_boolean(True)
             m.add_string('var')
@@ -2338,7 +2356,10 @@ class Transport(threading.Thread, ClosingContextManager):
         try:
             m = Message()
             m.add_byte(cMSG_CHANNEL_WINDOW_ADJUST)
-            m.add_int(self.get_remote_chanid_fuzz())
+            remote_chan_id = self.get_remote_chanid_fuzz()
+            if remote_chan_id < 0:
+                return "WRNG_SEQ"
+            m.add_int(remote_chan_id)
             # Just add one byte. We will want to make sure that we never exceed
             #  2^32 - 1 bytes anyway...
             m.add_int(1)
@@ -2564,7 +2585,10 @@ class Transport(threading.Thread, ClosingContextManager):
 
     def get_remote_chanid_fuzz(self):
         try:
-            return self._channels._map[self._channels._map.keys()[0]].remote_chanid
+            if len(self._channels._map.keys()) > 0:
+                if  self._channels._map.keys()[0] in self._channels._map:
+                    return self._channels._map[self._channels._map.keys()[0]].remote_chanid
+            return -1
         except IndexError:
             raise NoChannelException('There is no channel')
 

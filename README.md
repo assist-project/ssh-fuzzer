@@ -29,7 +29,54 @@ The hacked version of paramiko can be found in manualparamiko directory. This fi
 Timing variances were a nuisance. Timing is controlled at various places:
 - The time.sleep() in mapper/mapper.py (controls set timeout between runs)
 - read_multiple_responses() in manualparamiko/transport.py (has both a timeout between responses and total timeout -in case of multiple responses- argument). 
-- Timeout based on the type of message can be set in the individual read_multiple_responses-calls. 
+- Timeout based on the type of message can be set in the individual read_multiple_responses-calls.
+
+# Orchestration
+
+Since the components were containerized to make it easy to run and not worry about missing dependencies.
+
+The Mapper and Learner have their Dockerfiles in their own directories. The ssh servers, dropbear and openssh, have their dockerfiles sitting in the `experiments/orchestration/dockerfiles` directory.
+
+In order to start learning most of the setup has been orchestrated with the help of the docker-compose files. All the learners have volume mappings so the learner outputs are available on the host machine. If you need to change or add any extra arguments for any learner or the mapper, you will have to edit the corresponding compose file.
+
+There is a script to simplify the starting of the learning setup where the `ssh-key` pair is also generated which can be used by the mapper. The containers are built locally and then the learning starts.
+
+
+`cd experiments/scripts`
+
+`./start_learning.sh`
+
+<code>
+Usage:
+  ./start_learning.sh <SUT>
+  ./start_learning.sh <SUT> <learning_algorithm>
+
+  <SUT>          : Required. The SSH server to experiment with.
+                        Must be one of: 'openssh7', 'openssh8', 'dropbear'.
+  <learning_algorithm> : Optional. Specifies the Register Automata (RA) learning algorithm.
+                        If provided, RA learning mode is activated.
+                        Known algorithms: RALAMBDA RASTAR. Ignored if not applicable.
+
+Examples:
+Mealy Learning:
+./start_learning.sh openssh8
+./start_learning.sh dropbear
+
+RA Learning:
+./start_learning.sh dropbear RALAMBDA
+./start_learning.sh openssh8 RASTAR
+</code>
+
+Whichever learner setup is run, based on the docker-compose file, the results will be generated in the volume mapped in each file, for instance:
+
+<u>Mealy learning dropbear:</u> `experiments/orchestration/learner_output_dropbear`
+
+<u>Mealy learning openssh7:</u> `experiments/orchestration/learner_output_openssh7`
+
+<u>RA learning dropbear:</u> `experiments/orchestration/learner_output_ra_dropbear`
+
+<u>RA learning openssh7:</u> `experiments/orchestration/learner_output_openssh7_ra`
+
 
 # Trimming script (mypydot)
 The python pydot package was altered to merge edges between the same nodes. 

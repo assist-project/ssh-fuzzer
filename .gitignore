@@ -28,3 +28,4 @@ ssh-mapper/build/**
 ssh-mapper/dist/**
 ssh-mapper/mapper/__pycache__/**
 ssh-learner/target/**
+__pycache__/

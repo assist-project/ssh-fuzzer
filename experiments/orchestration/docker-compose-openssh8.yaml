@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  openssh-server8:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.openssh8
+    container_name: openssh-server8
+    # ports:
+    #   - "2222:22"
+    networks:
+      - openssh_network8
+    volumes:
+      - ./ssh-keys/learner-ssh.pub:/root/.ssh/id_rsa.pub:ro
+      - ./ssh-keys/learner-ssh:/root/.ssh/id_rsa:ro
+    entrypoint: ["sh", "-c", "cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && /usr/sbin/sshd -D -e"]
+
+
+  openssh-mapper8:
+    build:
+      context: ../../ssh-mapper
+      dockerfile: Dockerfile
+    container_name: openssh-mapper8
+    # ports:
+    #   - "8080:8080"
+    depends_on:
+      - openssh-server8
+    networks:
+      - openssh_network8
+    volumes:
+      - ./ssh-keys/learner-ssh.pub:/root/.ssh/id_rsa.pub:ro
+      - ./ssh-keys/learner-ssh:/root/.ssh/id_rsa:ro
+    command: -l 0.0.0.0:8080 -s openssh-server8:22  -c OpenSSH -f server
+
+  openssh-learner8:
+    build:
+      context: ../../ssh-learner
+      dockerfile: Dockerfile
+    container_name: openssh-learner8
+    networks:
+      - openssh_network8
+    depends_on:
+      - openssh-server8
+      - openssh-mapper8
+    volumes:
+      - ./learner_output_openssh8:/app/output_folder
+      - ../../ssh-learner/inputs/alphabets/servers/:/app/inputs/alphabets/servers/
+    command: ["java", "-cp", "./ssh-learner.jar:./lib/*", "learner.Main", "state-fuzzer-server", "-connect", "openssh-mapper8:8080", "-alphabet", "/app/inputs/alphabets/servers/trans_auth.xml", "-output", "/app/output_folder", "-sshMapperAddress", "openssh-mapper8:8080","-debug", "-roundLimit", "3"]
+
+networks:
+  openssh_network8:
+    driver: bridge
