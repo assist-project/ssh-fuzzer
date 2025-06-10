@@ -41,22 +41,30 @@ In order to start learning most of the setup has been orchestrated with the help
 
 There is a script to simplify the starting of the learning setup where the `ssh-key` pair is also generated which can be used by the mapper. The containers are built locally and then the learning starts.
 
+
+`cd experiments/scripts`
+
+`./start_learning.sh`
+
 <code>
-cd experiments/scripts
-
-./start_experiment.sh
-
 Usage:
-./start-experiment.sh <experiment> [ra] [learning_algorithm]
+  ./start_learning.sh <SUT>
+  ./start_learning.sh <SUT> <learning_algorithm>
+
+  <SUT>          : Required. The SSH server to experiment with.
+                        Must be one of: 'openssh7', 'openssh8', 'dropbear'.
+  <learning_algorithm> : Optional. Specifies the Register Automata (RA) learning algorithm.
+                        If provided, RA learning mode is activated.
+                        Known algorithms: RALAMBDA RASTAR. Ignored if not applicable.
 
 Examples:
-RA Learning:
-./start-experiment.sh dropbear ra RALAMBDA
-./start-experiment.sh openssh8 ra RASTAR
-
 Mealy Learning:
-./start-experiment.sh openssh8
-./start-experiment.sh dropbear
+./start_learning.sh openssh8
+./start_learning.sh dropbear
+
+RA Learning:
+./start_learning.sh dropbear RALAMBDA
+./start_learning.sh openssh8 RASTAR
 </code>
 
 Whichever learner setup is run, based on the docker-compose file, the results will be generated in the volume mapped in each file, for instance:

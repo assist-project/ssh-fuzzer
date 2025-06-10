@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start learning DropbearSSH server
-        run: cd experiments/scripts/ && ./start_experiment.sh dropbear
+        run: cd experiments/scripts/ && ./start_learning.sh dropbear
 
       - name: Verify Result
         run: |
@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start learning OpenSSH7 server
-        run: cd experiments/scripts/ && ./start_experiment.sh openssh7
+        run: cd experiments/scripts/ && ./start_learning.sh openssh7
 
       - name: Verify Result
         run: |
@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start learning OpenSSH8 server
-        run: cd experiments/scripts/ && ./start_experiment.sh openssh8
+        run: cd experiments/scripts/ && ./start_learning.sh openssh8
 
       - name: Verify Result
         run: |

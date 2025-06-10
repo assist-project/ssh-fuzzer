@@ -76,6 +76,15 @@ public class RASshSerializer implements AlphabetSerializer<ParameterizedSymbol> 
             alphBuilder.withOutput(new RASshInput("UA_FAILURE", new ArrayList<>()));
             alphBuilder.withOutput(new RASshInput("SR_ACCEPT", new ArrayList<>()));
             alphBuilder.withOutput(new RASshInput("KEX31+NEWKEYS", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("DISCONNECT", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("UA_SUCCESS", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("UA_SUCCESS+GLOBAL_REQUEST", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("CH_OPEN_SUCCESS", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("CH_SUCCESS", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("CH_CLOSE_SUCCESS", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("WRNG_SEQ", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("UA_FAILURE+SR_ACCEPT", new ArrayList<>()));
+            alphBuilder.withOutput(new RASshInput("NO_RESP+UA_FAILURE", new ArrayList<>()));
 
             for (ParameterizedSymbol a : inputList) {
                 alphBuilder.withInput(a).withOutput(a)
