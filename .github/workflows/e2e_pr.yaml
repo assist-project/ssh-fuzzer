@@ -21,8 +21,9 @@ jobs:
           docker logs dropbear-mapper
           echo "pwd: " 
           pwd
-          echo "ls: " 
+          echo "ls: "
           ls experiments/orchestration/learner_output_dropbear
+          docker logs dropbear-ssh
           experiments/scripts/diff_hyps.sh experiments/results/servers/dropbear experiments/orchestration/learner_output_dropbear 3
 
   ssh-mapper-openssh7-server:
