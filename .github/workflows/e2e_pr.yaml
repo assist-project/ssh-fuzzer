@@ -67,14 +67,7 @@
 #           experiments/scripts/diff_hyps.sh experiments/results/servers/openssh8 experiments/orchestration/learner_output_openssh8 2
 
 name: CI for SSH Mapper (Mealy Learning)
-
-on:
-  push:
-    branches:
-      - main # Adjust to your primary branch (e.g., master, develop)
-  pull_request:
-    branches:
-      - main # Adjust to your primary branch
+on: [push, pull_request]
 
 jobs:
   # This job performs Mealy learning for the Dropbear SSH server
