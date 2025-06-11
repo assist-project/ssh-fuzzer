@@ -18,7 +18,7 @@ jobs:
         run: |
           # wait for the learning to be over
           while [ "$( docker container inspect -f '{{.State.Running}}' dropbear-learner )" = "true" ]; do date; echo "still learning"; sleep 5; done
-          docker logs dropbear-learner
+          docker logs dropbear-mapper
           echo "pwd: " 
           pwd
           echo "ls: " 
