@@ -4,6 +4,7 @@ import sys
 import traceback
 import manualparamiko
 import argparse
+import json
 
 from messages import MSG_MAPPING, MSG_NAMES #MSG_NAMES ONLT FOR DEBUG
 
@@ -220,6 +221,21 @@ class Processor:
                     #Mapper
                     commands = conn.recv(4096).rstrip().split()
 
+                    print("commands is: {} with fmt: {}".format(commands, type(commands)))
+
+                    if len(commands) > 0:
+                        raw_bytes = commands[0]
+                        if raw_bytes != b'reset':
+                            json_str = raw_bytes.decode('utf-8')
+                            is_It = is_json(json_str)
+                            parsed_dict = ""
+                            if is_It:
+                                parsed_dict = json.loads(json_str)
+                                print("parsed command is: {}".format(parsed_dict))
+                                commands.insert(0,1)
+                                commands[1] = parsed_dict['msg']
+
+
                     # Repeat multiple times?
                     #Mapper
                     try:
@@ -242,9 +258,13 @@ class Processor:
                     for i in range(repeat):
                         result = ''
                         for ci, command in enumerate(commands):
-                            print('[%s]' % self.transport)
-                            print('Sending %s...' % command.decode('UTF-8'))
-                            response = self.process_learlib_query(command.decode('UTF-8'))
+                            final_cmd = command
+                            if type(command) != str:
+                                final_cmd = command.decode('UTF-8')
+                            # print('transport is: [%s]' % self.transport)
+                            if final_cmd != '':
+                                print('Sending %s...' %final_cmd)
+                            response = self.process_learlib_query(final_cmd)
                             result += response
                             # If this is not the last command, add a space
                             if ci != len(commands)-1:
@@ -256,16 +276,22 @@ class Processor:
 
                         # Add a newline after a run of one or many commands
                         result += '\n'
-                        
+                        print("Returning result: %s" % result)
                         conn.send(str.encode(result))
                 except socket.error:
-                    print('\nCient disconnected (socket.error)')
+                    print('\nClient disconnected (socket.error)')
                     break
             print('Ready for new connection on address ' + self.learnlib_host + ':' + str(self.learnlib_port) )
 
         print('Closing connection')
         sock.close()
 
+def is_json(myjson):
+  try:
+    json.loads(myjson)
+  except ValueError as e:
+    return False
+  return True
 
 def parse_address(address_str):
     host_port = address_str.split(":")

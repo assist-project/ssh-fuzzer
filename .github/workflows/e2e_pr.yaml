@@ -1,0 +1,50 @@
+name: CI for SSH Mapper (Mealy Learning)
+on: [push, pull_request]
+
+jobs:
+  # Bounded Mealy learning of the Dropbear SSH server, verified against a golden model.
+  ssh-mapper-dropbear-mealy:
+    # Skip if the commit message contains 'ci skip'
+    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare ephemeral SSH key and output dir
+        # A throwaway key is generated per run and never committed. It is left at
+        # mode 644 so the mapper container (which runs as a non-root user) can read
+        # the mounted private key. The output dir is made world-writable so the
+        # learner container can write its hypotheses to the bind mount.
+        run: |
+          mkdir -p experiments/orchestration/ssh-keys
+          ssh-keygen -t rsa -b 2048 -N "" -f experiments/orchestration/ssh-keys/learner-ssh
+          chmod 644 experiments/orchestration/ssh-keys/learner-ssh
+          chmod 644 experiments/orchestration/ssh-keys/learner-ssh.pub
+          mkdir -p experiments/orchestration/learner_output_dropbear
+          chmod -R 777 experiments/orchestration/learner_output_dropbear
+
+      - name: Run bounded Dropbear learning (Mealy, roundLimit 3)
+        # -roundLimit 3 (set in the compose learner command) stops learning after
+        # the 3rd hypothesis, so the learner exits on its own (~15 min). With
+        # --abort-on-container-exit --exit-code-from the whole stack then tears
+        # down and the step returns instead of hanging on the long-running mapper/SSH.
+        run: |
+          cd experiments/orchestration
+          docker compose -f docker-compose-dropbear.yaml up --build \
+            --abort-on-container-exit --exit-code-from dropbear-learner
+
+      - name: Verify learned model against golden reference
+        # Diff the first 3 hypotheses against the committed reference model.
+        run: |
+          experiments/scripts/diff_hyps.sh \
+            experiments/results/servers/dropbear \
+            experiments/orchestration/learner_output_dropbear \
+            3
+
+      - name: Show learner logs on failure
+        if: failure()
+        run: |
+          cd experiments/orchestration
+          docker compose -f docker-compose-dropbear.yaml logs --no-color || true

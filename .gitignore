@@ -28,3 +28,19 @@ ssh-mapper/build/**
 ssh-mapper/dist/**
 ssh-mapper/mapper/__pycache__/**
 ssh-learner/target/**
+__pycache__/
+
+# OS / editor cruft (nothing to do with learning)
+.DS_Store
+**/.DS_Store
+.metadata/
+**/.metadata/
+.vscode/
+**/.vscode/
+.idea/
+**/.idea/
+*.iml
+*.swp
+
+# Generated SSH keys — never commit
+experiments/orchestration/ssh-keys/

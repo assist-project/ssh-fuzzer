@@ -1,0 +1,29 @@
+<alphabet>
+    <RASshInput name="KEXINIT"></RASshInput>
+    <RASshInput name="KEX30"></RASshInput>
+    <RASshInput name="NEWKEYS"></RASshInput>
+    <RASshInput name="SR_AUTH"></RASshInput>
+    <RASshInput name="SR_CONN"></RASshInput>
+    <RASshInput name="UA_PK_OK"></RASshInput>
+    <RASshInput name="UA_PK_NOK"></RASshInput>
+</alphabet>
+
+<!-- <alphabet>
+    <RASshInput name="KEXINIT">
+        <param pName="kex_algo" type="STRING" baseClass="java.lang.String">ext-info-c</param>
+        <param pName="server_host_key" type="STRING" baseClass="java.lang.String"
+            value="rsa-sha2-256"></param>
+    </RASshInput>
+    <input name="SSH_LOGIN">
+        <param pName="username" type="STRING" baseClass="java.lang.String" value="alice"></param>
+        <param name="password" type="STRING" baseClass="java.lang.String" value="password123"></param>
+    </input>
+    <RASshInput name="CH_OPEN">
+        <param pName="channelId" type="int" value="0" baseClass="java.lang.Integer" />
+    </RASshInput>
+</alphabet> -->
+
+
+<!-- <output name="SSH_RESPONSE">
+        <param name="status" type="STRING">success</param>
+    </output> -->

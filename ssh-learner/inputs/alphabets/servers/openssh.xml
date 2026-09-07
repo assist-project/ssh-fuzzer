@@ -1,0 +1,29 @@
+<alphabet>
+    <!-- Transport Layer Inputs -->
+    <SshInput name="DISCONNECT" /> <!-- Terminates the current connection [35, p. 23] -->
+    <!-- <SshInput name="IGNORE" /> Has no intended eect [35, p.24] -->
+    <SshInput name="UNIMPL" /> <!-- Intended response to unrecognized messages [35, p. 25] -->
+    <SshInput name="DEBUG" /> <!-- Provides other party with debug information [35, p. 25] -->
+    <SshInput name="KEXINIT" /> <!-- Sends parameter preferences [35, p. 17] -->
+    <SshInput name="KEX30" /> <!-- Initializes the Diffie-Hellman key exchange [35, p. 21] -->
+    <SshInput name="NEWKEYS" /> <!-- Requests to take new keys into use [35, p. 21] -->
+    <SshInput name="SR_AUTH" /> <!-- Requests the authentication protocol [35, p. 23] -->
+    <SshInput name="SR_CONN" /> <!-- Requests the connection protocol [35, p. 23] -->
+    <!-- Transport Layer Inputs -->
+    <!-- Auth Layer Inputs -->
+    <SshInput name="UA_NONE" /> <!-- Authenticates with the “none” method [32, p. 7] -->
+    <SshInput name="UA_PK_OK" /> <!-- Provides a valid name/key pair [32, p. 8] -->
+    <SshInput name="UA_PK_NOK" />  <!-- Provides an invalid name/key pair [32, p. 8] -->
+    <SshInput name="UA_PW_OK" />  <!-- Provides a valid name/password pair [32, p. 10] -->
+    <SshInput name="UA_PW_NOK" />  <!-- Provides an invalid name/password pair [32, p. 10] -->
+    <!-- Auth Layer Inputs -->
+    <!-- Connection Layer Inputs -->
+    <SshInput name="CH_OPEN" /> <!-- Opens a new channel [33, p. 5] -->
+    <SshInput name="CH_CLOSE" /> <!-- Closes a channel [33, p. 9] -->
+    <SshInput name="CH_EOF" /> <!-- Indicates that no more data will be sent [33, p. 9] -->
+    <SshInput name="CH_DATA" /> <!-- Sends data over the channel [33, p. 7] -->
+    <SshInput name="CH_EDATA" /> <!-- Sends typed data over the channel [33, p. 8] -->
+    <SshInput name="CH_WINDOW" /> <!-- adjust Adjusts the window size [33, p. 7] -->
+    <SshInput name="CH_REQUEST_PTY" /> <!-- Requests terminal emulation [33, p. 11] -->
+    <!-- Connection Layer Inputs -->
+</alphabet>

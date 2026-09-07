@@ -29,7 +29,50 @@ The hacked version of paramiko can be found in manualparamiko directory. This fi
 Timing variances were a nuisance. Timing is controlled at various places:
 - The time.sleep() in mapper/mapper.py (controls set timeout between runs)
 - read_multiple_responses() in manualparamiko/transport.py (has both a timeout between responses and total timeout -in case of multiple responses- argument). 
-- Timeout based on the type of message can be set in the individual read_multiple_responses-calls. 
+- Timeout based on the type of message can be set in the individual read_multiple_responses-calls.
+
+# Orchestration (Quick Start)
+
+The easiest way to run SSH-Fuzzer is via Docker, which handles all dependencies for the Learner, Mapper, and the SUT (System Under Test).
+
+### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Running an Experiment
+A helper script is provided to automate SSH key generation, container building, and execution.
+
+1.  **Navigate to the scripts directory:**
+    ```bash
+    cd experiments/scripts
+    ```
+2.  **Start the learning process:**
+    ```bash
+    ./start_learning.sh <SUT> [ALGORITHM]
+    ```
+
+### Usage Details
+The `start_learning.sh` script accepts the following parameters:
+
+*   **`<SUT>` (Required):** The target SSH server implementation. 
+    *   Options: `openssh7`, `openssh8`, `dropbear`.
+*   **`[ALGORITHM]` (Optional):** Specifies a Register Automata (RA) algorithm. If provided, the fuzzer runs in RA mode.
+    *   Options: `RALAMBDA`, `RASTAR`.
+
+**Examples:**
+*   **Standard Mealy Learning:** `./start_learning.sh openssh8`
+*   **Register Automata Learning:** `./start_learning.sh dropbear RALAMBDA`
+
+### Results and Outputs
+Learning results (Mealy machine models, logs, and statistics) are mapped from the containers back to your host machine:
+
+*   **Mealy (Dropbear):** `experiments/orchestration/learner_output_dropbear`
+*   **Mealy (OpenSSH 7):** `experiments/orchestration/learner_output_openssh7`
+*   **RA (Dropbear):** `experiments/orchestration/learner_output_ra_dropbear`
+*   **RA (OpenSSH 7):** `experiments/orchestration/learner_output_openssh7_ra`
+
+> **Note:** To modify specific Learner or Mapper arguments (e.g., timeouts, alphabet settings), edit the corresponding `.yaml` files in `experiments/orchestration/`.
+
 
 # Trimming script (mypydot)
 The python pydot package was altered to merge edges between the same nodes. 

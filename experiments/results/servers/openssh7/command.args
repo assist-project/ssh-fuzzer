@@ -1,0 +1,12 @@
+state-fuzzer-server
+-connect
+openssh-mapper7:8080
+-alphabet
+/app/inputs/alphabets/servers/trans_auth.xml
+-output
+/app/output_folder
+-sshMapperAddress
+openssh-mapper7:8080
+-debug
+-roundLimit
+3
